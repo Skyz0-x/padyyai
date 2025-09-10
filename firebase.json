@@ -1,0 +1,1 @@
+{"flutter":{"platforms":{"dart":{"lib/firebase_options.dart":{"projectId":"paddyai","configurations":{"android":"1:862590848178:android:c23ece4fc6784781820dab"}}},"android":{"default":{"projectId":"paddyai","appId":"1:862590848178:android:c23ece4fc6784781820dab","fileOutput":"android/app/google-services.json"}}}}}

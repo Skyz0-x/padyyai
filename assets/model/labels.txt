@@ -1,0 +1,8 @@
+0 Brown Planthopper
+1 Brown Spot
+2 Healthy
+3 Leaf Blast
+4 Leaf Scald
+5 Rice Leafroller
+6 Rice Yellow Stem Borer
+7 Sheath Blight
