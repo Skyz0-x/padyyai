@@ -1,34 +1,38 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<RegistrationScreen> createState() => _RegistrationScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _RegistrationScreenState extends State<RegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
   
   // Form controllers
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
   
   // Form state
+  String _selectedRole = 'farmer'; // Default role
   bool _isLoading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
-  // Login user function
-  Future<void> _loginUser() async {
+  // Register user function
+  Future<void> _registerUser() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -38,30 +42,43 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
+      // Assuming email, password, and selectedRole (e.g., "farmer", "supplier") are available variables.
       String email = _emailController.text.trim();
       String password = _passwordController.text.trim();
+      String selectedRole = _selectedRole;
 
-      print('🔐 Starting login process...');
+      print('🚀 Starting registration process...');
 
-      Map<String, dynamic> result = await _authService.loginUser(
+      // Use Firebase Authentication to create a new user with email and password.
+      // If successful, then create a corresponding user document in Cloud Firestore.
+      // Handle success and error cases appropriately, showing toast messages or updating UI.
+      Map<String, dynamic> result = await _authService.registerUser(
         email: email,
         password: password,
+        selectedRole: selectedRole,
       );
 
       if (result['success']) {
-        // Login successful
-        print('✅ Login completed successfully');
+        // Registration successful
+        print('✅ Registration completed successfully');
         if (mounted) {
           AuthService.showToast(context, result['message']);
           
-          // Navigate based on user role and status
-          String navigationRoute = result['navigationRoute'] ?? '/home';
-          Map<String, dynamic> profile = result['profile'] ?? {};
+          // Navigate based on role
+          String navigationRoute;
+          if (selectedRole == 'supplier') {
+            // Navigate to supplier details form
+            navigationRoute = '/supplier-details';
+          } else if (selectedRole == 'farmer') {
+            // Navigate to main app (farmer)
+            navigationRoute = '/home';
+          } else {
+            // Default navigation
+            navigationRoute = '/home';
+          }
           
-          print('🧭 Navigating to: $navigationRoute');
-          print('👤 User profile: ${profile['role']} - ${profile['status'] ?? 'N/A'}');
+          print('🚀 Registration successful, navigating to: $navigationRoute');
           
-          // Navigate to the appropriate screen and clear navigation stack
           Navigator.pushNamedAndRemoveUntil(
             context, 
             navigationRoute,
@@ -69,15 +86,15 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         }
       } else {
-        // Login failed
-        print('❌ Login failed: ${result['message']}');
+        // Registration failed
+        print('❌ Registration failed: ${result['message']}');
         if (mounted) {
           AuthService.showToast(context, result['message'], isError: true);
         }
       }
     } catch (e) {
-      print('❌ Unexpected error during login: $e');
-      AuthService.showToast(context, 'Login failed. Please try again.', isError: true);
+      print('❌ Unexpected error during registration: $e');
+      AuthService.showToast(context, 'Registration failed. Please try again.', isError: true);
     } finally {
       setState(() {
         _isLoading = false;
@@ -105,20 +122,20 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 60),
+                const SizedBox(height: 40),
                 
                 // App Logo and Title
                 _buildHeader(),
                 
-                const SizedBox(height: 50),
+                const SizedBox(height: 40),
                 
-                // Login Form
-                _buildLoginForm(),
+                // Registration Form
+                _buildRegistrationForm(),
                 
                 const SizedBox(height: 20),
                 
-                // Registration Link
-                _buildRegistrationLink(),
+                // Login Link
+                _buildLoginLink(),
               ],
             ),
           ),
@@ -151,7 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 16),
         const Text(
-          'Welcome to PaddyAI',
+          'Join PaddyAI',
           style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.bold,
@@ -160,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         const SizedBox(height: 8),
         const Text(
-          'Sign in to access your account',
+          'Create your account to get started',
           style: TextStyle(
             fontSize: 16,
             color: Colors.white70,
@@ -170,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildLoginForm() {
+  Widget _buildRegistrationForm() {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -189,16 +206,8 @@ class _LoginScreenState extends State<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Welcome Text
-            const Text(
-              'Sign In',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              textAlign: TextAlign.center,
-            ),
+            // Role Selection
+            _buildRoleSelection(),
             
             const SizedBox(height: 24),
             
@@ -210,15 +219,108 @@ class _LoginScreenState extends State<LoginScreen> {
             // Password Field
             _buildPasswordField(),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             
-            // Forgot Password Link
-            _buildForgotPasswordLink(),
+            // Confirm Password Field
+            _buildConfirmPasswordField(),
             
             const SizedBox(height: 24),
             
-            // Login Button
-            _buildLoginButton(),
+            // Register Button
+            _buildRegisterButton(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRoleSelection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'I am a:',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildRoleOption(
+                value: 'farmer',
+                title: 'Farmer',
+                description: 'I grow rice crops',
+                icon: Icons.eco,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildRoleOption(
+                value: 'supplier',
+                title: 'Supplier',
+                description: 'I sell agricultural products',
+                icon: Icons.store,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRoleOption({
+    required String value,
+    required String title,
+    required String description,
+    required IconData icon,
+  }) {
+    final isSelected = _selectedRole == value;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedRole = value;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.green.shade50 : Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? Colors.green.shade300 : Colors.grey.shade300,
+            width: 2,
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: isSelected ? Colors.green.shade700 : Colors.grey.shade600,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isSelected ? Colors.green.shade700 : Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              description,
+              style: TextStyle(
+                fontSize: 12,
+                color: isSelected ? Colors.green.shade600 : Colors.grey.shade600,
+              ),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
@@ -285,36 +387,58 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter your password';
+          return 'Please enter a password';
+        }
+        if (value.length < 6) {
+          return 'Password must be at least 6 characters';
         }
         return null;
       },
     );
   }
 
-  Widget _buildForgotPasswordLink() {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: GestureDetector(
-        onTap: () {
-          // TODO: Implement forgot password
-          AuthService.showToast(context, 'Forgot password feature coming soon!');
-        },
-        child: Text(
-          'Forgot Password?',
-          style: TextStyle(
-            color: Colors.green.shade600,
-            fontWeight: FontWeight.w500,
-            decoration: TextDecoration.underline,
-          ),
+  Widget _buildConfirmPasswordField() {
+    return TextFormField(
+      controller: _confirmPasswordController,
+      obscureText: _obscureConfirmPassword,
+      decoration: InputDecoration(
+        labelText: 'Confirm Password',
+        prefixIcon: const Icon(Icons.lock_outlined),
+        suffixIcon: IconButton(
+          icon: Icon(_obscureConfirmPassword ? Icons.visibility : Icons.visibility_off),
+          onPressed: () {
+            setState(() {
+              _obscureConfirmPassword = !_obscureConfirmPassword;
+            });
+          },
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.grey.shade300),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Colors.green.shade500),
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please confirm your password';
+        }
+        if (value != _passwordController.text) {
+          return 'Passwords do not match';
+        }
+        return null;
+      },
     );
   }
 
-  Widget _buildLoginButton() {
+  Widget _buildRegisterButton() {
     return ElevatedButton(
-      onPressed: _isLoading ? null : _loginUser,
+      onPressed: _isLoading ? null : _registerUser,
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green.shade600,
         foregroundColor: Colors.white,
@@ -337,11 +461,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 SizedBox(width: 12),
-                Text('Signing In...'),
+                Text('Creating Account...'),
               ],
             )
           : const Text(
-              'Sign In',
+              'Create Account',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -350,20 +474,20 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildRegistrationLink() {
+  Widget _buildLoginLink() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         const Text(
-          "Don't have an account? ",
+          'Already have an account? ',
           style: TextStyle(color: Colors.white70),
         ),
         GestureDetector(
           onTap: () {
-            Navigator.pushReplacementNamed(context, '/register');
+            Navigator.pushReplacementNamed(context, '/login');
           },
           child: const Text(
-            'Sign Up',
+            'Sign In',
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
