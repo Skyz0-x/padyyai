@@ -13,6 +13,7 @@ import 'screens/farmer_dashboard.dart';
 import 'screens/supplier_dashboard.dart';
 import 'screens/supplier_details_screen.dart';
 import 'screens/supplier_pending_screen.dart';
+import 'screens/admin_dashboard.dart';
 import 'services/auth_service.dart';
 
 void main() async {
@@ -81,6 +82,7 @@ class PaddyAIApp extends StatelessWidget {
         '/supplier-dashboard': (context) => const RoleGuard(allowedRoles: ['supplier'], child: SupplierDashboard()),
         '/supplier-details': (context) => const RoleGuard(allowedRoles: ['supplier'], child: SupplierDetailsScreen()),
         '/supplier-pending': (context) => const RoleGuard(allowedRoles: ['supplier'], child: SupplierPendingScreen()),
+        '/admin-dashboard': (context) => const RoleGuard(allowedRoles: ['admin'], child: AdminDashboard()),
       },
       initialRoute: '/',
     );
@@ -216,6 +218,8 @@ class _RoleBasedNavigationState extends State<RoleBasedNavigation> {
         return const SupplierPendingScreen(); // Pending suppliers
       case '/supplier-details':
         return const SupplierDetailsScreen(); // Suppliers need to complete details
+      case '/admin-dashboard':
+        return const AdminDashboard(); // Admin dashboard
       case '/login':
       default:
         return const LoginScreen(); // Fallback to login
