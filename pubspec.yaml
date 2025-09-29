@@ -81,6 +81,7 @@ flutter:
   assets:
     - assets/model/model_unquant.tflite
     - assets/model/labels.txt
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

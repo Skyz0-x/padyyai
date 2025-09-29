@@ -114,7 +114,7 @@ const InputDecoration customInputDecoration = InputDecoration(
 
 // App constants
 const String appName = 'PaddyAI';
-const String logoPath = 'lib/assets/img/PadyyAI.png';
+const String logoPath = 'assets/images/Logo1.png';
 
 // AI Model paths
 const String modelPath = 'lib/assets/tflite/paddyai_model.tflite';

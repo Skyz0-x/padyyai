@@ -134,7 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             color: Colors.white,
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
@@ -143,10 +143,20 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ],
           ),
-          child: Icon(
-            Icons.agriculture,
-            size: 50,
-            color: Colors.green.shade700,
+          child: Image.asset(
+            'assets/images/PadyyAI.png',
+            width: 120,
+            height: 120,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              // Fallback to icon if image fails to load
+              print('Error loading logo: $error');
+              return Icon(
+                Icons.agriculture,
+                size: 60,
+                color: Colors.green.shade700,
+              );
+            },
           ),
         ),
         const SizedBox(height: 16),

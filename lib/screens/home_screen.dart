@@ -115,26 +115,32 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  ClipOval(
-                    child: Image.asset(
-                      logoPath,
-                      height: 40,
-                      width: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
+                  Image.asset(
+                    'assets/images/Logo1.png',
+                    height: 40,
+                    width: 40,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      print('Error loading Logo1.png: $error');
+                      return Container(
                         height: 40,
                         width: 40,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
+                        decoration: BoxDecoration(
                           color: Colors.white,
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(
-                          Icons.agriculture,
-                          color: primaryColor,
-                          size: 24,
+                        child: const Center(
+                          child: Text(
+                            'P',
+                            style: TextStyle(
+                              color: primaryColor,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    },
                   ),
                   const SizedBox(width: 12),
                   const Text(
