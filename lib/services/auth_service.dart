@@ -1,270 +1,311 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/supabase_config.dart';
 
 class AuthService {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final SupabaseClient _client = SupabaseConfig.client;
 
   // Get current user
-  User? get currentUser => _firebaseAuth.currentUser;
+  User? get currentUser => _client.auth.currentUser;
 
   // Auth state stream
-  Stream<User?> get authStateChanges => _firebaseAuth.authStateChanges();
+  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
 
-  // Register new user with email and password
+  // Sign up with email and password
+  Future<Map<String, dynamic>> signUp({
+    required String email,
+    required String password,
+    required Map<String, dynamic> metadata,
+  }) async {
+    try {
+      // Clean and validate email
+      final cleanEmail = email.trim().toLowerCase();
+      
+      // Validate email format before sending to Supabase
+      final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+      if (!emailRegex.hasMatch(cleanEmail)) {
+        return {
+          'success': false,
+          'error': 'Invalid email format: $cleanEmail',
+        };
+      }
+      
+      print('🔐 Starting user registration for: $cleanEmail with role: ${metadata['role']}');
+      print('📧 Original email: "$email"');
+      print('📧 Clean email: "$cleanEmail"');
+      print('📧 Email length: ${cleanEmail.length}');
+      print('📧 Email validation: ${emailRegex.hasMatch(cleanEmail)}');
+      
+      // Test email before sending to Supabase
+      if (cleanEmail == 'farmer1@gmail.com') {
+        print('🧪 Testing specific email: farmer1@gmail.com');
+        print('🧪 Character codes: ${cleanEmail.codeUnits}');
+      }
+      
+      final response = await _client.auth.signUp(
+        email: cleanEmail,
+        password: password,
+        data: metadata,
+      );
+      
+      if (response.user != null) {
+        print('✅ Supabase Auth registration successful for ID: ${response.user!.id}');
+        
+        // Create user profile in users table
+        await _client.from('users').insert({
+          'id': response.user!.id,
+          'email': cleanEmail,
+          'full_name': metadata['full_name'],
+          'phone': metadata['phone'],
+          'role': metadata['role'],
+          'business_name': metadata['business_name'],
+          'business_address': metadata['business_address'],
+          'business_type': metadata['business_type'],
+          'gst_number': metadata['gst_number'],
+          'status': metadata['role'] == 'supplier' ? 'pending' : 'approved',
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+        
+        print('📊 User profile created in database');
+        
+        return {
+          'success': true,
+          'user': response.user,
+          'message': 'Registration successful',
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Registration failed - no user returned',
+        };
+      }
+    } catch (e) {
+      print('❌ Registration failed: $e');
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  // Sign in with email and password
+  Future<Map<String, dynamic>> signIn({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      print('🔐 Attempting sign in for: $email');
+      
+      final response = await _client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      
+      if (response.user != null) {
+        print('✅ Sign in successful for ID: ${response.user!.id}');
+        
+        // Get user profile and navigation info
+        Map<String, dynamic> navInfo = await getUserProfileAndNavigationInfo(response.user!.id);
+        
+        return {
+          'success': true,
+          'user': response.user,
+          'message': 'Sign in successful',
+          'navigationRoute': navInfo['navigationRoute'],
+          'profile': navInfo['userProfile'],
+          'role': navInfo['role'],
+          'status': navInfo['status'],
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Sign in failed - no user returned',
+        };
+      }
+    } catch (e) {
+      print('❌ Sign in failed: $e');
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  // Sign out
+  Future<void> signOut() async {
+    try {
+      await _client.auth.signOut();
+      print('✅ User signed out successfully');
+    } catch (e) {
+      print('❌ Sign out failed: $e');
+      rethrow;
+    }
+  }
+
+  // Reset password
+  Future<Map<String, dynamic>> resetPassword(String email) async {
+    try {
+      await _client.auth.resetPasswordForEmail(email);
+      return {
+        'success': true,
+        'message': 'Password reset email sent',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  // Get user profile and navigation info
+  Future<Map<String, dynamic>> getUserProfileAndNavigationInfo(String userId) async {
+    try {
+      print('🔍 Getting user profile for ID: $userId');
+      
+      // Try to get user profile with error handling for RLS issues
+      Map<String, dynamic>? response;
+      try {
+        final result = await _client
+            .from('users')
+            .select()
+            .eq('id', userId)
+            .maybeSingle();
+        response = result;
+      } catch (e) {
+        print('❌ Error getting user profile: $e');
+        // If RLS policy issue, create a basic profile entry
+        if (e.toString().contains('infinite recursion') || e.toString().contains('policy')) {
+          print('🔧 Attempting to create basic user profile...');
+          try {
+            await _client.from('users').upsert({
+              'id': userId,
+              'role': 'farmer', // Default role
+              'status': 'approved',
+              'created_at': DateTime.now().toIso8601String(),
+            });
+            
+            // Try to fetch again
+            final result = await _client
+                .from('users')
+                .select()
+                .eq('id', userId)
+                .maybeSingle();
+            response = result;
+          } catch (upsertError) {
+            print('❌ Failed to create user profile: $upsertError');
+            // Return default values if all else fails
+            response = {
+              'id': userId,
+              'role': 'farmer',
+              'status': 'approved',
+            };
+          }
+        } else {
+          rethrow;
+        }
+      }
+      
+      if (response == null) {
+        print('⚠️ No user profile found, using defaults');
+        response = {
+          'id': userId,
+          'role': 'farmer',
+          'status': 'approved',
+        };
+      }
+      
+      String role = response['role'] ?? 'farmer';
+      String status = response['status'] ?? 'approved';
+      
+      String navigationRoute;
+      switch (role) {
+        case 'admin':
+          navigationRoute = '/admin-dashboard';
+          break;
+        case 'supplier':
+          if (status == 'approved') {
+            navigationRoute = '/supplier-dashboard';
+          } else if (status == 'pending') {
+            navigationRoute = '/supplier-pending';
+          } else {
+            navigationRoute = '/supplier-details'; // For rejected or incomplete profiles
+          }
+          break;
+        case 'farmer':
+        default:
+          navigationRoute = '/home';
+          break;
+      }
+      
+      print('📊 User profile found - Role: $role, Status: $status, Route: $navigationRoute');
+      
+      return {
+        'userProfile': response,
+        'navigationRoute': navigationRoute,
+        'role': role,
+        'status': status,
+      };
+    } catch (e) {
+      print('❌ Error getting user profile: $e');
+      return {
+        'userProfile': null,
+        'navigationRoute': '/login',
+        'role': 'farmer',
+        'status': 'pending',
+      };
+    }
+  }
+
+  // Register user (backward compatibility method)
   Future<Map<String, dynamic>> registerUser({
     required String email,
     required String password,
     required String selectedRole,
   }) async {
-    try {
-      print('🔐 Starting user registration for: $email with role: $selectedRole');
-      
-      // Use Firebase Authentication to create a new user with email and password
-      UserCredential userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      User? user = userCredential.user;
-      if (user != null) {
-        print('✅ Firebase Auth registration successful for UID: ${user.uid}');
-        
-        // Create a new document in the 'users' collection in Cloud Firestore
-        // The document ID should be the new user's UID (user.uid)
-        Map<String, dynamic> userData = {
-          'email': email,
-          'role': selectedRole,
-          'createdAt': FieldValue.serverTimestamp(),
-          'updatedAt': FieldValue.serverTimestamp(),
-        };
-
-        // Include 'status' as 'pending' if the role is 'supplier'
-        if (selectedRole == 'supplier') {
-          userData['status'] = 'pending';
-          print('📋 Added pending status for supplier');
-        }
-
-        // Save user profile to Firestore
-        await _firestore.collection('users').doc(user.uid).set(userData);
-        print('✅ User document created in Firestore successfully');
-
-        return {
-          'success': true,
-          'user': user,
-          'role': selectedRole,
-          'message': 'Registration successful!'
-        };
-      } else {
-        throw Exception('User creation failed - user is null');
-      }
-    } on FirebaseAuthException catch (e) {
-      print('❌ Firebase Auth Error: ${e.code} - ${e.message}');
-      String errorMessage;
-      switch (e.code) {
-        case 'weak-password':
-          errorMessage = 'The password is too weak. Please use at least 6 characters.';
-          break;
-        case 'email-already-in-use':
-          errorMessage = 'An account already exists with this email address.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'Please enter a valid email address.';
-          break;
-        default:
-          errorMessage = 'Registration failed: ${e.message}';
-      }
-      return {
-        'success': false,
-        'message': errorMessage
-      };
-    } catch (e) {
-      print('❌ Unexpected error during registration: $e');
-      return {
-        'success': false,
-        'message': 'Registration failed. Please try again.'
-      };
-    }
+    return await signUp(
+      email: email,
+      password: password,
+      metadata: {
+        'role': selectedRole,
+        'full_name': '',
+        'phone': '',
+        'business_name': '',
+        'business_address': '',
+        'business_type': '',
+        'gst_number': '',
+      },
+    );
   }
 
-  // Update supplier profile with business details
-  Future<Map<String, dynamic>> updateSupplierDetails({
-    required String businessName,
-    required String address,
-    required String contactInfo,
-    String? description,
+  // Authenticate user (backward compatibility method)
+  Future<Map<String, dynamic>> authenticateUser({
+    required String email,
+    required String password,
   }) async {
-    try {
-      User? currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        return {
-          'success': false,
-          'message': 'User not logged in'
-        };
-      }
-
-      print('📝 Updating supplier details for UID: ${currentUser.uid}');
-
-      // Update the existing user document in the 'users' collection in Cloud Firestore
-      // Add or update fields like 'businessName', 'address', 'contactInfo', etc.
-      // The 'status' field should remain 'pending' at this stage
-      Map<String, dynamic> updateData = {
-        'businessName': businessName,
-        'address': address,
-        'contactInfo': contactInfo,
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
-      if (description != null && description.isNotEmpty) {
-        updateData['description'] = description;
-      }
-
-      await _firestore.collection('users').doc(currentUser.uid).update(updateData);
-      print('✅ Supplier details updated successfully');
-
-      return {
-        'success': true,
-        'message': 'Business details updated successfully!'
-      };
-    } catch (e) {
-      print('❌ Error updating supplier details: $e');
-      return {
-        'success': false,
-        'message': 'Failed to update details. Please try again.'
-      };
-    }
+    return await signIn(email: email, password: password);
   }
 
-  // Login user with email and password
+  // Login user (backward compatibility method)
   Future<Map<String, dynamic>> loginUser({
     required String email,
     required String password,
   }) async {
-    try {
-      print('🔐 Starting login for: $email');
-      
-      // Use Firebase Authentication to sign in the user with email and password
-      UserCredential userCredential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      User? user = userCredential.user;
-      if (user != null) {
-        print('✅ Firebase Auth login successful for UID: ${user.uid}');
-        
-        // Fetch user profile and determine navigation
-        Map<String, dynamic> profileResult = await getUserProfileAndNavigationInfo(user.uid);
-        
-        return {
-          'success': true,
-          'user': user,
-          'profile': profileResult['profile'],
-          'navigationRoute': profileResult['navigationRoute'],
-          'message': 'Login successful!'
-        };
-      } else {
-        throw Exception('Login failed - user is null');
-      }
-    } on FirebaseAuthException catch (e) {
-      print('❌ Firebase Auth Error: ${e.code} - ${e.message}');
-      String errorMessage;
-      switch (e.code) {
-        case 'user-not-found':
-          errorMessage = 'No account found with this email address.';
-          break;
-        case 'wrong-password':
-          errorMessage = 'Incorrect password. Please try again.';
-          break;
-        case 'invalid-email':
-          errorMessage = 'Please enter a valid email address.';
-          break;
-        case 'user-disabled':
-          errorMessage = 'This account has been disabled.';
-          break;
-        default:
-          errorMessage = 'Login failed: ${e.message}';
-      }
-      return {
-        'success': false,
-        'message': errorMessage
-      };
-    } catch (e) {
-      print('❌ Unexpected error during login: $e');
-      return {
-        'success': false,
-        'message': 'Login failed. Please try again.'
-      };
-    }
-  }
-
-  // Fetch user profile and determine navigation route
-  Future<Map<String, dynamic>> getUserProfileAndNavigationInfo(String uid) async {
-    try {
-      print('📋 Fetching user profile for UID: $uid');
-      
-      // Fetch the user's profile document from the 'users' collection in Cloud Firestore using user.uid
-      DocumentSnapshot docSnapshot = await _firestore.collection('users').doc(uid).get();
-      
-      if (docSnapshot.exists) {
-        Map<String, dynamic> userData = docSnapshot.data() as Map<String, dynamic>;
-        String role = userData['role'] ?? '';
-        String status = userData['status'] ?? '';
-        
-        print('📋 User profile loaded - Role: $role, Status: $status');
-        
-        // Implement conditional navigation logic:
-        String navigationRoute;
-        
-        if (role == 'admin') {
-          // If role is 'admin', go to Admin Dashboard
-          navigationRoute = '/admin-dashboard';
-        } else if (role == 'farmer') {
-          // If role is 'farmer', go to Main App (home with all features: detect, marketplace, profile)
-          navigationRoute = '/home';
-        } else if (role == 'supplier') {
-          if (status == 'approved') {
-            // If role is 'supplier' and status is 'approved', go to Supplier Dashboard
-            navigationRoute = '/supplier-dashboard';
-          } else if (status == 'pending') {
-            // If role is 'supplier' and status is 'pending', go to Supplier Pending Approval screen
-            navigationRoute = '/supplier-pending';
-          } else if (status == 'rejected') {
-            // If role is 'supplier' and status is 'rejected', go to Supplier Dashboard to see rejection
-            navigationRoute = '/supplier-dashboard';
-          } else {
-            // If supplier but no details filled or unknown status, go to details form
-            navigationRoute = '/supplier-details';
-          }
-        } else {
-          // Default fallback - send to main app
-          navigationRoute = '/home';
-        }
-        
-        return {
-          'profile': userData,
-          'navigationRoute': navigationRoute
-        };
-      } else {
-        print('❌ User document not found in Firestore');
-        throw Exception('User profile not found');
-      }
-    } catch (e) {
-      print('❌ Error fetching user profile: $e');
-      throw Exception('Failed to load user profile');
-    }
+    return await signIn(email: email, password: password);
   }
 
   // Get current user profile
   Future<Map<String, dynamic>?> getCurrentUserProfile() async {
     try {
-      User? user = _firebaseAuth.currentUser;
-      if (user == null) return null;
-      
-      DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
-      if (doc.exists) {
-        return doc.data() as Map<String, dynamic>;
+      final currentUser = _client.auth.currentUser;
+      if (currentUser != null) {
+        final response = await _client
+            .from('users')
+            .select()
+            .eq('id', currentUser.id)
+            .single();
+        return response;
       }
       return null;
     } catch (e) {
@@ -273,291 +314,92 @@ class AuthService {
     }
   }
 
-  // Logout user
-  Future<void> signOut() async {
-    try {
-      await _firebaseAuth.signOut();
-      print('✅ User signed out successfully');
-    } catch (e) {
-      print('❌ Error signing out: $e');
-      throw Exception('Failed to sign out');
-    }
-  }
-
-  // Check if user is logged in
-  bool isLoggedIn() {
-    return _firebaseAuth.currentUser != null;
-  }
-
-  // Admin functions for supplier management
-  Future<List<Map<String, dynamic>>> getPendingSuppliers() async {
-    try {
-      QuerySnapshot snapshot = await _firestore
-          .collection('users')
-          .where('role', isEqualTo: 'supplier')
-          .where('status', isEqualTo: 'pending')
-          .orderBy('createdAt', descending: true)
-          .get();
-
-      return snapshot.docs.map((doc) {
-        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        data['uid'] = doc.id;
-        return data;
-      }).toList();
-    } catch (e) {
-      print('❌ Error getting pending suppliers: $e');
-      throw Exception('Failed to load pending suppliers');
-    }
-  }
-
-  Future<Map<String, dynamic>> updateSupplierStatus({
-    required String supplierUid,
-    required String status, // 'approved' or 'rejected'
-    String? adminNote,
-  }) async {
-    try {
-      User? currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        return {
-          'success': false,
-          'message': 'Admin not logged in'
-        };
-      }
-
-      print('🔐 Attempting status update with admin: ${currentUser.uid}');
-
-      // Verify admin has admin role
-      Map<String, dynamic>? adminProfile = await getCurrentUserProfile();
-      if (adminProfile == null || adminProfile['role'] != 'admin') {
-        return {
-          'success': false,
-          'message': 'Insufficient permissions - admin role required'
-        };
-      }
-
-      print('✅ Admin verification passed: ${adminProfile['email']}');
-
-      // Prepare update data
-      Map<String, dynamic> updateData = {
-        'status': status,
-        'updatedAt': FieldValue.serverTimestamp(),
-        'reviewedBy': currentUser.uid,
-        'reviewedByEmail': adminProfile['email'],
-        'reviewedAt': FieldValue.serverTimestamp(),
-      };
-
-      if (adminNote != null && adminNote.isNotEmpty) {
-        updateData['adminNote'] = adminNote;
-      }
-
-      print('📝 Updating supplier $supplierUid with data: $updateData');
-
-      // Try to update with admin privileges
-      try {
-        await _firestore.collection('users').doc(supplierUid).update(updateData);
-        print('✅ Direct Firestore update successful');
-      } catch (firestoreError) {
-        print('⚠️ Direct update failed: $firestoreError');
-        
-        // If direct update fails due to permissions, try alternative approach
-        if (firestoreError.toString().contains('permission')) {
-          print('🔄 Trying admin-privileged update...');
-          
-          // Alternative: Use admin SDK approach by getting the document first
-          DocumentSnapshot supplierDoc = await _firestore.collection('users').doc(supplierUid).get();
-          
-          if (!supplierDoc.exists) {
-            throw Exception('Supplier document not found');
-          }
-          
-          // Try batch write or transaction
-          WriteBatch batch = _firestore.batch();
-          batch.update(_firestore.collection('users').doc(supplierUid), updateData);
-          await batch.commit();
-          
-          print('✅ Batch update successful');
-        } else {
-          rethrow;
-        }
-      }
-
-      print('✅ Supplier status updated to: $status');
-      return {
-        'success': true,
-        'message': 'Supplier status updated successfully'
-      };
-    } catch (e) {
-      print('❌ Error updating supplier status: $e');
-      
-      // Provide specific error messages
-      String errorMessage = 'Failed to update supplier status';
-      if (e.toString().contains('permission-denied')) {
-        errorMessage = 'Permission denied. Please check Firestore security rules for admin access.';
-      } else if (e.toString().contains('not-found')) {
-        errorMessage = 'Supplier not found in database.';
-      } else if (e.toString().contains('network')) {
-        errorMessage = 'Network error. Please check your connection.';
-      }
-      
-      return {
-        'success': false,
-        'message': errorMessage,
-        'error': e.toString()
-      };
-    }
-  }
-
-  // Alternative update method using admin's own document write permissions
-  Future<Map<String, dynamic>> updateSupplierStatusAlternative({
-    required String supplierUid,
-    required String status,
-    String? adminNote,
-  }) async {
-    try {
-      User? currentUser = _firebaseAuth.currentUser;
-      if (currentUser == null) {
-        return {
-          'success': false,
-          'message': 'Admin not logged in'
-        };
-      }
-
-      // Verify admin role
-      Map<String, dynamic>? adminProfile = await getCurrentUserProfile();
-      if (adminProfile == null || adminProfile['role'] != 'admin') {
-        return {
-          'success': false,
-          'message': 'Insufficient permissions - admin role required'
-        };
-      }
-
-      // Create admin action record that triggers supplier update
-      String adminActionId = DateTime.now().millisecondsSinceEpoch.toString();
-      
-      await _firestore.collection('admin_actions').doc(adminActionId).set({
-        'action': 'update_supplier_status',
-        'supplierUid': supplierUid,
-        'newStatus': status,
-        'adminUid': currentUser.uid,
-        'adminEmail': adminProfile['email'],
-        'adminNote': adminNote,
-        'timestamp': FieldValue.serverTimestamp(),
-        'processed': false,
-      });
-
-      // Also try direct update (this might work if rules allow admin)
-      try {
-        await _firestore.collection('users').doc(supplierUid).update({
-          'status': status,
-          'updatedAt': FieldValue.serverTimestamp(),
-          'reviewedBy': currentUser.uid,
-          'reviewedByEmail': adminProfile['email'],
-          'reviewedAt': FieldValue.serverTimestamp(),
-          'adminNote': adminNote,
-        });
-        
-        // Mark admin action as processed
-        await _firestore.collection('admin_actions').doc(adminActionId).update({
-          'processed': true,
-          'processedAt': FieldValue.serverTimestamp(),
-        });
-        
-        return {
-          'success': true,
-          'message': 'Supplier status updated successfully'
-        };
-      } catch (directUpdateError) {
-        print('⚠️ Direct update failed, admin action recorded: $directUpdateError');
-        return {
-          'success': false,
-          'message': 'Admin action recorded but direct update failed. Please check Firestore security rules.',
-          'requiresManualAction': true,
-          'adminActionId': adminActionId,
-        };
-      }
-    } catch (e) {
-      print('❌ Error in alternative update method: $e');
-      return {
-        'success': false,
-        'message': 'Failed to process admin action: ${e.toString()}'
-      };
-    }
-  }
-
-  // Method to provide Firestore rules guidance
-  String getFirestoreRulesGuidance() {
-    return '''
-To allow admin users to approve/reject suppliers, add these Firestore security rules:
-
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    // Allow users to read/write their own document
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // Allow admin users to read/write any user document
-      allow read, write: if request.auth != null && 
-        get(/databases/\$(database)/documents/users/\$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    // Allow admin actions collection for admins
-    match /admin_actions/{actionId} {
-      allow read, write: if request.auth != null && 
-        get(/databases/\$(database)/documents/users/\$(request.auth.uid)).data.role == 'admin';
-    }
-  }
-}
-''';
-  }
-
-  Future<Map<String, dynamic>> getSupplierStats() async {
-    try {
-      // Get counts for each supplier status
-      QuerySnapshot pendingSnapshot = await _firestore
-          .collection('users')
-          .where('role', isEqualTo: 'supplier')
-          .where('status', isEqualTo: 'pending')
-          .get();
-
-      QuerySnapshot approvedSnapshot = await _firestore
-          .collection('users')
-          .where('role', isEqualTo: 'supplier')
-          .where('status', isEqualTo: 'approved')
-          .get();
-
-      QuerySnapshot rejectedSnapshot = await _firestore
-          .collection('users')
-          .where('role', isEqualTo: 'supplier')
-          .where('status', isEqualTo: 'rejected')
-          .get();
-
-      return {
-        'pending': pendingSnapshot.docs.length,
-        'approved': approvedSnapshot.docs.length,
-        'rejected': rejectedSnapshot.docs.length,
-        'total': pendingSnapshot.docs.length + approvedSnapshot.docs.length + rejectedSnapshot.docs.length,
-      };
-    } catch (e) {
-      print('❌ Error getting supplier stats: $e');
-      return {
-        'pending': 0,
-        'approved': 0,
-        'rejected': 0,
-        'total': 0,
-      };
-    }
-  }
-
   // Show toast message
-  static void showToast(BuildContext context, String message, {bool isError = false}) {
+  void showToast(BuildContext context, String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
         backgroundColor: isError ? Colors.red : Colors.green,
-        behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 3),
       ),
     );
+  }
+
+  // Update supplier details
+  Future<Map<String, dynamic>> updateSupplierDetails(String userId, Map<String, dynamic> data) async {
+    try {
+      data['updated_at'] = DateTime.now().toIso8601String();
+      
+      await _client
+          .from('users')
+          .update(data)
+          .eq('id', userId);
+      
+      return {
+        'success': true,
+        'message': 'Supplier details updated successfully',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  // Get pending suppliers (for admin dashboard)
+  Future<List<Map<String, dynamic>>> getPendingSuppliers() async {
+    try {
+      final response = await _client
+          .from('users')
+          .select()
+          .eq('role', 'supplier')
+          .eq('status', 'pending');
+      
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      print('❌ Error getting pending suppliers: $e');
+      return [];
+    }
+  }
+
+  // Approve supplier
+  Future<Map<String, dynamic>> approveSupplier(String supplierId) async {
+    try {
+      await _client
+          .from('users')
+          .update({'status': 'approved', 'updated_at': DateTime.now().toIso8601String()})
+          .eq('id', supplierId);
+      
+      return {
+        'success': true,
+        'message': 'Supplier approved successfully',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  // Reject supplier
+  Future<Map<String, dynamic>> rejectSupplier(String supplierId) async {
+    try {
+      await _client
+          .from('users')
+          .update({'status': 'rejected', 'updated_at': DateTime.now().toIso8601String()})
+          .eq('id', supplierId);
+      
+      return {
+        'success': true,
+        'message': 'Supplier rejected',
+      };
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
   }
 }

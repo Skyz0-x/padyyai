@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/auth_service.dart';
 
 class SupplierDashboard extends StatefulWidget {
@@ -24,20 +22,15 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
 
   Future<void> _loadUserProfile() async {
     try {
-      User? currentUser = FirebaseAuth.instance.currentUser;
-      if (currentUser != null) {
-        DocumentSnapshot doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(currentUser.uid)
-            .get();
-        
-        if (doc.exists) {
-          setState(() {
-            userProfile = doc.data() as Map<String, dynamic>;
-            userStatus = userProfile?['status'] ?? 'pending';
-            isLoading = false;
-          });
-        }
+      final authService = AuthService();
+      Map<String, dynamic>? profile = await authService.getCurrentUserProfile();
+      
+      if (profile != null) {
+        setState(() {
+          userProfile = profile;
+          userStatus = profile['status'] ?? 'pending';
+          isLoading = false;
+        });
       }
     } catch (e) {
       print('Error loading user profile: $e');

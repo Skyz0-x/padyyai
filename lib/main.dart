@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'firebase_options.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'config/supabase_config.dart';
 import 'utils/constants.dart';
 import 'screens/login_screen.dart';
 import 'screens/registration_screen.dart';
@@ -18,13 +17,15 @@ import 'services/auth_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
   try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+    // Initialize Supabase instead of Firebase
+    await SupabaseConfig.initialize();
+    debugPrint("Supabase initialized successfully");
   } catch (e) {
-    debugPrint("Firebase initialization failed: $e");
+    debugPrint("Supabase initialization failed: $e");
   }
+  
   runApp(const PaddyAIApp());
 }
 
@@ -94,8 +95,8 @@ class AuthWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
+    return StreamBuilder<AuthState>(
+      stream: SupabaseConfig.client.auth.onAuthStateChange,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Scaffold(
@@ -125,7 +126,10 @@ class AuthWrapper extends StatelessWidget {
         }
         
         if (snapshot.hasData) {
-          return const RoleBasedNavigation();
+          final session = snapshot.data!.session;
+          if (session != null) {
+            return const RoleBasedNavigation();
+          }
         }
         
         return const LoginScreen();
@@ -154,9 +158,9 @@ class _RoleBasedNavigationState extends State<RoleBasedNavigation> {
 
   Future<void> _determineNavigationRoute() async {
     try {
-      User? currentUser = FirebaseAuth.instance.currentUser;
+      final currentUser = SupabaseConfig.client.auth.currentUser;
       if (currentUser != null) {
-        Map<String, dynamic> result = await _authService.getUserProfileAndNavigationInfo(currentUser.uid);
+        Map<String, dynamic> result = await _authService.getUserProfileAndNavigationInfo(currentUser.id);
         setState(() {
           _navigationRoute = result['navigationRoute'];
           _isLoading = false;
@@ -397,7 +401,7 @@ class _RoleGuardState extends State<RoleGuard> {
 
   Future<void> _checkUserRole() async {
     try {
-      User? currentUser = FirebaseAuth.instance.currentUser;
+      User? currentUser = SupabaseConfig.client.auth.currentUser;
       if (currentUser != null) {
         Map<String, dynamic>? userProfile = await _authService.getCurrentUserProfile();
         
@@ -428,9 +432,9 @@ class _RoleGuardState extends State<RoleGuard> {
 
   void _redirectToUserScreen(Map<String, dynamic> userProfile) async {
     try {
-      User? currentUser = FirebaseAuth.instance.currentUser;
+      User? currentUser = SupabaseConfig.client.auth.currentUser;
       if (currentUser != null) {
-        Map<String, dynamic> result = await _authService.getUserProfileAndNavigationInfo(currentUser.uid);
+        Map<String, dynamic> result = await _authService.getUserProfileAndNavigationInfo(currentUser.id);
         String correctRoute = result['navigationRoute'] ?? '/login';
         
         if (mounted) {

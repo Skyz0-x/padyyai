@@ -62,7 +62,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         // Registration successful
         print('✅ Registration completed successfully');
         if (mounted) {
-          AuthService.showToast(context, result['message']);
+          _authService.showToast(context, result['message']);
           
           // Navigate based on role
           String navigationRoute;
@@ -89,12 +89,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         // Registration failed
         print('❌ Registration failed: ${result['message']}');
         if (mounted) {
-          AuthService.showToast(context, result['message'], isError: true);
+          _authService.showToast(context, result['message'], isError: true);
         }
       }
     } catch (e) {
       print('❌ Unexpected error during registration: $e');
-      AuthService.showToast(context, 'Registration failed. Please try again.', isError: true);
+      _authService.showToast(context, 'Registration failed. Please try again.', isError: true);
     } finally {
       setState(() {
         _isLoading = false;

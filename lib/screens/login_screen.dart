@@ -52,7 +52,7 @@ class _LoginScreenState extends State<LoginScreen> {
         // Login successful
         print('✅ Login completed successfully');
         if (mounted) {
-          AuthService.showToast(context, result['message']);
+          _authService.showToast(context, result['message']);
           
           // Navigate based on user role and status
           String navigationRoute = result['navigationRoute'] ?? '/home';
@@ -72,12 +72,12 @@ class _LoginScreenState extends State<LoginScreen> {
         // Login failed
         print('❌ Login failed: ${result['message']}');
         if (mounted) {
-          AuthService.showToast(context, result['message'], isError: true);
+          _authService.showToast(context, result['message'], isError: true);
         }
       }
     } catch (e) {
       print('❌ Unexpected error during login: $e');
-      AuthService.showToast(context, 'Login failed. Please try again.', isError: true);
+      _authService.showToast(context, 'Login failed. Please try again.', isError: true);
     } finally {
       setState(() {
         _isLoading = false;
@@ -308,7 +308,7 @@ class _LoginScreenState extends State<LoginScreen> {
       child: GestureDetector(
         onTap: () {
           // TODO: Implement forgot password
-          AuthService.showToast(context, 'Forgot password feature coming soon!');
+          _authService.showToast(context, 'Forgot password feature coming soon!');
         },
         child: Text(
           'Forgot Password?',

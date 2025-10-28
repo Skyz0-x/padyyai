@@ -43,16 +43,32 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     });
 
     try {
+      // Get current user ID
+      final currentUser = _authService.currentUser;
+      if (currentUser == null) {
+        if (mounted) {
+          _authService.showToast(context, 'User not found. Please login again.', isError: true);
+        }
+        return;
+      }
+
+      Map<String, dynamic> updateData = {
+        'business_name': _businessNameController.text.trim(),
+        'business_address': _addressController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'business_type': _businessTypeController.text.trim(),
+        'business_description': _descriptionController.text.trim(),
+        'products_offered': _productsController.text.trim(),
+      };
+
       Map<String, dynamic> result = await _authService.updateSupplierDetails(
-        businessName: _businessNameController.text.trim(),
-        address: _addressController.text.trim(),
-        contactInfo: _phoneController.text.trim(),
-        description: '${_businessTypeController.text.trim()} - ${_descriptionController.text.trim()} - Products: ${_productsController.text.trim()}',
+        currentUser.id,
+        updateData,
       );
 
       if (result['success']) {
         if (mounted) {
-          AuthService.showToast(context, 'Supplier details saved successfully!');
+          _authService.showToast(context, 'Supplier details saved successfully!');
           // Navigate to supplier pending screen since they need admin approval
           Navigator.pushNamedAndRemoveUntil(
             context, 
@@ -62,12 +78,12 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
         }
       } else {
         if (mounted) {
-          AuthService.showToast(context, result['message'], isError: true);
+          _authService.showToast(context, result['message'], isError: true);
         }
       }
     } catch (e) {
       if (mounted) {
-        AuthService.showToast(context, 'Failed to save details. Please try again.', isError: true);
+        _authService.showToast(context, 'Failed to save details. Please try again.', isError: true);
       }
     } finally {
       if (mounted) {

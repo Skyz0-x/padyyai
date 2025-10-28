@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../utils/constants.dart';
+import '../services/auth_service.dart';
 import '../services/google_auth_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -79,45 +79,58 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     setState(() => _isLoading = true);
 
     try {
-      UserCredential credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+      final authService = AuthService();
+      
+      // Prepare user metadata
+      Map<String, dynamic> metadata = {
+        'full_name': _nameController.text.trim(),
+        'phone': '', // No phone controller in this screen
+        'role': 'farmer', // Default role for this registration screen
+        'business_name': '',
+        'business_address': '',
+        'business_type': '',
+        'gst_number': '',
+      };
+
+      Map<String, dynamic> result = await authService.signUp(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
+        metadata: metadata,
       );
       
-      // Update user profile with name
-      await credential.user?.updateDisplayName(_nameController.text.trim());
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 8),
-                const Expanded(child: Text('Welcome to the PaddyAI community!')),
-              ],
+      if (result['success']) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Welcome to PaddyAI, ${_nameController.text.split(' ').first}! 🌾',
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.green.shade600,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            backgroundColor: Colors.green.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-        Navigator.of(context).pop();
+          );
+          Navigator.of(context).pop();
+        }
+      } else {
+        throw Exception(result['message']);
       }
-    } on FirebaseAuthException catch (e) {
+    } catch (e) {
       String message = 'Registration failed';
-      switch (e.code) {
-        case 'weak-password':
-          message = 'Password is too weak. Please choose a stronger password';
-          break;
-        case 'email-already-in-use':
-          message = 'An account already exists with this email address';
-          break;
-        case 'invalid-email':
-          message = 'Please enter a valid email address';
-          break;
-        default:
-          message = e.message ?? 'Registration failed';
+      if (e.toString().contains('email-already-in-use')) {
+        message = 'Email is already registered';
+      } else if (e.toString().contains('weak-password')) {
+        message = 'Password is too weak';
+      } else if (e.toString().contains('invalid-email')) {
+        message = 'Invalid email address';
       }
       
       if (mounted) {
@@ -145,9 +158,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     setState(() => _isLoading = true);
 
     try {
-      final userCredential = await GoogleAuthService.signInWithGoogle();
+      final authResponse = await GoogleAuthService.signInWithGoogle();
       
-      if (userCredential != null && mounted) {
+      if (authResponse != null && authResponse.user != null && mounted) {
         // Successfully signed in with Google
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -157,7 +170,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Welcome to PaddyAI, ${userCredential.user?.displayName ?? 'Farmer'}! 🌾',
+                    'Welcome to PaddyAI, ${authResponse.user!.userMetadata?['full_name'] ?? 'Farmer'}! 🌾',
                   ),
                 ),
               ],

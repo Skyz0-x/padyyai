@@ -35,12 +35,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   
-  # Firebase dependencies
-  firebase_core: ^3.8.0
-  firebase_auth: ^5.3.3
-  cloud_firestore: ^5.5.0
+  # Supabase dependencies (replacing Firebase)
+  supabase_flutter: ^2.3.4
   
-  # Google Sign-In
+  # Google Sign-In (keeping for potential OAuth integration)
   google_sign_in: ^6.1.5
   
   # Image picker for camera and gallery functionality

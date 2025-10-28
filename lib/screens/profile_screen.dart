@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import '../config/supabase_config.dart';
+import '../services/auth_service.dart';
 import '../utils/constants.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -13,11 +15,38 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  
+  final AuthService _authService = AuthService();
+  Map<String, dynamic>? _userProfile;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _initializeAnimations();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    try {
+      final currentUser = SupabaseConfig.client.auth.currentUser;
+      if (currentUser != null) {
+        final profile = await _authService.getUserProfileAndNavigationInfo(currentUser.id);
+        setState(() {
+          _userProfile = profile;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('Error loading user profile: $e');
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _initializeAnimations() {
@@ -51,10 +80,19 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     super.dispose();
   }
 
-  User? get currentUser => FirebaseAuth.instance.currentUser;
+  User? get currentUser => SupabaseConfig.client.auth.currentUser;
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: backgroundColor,
+        body: Center(
+          child: CircularProgressIndicator(color: primaryColor),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: backgroundColor,
       body: FadeTransition(
@@ -149,9 +187,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   ],
                 ),
                 child: ClipOval(
-                  child: currentUser?.photoURL != null
+                  child: _userProfile?['avatar_url'] != null
                       ? Image.network(
-                          currentUser!.photoURL!,
+                          _userProfile!['avatar_url'],
                           height: 100,
                           width: 100,
                           fit: BoxFit.cover,
@@ -194,7 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           
           // User name
           Text(
-            currentUser?.displayName ?? 'Farmer',
+            _userProfile?['full_name'] ?? currentUser?.email?.split('@')[0] ?? 'User',
             style: headingStyle.copyWith(fontSize: 24),
           ),
           
@@ -221,7 +259,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 const Icon(Icons.calendar_today, color: primaryColor, size: 16),
                 const SizedBox(width: 8),
                 Text(
-                  'Member since ${_formatDate(currentUser?.metadata.creationTime)}',
+                  'Member since ${_formatDate(_parseDate(currentUser?.createdAt))}',
                   style: const TextStyle(
                     color: primaryColor,
                     fontWeight: FontWeight.w600,
@@ -524,7 +562,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              await FirebaseAuth.instance.signOut();
+              final authService = AuthService();
+              await authService.signOut();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
@@ -547,6 +586,16 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       return '${difference.inDays} day${difference.inDays > 1 ? 's' : ''} ago';
     } else {
       return 'Today';
+    }
+  }
+
+  DateTime? _parseDate(String? dateString) {
+    if (dateString == null) return null;
+    try {
+      return DateTime.parse(dateString);
+    } catch (e) {
+      print('Error parsing date: $e');
+      return null;
     }
   }
 }

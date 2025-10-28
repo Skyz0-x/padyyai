@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import '../config/supabase_config.dart';
 import '../utils/constants.dart';
 import 'detect_screen.dart';
 import 'marketplace_screen.dart';
@@ -17,8 +17,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<Offset> _slideAnimation;
   
   String get userName {
-    final user = FirebaseAuth.instance.currentUser;
-    return user?.displayName?.split(' ').first ?? 'Farmer';
+    final user = SupabaseConfig.client.auth.currentUser;
+    return user?.userMetadata?['full_name']?.split(' ')?.first ?? 'Farmer';
   }
 
   String get welcomeMessage {
