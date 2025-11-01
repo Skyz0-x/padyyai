@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
+import '../services/products_service.dart';
 
 class MarketplaceScreen extends StatefulWidget {
   final String? diseaseFilter;
@@ -11,11 +12,16 @@ class MarketplaceScreen extends StatefulWidget {
 }
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProviderStateMixin {
+  final ProductsService _productsService = ProductsService();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
   int _selectedCategory = 0;
   final TextEditingController _searchController = TextEditingController();
+  
+  List<Map<String, dynamic>> _products = [];
+  List<Map<String, dynamic>> _filteredProducts = [];
+  bool _isLoading = true;
   
   final List<String> categories = [
     'All Products',
@@ -177,6 +183,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   void initState() {
     super.initState();
     _initializeAnimations();
+    _loadProducts();
+    _searchController.addListener(_onSearchChanged);
     
     // If a disease filter is provided, search for it
     if (widget.diseaseFilter != null) {
@@ -208,6 +216,56 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
     _animationController.forward();
   }
 
+  Future<void> _loadProducts() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      List<Map<String, dynamic>> products;
+      
+      if (widget.diseaseFilter != null) {
+        products = await _productsService.getProductsForDisease(widget.diseaseFilter!);
+      } else {
+        products = await _productsService.getAllProducts();
+      }
+      
+      setState(() {
+        _products = products;
+        _filteredProducts = products;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Error loading products: $e');
+      setState(() {
+        _products = [];
+        _filteredProducts = [];
+        _isLoading = false;
+      });
+    }
+  }
+
+  void _onSearchChanged() {
+    _filterProducts();
+  }
+
+  void _filterProducts() {
+    final query = _searchController.text.toLowerCase();
+    final selectedCategory = categories[_selectedCategory];
+    
+    setState(() {
+      _filteredProducts = _products.where((product) {
+        final matchesSearch = query.isEmpty ||
+            product['name']?.toLowerCase().contains(query) == true ||
+            product['description']?.toLowerCase().contains(query) == true ||
+            product['category']?.toLowerCase().contains(query) == true;
+            
+        final matchesCategory = selectedCategory == 'All Products' ||
+            product['category'] == selectedCategory;
+            
+        return matchesSearch && matchesCategory;
+      }).toList();
+    });
+  }
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -216,53 +274,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   }
 
   List<Map<String, dynamic>> get filteredProducts {
-    List<Map<String, dynamic>> filtered = products;
-    
-    // Filter by category
-    if (_selectedCategory != 0) {
-      filtered = filtered.where((product) => 
-        product['category'] == categories[_selectedCategory]).toList();
-    }
-    
-    // Filter by search term
-    if (_searchController.text.isNotEmpty) {
-      final searchTerm = _searchController.text.toLowerCase();
-      filtered = filtered.where((product) {
-        // Check product name, supplier, description
-        bool matchesBasic = product['name'].toLowerCase().contains(searchTerm) ||
-            product['supplier'].toLowerCase().contains(searchTerm) ||
-            product['description'].toLowerCase().contains(searchTerm);
-        
-        // Check if product is effective against the searched disease
-        bool matchesDisease = false;
-        if (product['diseases'] != null) {
-          final diseases = product['diseases'] as List<dynamic>;
-          matchesDisease = diseases.any((disease) => 
-            disease.toString().toLowerCase().contains(searchTerm));
-        }
-        
-        return matchesBasic || matchesDisease;
-      }).toList();
-    }
-    
-    // Sort products - put disease-specific products first if searching for disease
-    if (widget.diseaseFilter != null) {
-      filtered.sort((a, b) {
-        final aDiseases = a['diseases'] as List<dynamic>? ?? [];
-        final bDiseases = b['diseases'] as List<dynamic>? ?? [];
-        
-        bool aMatches = aDiseases.any((disease) => 
-          disease.toString().toLowerCase().contains(widget.diseaseFilter!.toLowerCase()));
-        bool bMatches = bDiseases.any((disease) => 
-          disease.toString().toLowerCase().contains(widget.diseaseFilter!.toLowerCase()));
-        
-        if (aMatches && !bMatches) return -1;
-        if (!aMatches && bMatches) return 1;
-        return 0;
-      });
-    }
-    
-    return filtered;
+    return _filteredProducts;
   }
 
   @override
@@ -288,13 +300,15 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: Column(
-          children: [
-            _buildSearchAndFilter(),
-            _buildCategories(),
-            Expanded(child: _buildProductGrid()),
-          ],
-        ),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Column(
+                children: [
+                  _buildSearchAndFilter(),
+                  _buildCategories(),
+                  Expanded(child: _buildProductGrid()),
+                ],
+              ),
       ),
     );
   }
@@ -405,7 +419,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
         itemBuilder: (context, index) {
           final isSelected = _selectedCategory == index;
           return GestureDetector(
-            onTap: () => setState(() => _selectedCategory = index),
+            onTap: () {
+              setState(() => _selectedCategory = index);
+              _filterProducts();
+            },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
               margin: const EdgeInsets.only(right: 12),
@@ -490,10 +507,12 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   }
 
   Widget _buildProductCard(Map<String, dynamic> product) {
-    final hasDiscount = product['discount'] > 0;
-    final discountedPrice = product['price'].replaceAll('RM ', '');
-    final originalPrice = double.parse(discountedPrice);
-    final finalPrice = originalPrice * (1 - product['discount'] / 100);
+    // For now, show 'Supplier' as placeholder since we're not joining with users table
+    // This can be enhanced later once the foreign key relationship is fixed
+    final supplierName = 'Supplier'; // Placeholder
+    
+    final price = product['price']?.toDouble() ?? 0.0;
+    final imageUrl = product['image_url'];
     
     return GestureDetector(
       onTap: () => _showProductDetails(product),
@@ -502,37 +521,55 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product image with badges
+            // Product image
             Expanded(
               flex: 3,
               child: Stack(
                 children: [
                   ClipRRect(
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                    child: Container(
-                      width: double.infinity,
-                      color: primaryColor.withOpacity(0.1),
-                      child: Icon(
-                        _getCategoryIcon(product['category']),
-                        size: 48,
-                        color: primaryColor,
-                      ),
-                    ),
+                    child: imageUrl != null
+                        ? Image.network(
+                            imageUrl,
+                            width: double.infinity,
+                            height: double.infinity,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: double.infinity,
+                                color: primaryColor.withOpacity(0.1),
+                                child: Icon(
+                                  _getCategoryIcon(product['category']),
+                                  size: 48,
+                                  color: primaryColor,
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            width: double.infinity,
+                            color: primaryColor.withOpacity(0.1),
+                            child: Icon(
+                              _getCategoryIcon(product['category']),
+                              size: 48,
+                              color: primaryColor,
+                            ),
+                          ),
                   ),
                   
-                  // Discount badge
-                  if (hasDiscount)
+                  // In stock badge
+                  if (product['in_stock'] == true)
                     Positioned(
                       top: 8,
-                      left: 8,
+                      right: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.red,
+                          color: Colors.green,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          '${product['discount']}% OFF',
+                          'In Stock',
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -541,27 +578,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                         ),
                       ),
                     ),
-                  
-                  // Stock status
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: product['inStock'] ? Colors.green : Colors.orange,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        product['inStock'] ? 'In Stock' : 'Out of Stock',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -576,7 +592,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                   children: [
                     // Product name
                     Text(
-                      product['name'],
+                      product['name'] ?? 'Unknown Product',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
@@ -590,7 +606,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                     
                     // Supplier
                     Text(
-                      product['supplier'],
+                      supplierName,
                       style: captionStyle.copyWith(fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -598,52 +614,33 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                     
                     const SizedBox(height: 8),
                     
-                    // Rating
-                    Row(
-                      children: [
-                        const Icon(Icons.star, color: Colors.amber, size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${product['rating']}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
+                    // Category
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        product['category'] ?? 'General',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: primaryColor,
+                          fontWeight: FontWeight.w500,
                         ),
-                        Text(
-                          ' (${product['reviews']})',
-                          style: captionStyle.copyWith(fontSize: 12),
-                        ),
-                      ],
+                      ),
                     ),
                     
                     const Spacer(),
                     
                     // Price
-                    Row(
-                      children: [
-                        if (hasDiscount) ...[
-                          Text(
-                            'RM ${originalPrice.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              decoration: TextDecoration.lineThrough,
-                              color: Colors.grey,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                        ],
-                        Text(
-                          hasDiscount 
-                              ? 'RM ${finalPrice.toStringAsFixed(2)}'
-                              : product['price'],
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: primaryColor,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      'RM ${price.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: primaryColor,
+                        fontSize: 14,
+                      ),
                     ),
                   ],
                 ),

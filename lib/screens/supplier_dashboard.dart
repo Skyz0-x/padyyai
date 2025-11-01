@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'manage_products_screen.dart';
 
 class SupplierDashboard extends StatefulWidget {
   const SupplierDashboard({super.key});
@@ -315,9 +316,11 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
             'Add, edit, or remove your products',
             Icons.inventory_2,
             () {
-              // TODO: Navigate to product management
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Product management coming soon!')),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ManageProductsScreen(),
+                ),
               );
             },
           ),
