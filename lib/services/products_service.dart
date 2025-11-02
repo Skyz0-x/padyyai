@@ -17,13 +17,13 @@ class ProductsService {
       final String fileName = '${productId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final String filePath = 'products/$fileName';
 
-      print('📤 Uploading image to bucket: product-images');
+      print('📤 Uploading image to bucket: product-image');
       print('📤 File path: $filePath');
       print('📤 Local file size: ${imageFile.lengthSync()} bytes');
       
       // Upload the file
       final response = await _client.storage
-          .from('product-images')
+          .from('product-image')
           .upload(filePath, imageFile, fileOptions: const FileOptions(
             cacheControl: '3600',
             upsert: false,
@@ -33,7 +33,7 @@ class ProductsService {
 
       // Get public URL
       final String publicUrl = _client.storage
-          .from('product-images')
+          .from('product-image')
           .getPublicUrl(filePath);
 
       print('✅ Image uploaded successfully');
@@ -45,7 +45,7 @@ class ProductsService {
       
       // Try to get more specific error information
       if (e.toString().contains('not found')) {
-        print('❌ Bucket "product-images" not found. Please create it in Supabase Dashboard.');
+        print('❌ Bucket "product-image" not found. Please create it in Supabase Dashboard.');
       } else if (e.toString().contains('permission')) {
         print('❌ Permission denied. Check storage policies.');
       }
