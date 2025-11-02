@@ -495,7 +495,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
       padding: const EdgeInsets.all(16),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.75,
+        childAspectRatio: 0.68,
         crossAxisSpacing: 16,
         mainAxisSpacing: 16,
       ),
@@ -586,37 +586,38 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
             Expanded(
               flex: 2,
               child: Padding(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(8),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     // Product name
                     Text(
                       product['name'] ?? 'Unknown Product',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 12,
                         color: textDarkColor,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                     
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     
                     // Supplier
                     Text(
                       supplierName,
-                      style: captionStyle.copyWith(fontSize: 12),
+                      style: captionStyle.copyWith(fontSize: 10),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
                     
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 4),
                     
                     // Category
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: primaryColor.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(4),
@@ -624,7 +625,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                       child: Text(
                         product['category'] ?? 'General',
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 8,
                           color: primaryColor,
                           fontWeight: FontWeight.w500,
                         ),
@@ -639,7 +640,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         color: primaryColor,
-                        fontSize: 14,
+                        fontSize: 12,
                       ),
                     ),
                   ],
@@ -679,13 +680,14 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   }
 
   Widget _buildProductDetailsModal(Map<String, dynamic> product) {
-    final hasDiscount = product['discount'] > 0;
-    final discountedPrice = product['price'].replaceAll('RM ', '');
-    final originalPrice = double.parse(discountedPrice);
-    final finalPrice = originalPrice * (1 - product['discount'] / 100);
+    final price = product['price']?.toDouble() ?? 0.0;
+    final imageUrl = product['image_url'];
+    final inStock = product['in_stock'] ?? false;
+    final description = product['description'] ?? 'No description available';
+    final category = product['category'] ?? 'General';
     
     return Container(
-      height: MediaQuery.of(context).size.height * 0.8,
+      height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
@@ -705,51 +707,100 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
           
           Expanded(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Product header
+                  // Product image
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: imageUrl != null
+                          ? Image.network(
+                              imageUrl,
+                              width: double.infinity,
+                              height: 250,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  width: double.infinity,
+                                  height: 250,
+                                  color: primaryColor.withOpacity(0.1),
+                                  child: Icon(
+                                    _getCategoryIcon(category),
+                                    size: 80,
+                                    color: primaryColor,
+                                  ),
+                                );
+                              },
+                            )
+                          : Container(
+                              width: double.infinity,
+                              height: 250,
+                              color: primaryColor.withOpacity(0.1),
+                              child: Icon(
+                                _getCategoryIcon(category),
+                                size: 80,
+                                color: primaryColor,
+                              ),
+                            ),
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Product name
+                  Text(
+                    product['name'] ?? 'Unknown Product',
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: textDarkColor,
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 8),
+                  
+                  // Category and Stock Status
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                        width: 80,
-                        height: 80,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
                           color: primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Icon(
-                          _getCategoryIcon(product['category']),
-                          size: 40,
-                          color: primaryColor,
+                        child: Text(
+                          category,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: inStock ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              product['name'],
-                              style: headingStyle.copyWith(fontSize: 20),
+                            Icon(
+                              inStock ? Icons.check_circle : Icons.remove_circle,
+                              size: 14,
+                              color: inStock ? Colors.green : Colors.red,
                             ),
-                            const SizedBox(height: 4),
+                            const SizedBox(width: 4),
                             Text(
-                              product['supplier'],
-                              style: bodyStyle.copyWith(color: textLightColor),
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                const Icon(Icons.star, color: Colors.amber, size: 20),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${product['rating']} (${product['reviews']} reviews)',
-                                  style: bodyStyle.copyWith(fontWeight: FontWeight.w600),
-                                ),
-                              ],
+                              inStock ? 'In Stock' : 'Out of Stock',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: inStock ? Colors.green : Colors.red,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ],
                         ),
@@ -757,56 +808,42 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                     ],
                   ),
                   
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 20),
                   
                   // Price section
                   Container(
+                    width: double.infinity,
                     padding: const EdgeInsets.all(16),
-                    decoration: interactiveCardDecoration,
-                    child: Row(
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (hasDiscount) ...[
-                              Text(
-                                'RM ${originalPrice.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  decoration: TextDecoration.lineThrough,
-                                  color: Colors.grey,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                            ],
-                            Text(
-                              hasDiscount 
-                                  ? 'RM ${finalPrice.toStringAsFixed(2)}'
-                                  : product['price'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: primaryColor,
-                                fontSize: 24,
-                              ),
-                            ),
-                          ],
+                    decoration: BoxDecoration(
+                      gradient: primaryGradient,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: primaryColor.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
                         ),
-                        const Spacer(),
-                        if (hasDiscount)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'Save ${product['discount']}%',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Price',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
                           ),
+                        ),
+                        Text(
+                          'RM ${price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 28,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -816,26 +853,82 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                   // Description
                   const Text(
                     'Description',
-                    style: subHeadingStyle,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: textDarkColor,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
-                    product['description'],
-                    style: bodyStyle.copyWith(height: 1.5),
+                    description,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 1.6,
+                      color: textLightColor,
+                    ),
                   ),
                   
                   const SizedBox(height: 24),
                   
-                  // Features/Benefits
+                  // Effective Against Diseases (if available)
+                  if (product['diseases'] != null && (product['diseases'] as List).isNotEmpty) ...[
+                    const Text(
+                      'Effective Against',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textDarkColor,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: (product['diseases'] as List).map((disease) {
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.green.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.green, width: 1),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.check_circle, size: 16, color: Colors.green),
+                              const SizedBox(width: 6),
+                              Text(
+                                disease.toString().replaceAll('_', ' ').toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                  
+                  // Key Benefits
                   const Text(
                     'Key Benefits',
-                    style: subHeadingStyle,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: textDarkColor,
+                    ),
                   ),
                   const SizedBox(height: 12),
-                  _buildBenefitItem('✅ Proven effectiveness against target diseases'),
-                  _buildBenefitItem('✅ Safe for environment when used as directed'),
-                  _buildBenefitItem('✅ Trusted by thousands of farmers'),
-                  _buildBenefitItem('✅ Easy application process'),
+                  _buildBenefitItem('✅ Quality assured product'),
+                  _buildBenefitItem('✅ Trusted by farmers'),
+                  _buildBenefitItem('✅ Easy to use and apply'),
+                  if (inStock)
+                    _buildBenefitItem('✅ Available for immediate delivery'),
                   
                   const SizedBox(height: 32),
                   
@@ -843,35 +936,58 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                   Row(
                     children: [
                       Expanded(
+                        flex: 2,
                         child: ElevatedButton.icon(
-                          onPressed: product['inStock'] ? () {
-                            // TODO: Add to cart
+                          onPressed: inStock ? () {
                             Navigator.pop(context);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('${product['name']} added to cart'),
                                 backgroundColor: Colors.green,
+                                behavior: SnackBarBehavior.floating,
                               ),
                             );
                           } : null,
-                          icon: const Icon(Icons.shopping_cart),
-                          label: Text(product['inStock'] ? 'Add to Cart' : 'Out of Stock'),
-                          style: product['inStock'] ? primaryButtonStyle : 
-                                 primaryButtonStyle.copyWith(
-                                   backgroundColor: WidgetStateProperty.all(Colors.grey),
-                                 ),
+                          icon: const Icon(Icons.shopping_cart, size: 20),
+                          label: Text(
+                            inStock ? 'Add to Cart' : 'Out of Stock',
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: inStock ? primaryColor : Colors.grey,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: inStock ? 4 : 0,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 12),
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: Contact supplier
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Contact supplier feature coming soon'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
                         },
-                        style: secondaryButtonStyle,
-                        child: const Icon(Icons.message),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: primaryColor,
+                          padding: const EdgeInsets.all(16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: BorderSide(color: primaryColor, width: 2),
+                          ),
+                        ),
+                        child: const Icon(Icons.message, size: 20),
                       ),
                     ],
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
