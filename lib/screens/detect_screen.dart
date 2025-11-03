@@ -294,7 +294,29 @@ class _DetectScreenState extends State<DetectScreen> {
           ? _diseaseClasses[maxIndex] 
           : 'Unknown (Index: $maxIndex)';
       
-      print('🎯 Detected: $diseaseName (${(maxProb * 100).toStringAsFixed(1)}% confidence)');
+      print('🎯 Detected: $diseaseName (${(maxProb * 100).toStringAsFixed(1)}% accuracy)');
+      
+      // Check if accuracy is too low (below 15%)
+      if (maxProb < 0.15) {
+        print('⚠️ Low accuracy detected: ${(maxProb * 100).toStringAsFixed(1)}%');
+        setState(() {
+          _isAnalyzing = false;
+        });
+        
+        _showErrorDialog(
+          'Invalid Image or Low Quality\n\n'
+          'The AI model cannot confidently analyze this image. '
+          'This could be due to:\n\n'
+          '• Poor image quality or lighting\n'
+          '• Image is not a rice plant\n'
+          '• Plant part is not clearly visible\n\n'
+          'Please try again with:\n'
+          '• Better lighting conditions\n'
+          '• Clear focus on the rice plant\n'
+          '• Close-up of affected leaves'
+        );
+        return;
+      }
       
       // Create comprehensive result
       final aiResult = {
@@ -1271,25 +1293,6 @@ class _DetectScreenState extends State<DetectScreen> {
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.trending_up,
-                      size: 16,
-                      color: Colors.grey.shade600,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Confidence: ${(_result!['confidence'] * 100).toStringAsFixed(1)}%',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey.shade700,
                       ),
                     ),
                   ],
