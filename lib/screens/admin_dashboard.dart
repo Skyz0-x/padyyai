@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/products_service.dart';
+import '../utils/constants.dart';
 
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({super.key});
@@ -10,15 +12,31 @@ class AdminDashboard extends StatefulWidget {
 
 class _AdminDashboardState extends State<AdminDashboard> {
   final AuthService _authService = AuthService();
+  final ProductsService _productsService = ProductsService();
   List<Map<String, dynamic>> _pendingSuppliers = [];
   bool _isLoading = true;
   bool _isRefreshing = false;
   String _query = '';
+  int _totalProducts = 0;
+  int _inStock = 0;
 
   @override
   void initState() {
     super.initState();
     _loadPendingSuppliers();
+    _loadProductStats();
+  }
+
+  Future<void> _loadProductStats() async {
+    try {
+      final products = await _productsService.getAllProducts();
+      setState(() {
+        _totalProducts = products.length;
+        _inStock = products.where((p) => p['in_stock'] == true).length;
+      });
+    } catch (e) {
+      print('Error loading product stats: $e');
+    }
   }
 
   Future<void> _loadPendingSuppliers() async {
@@ -242,130 +260,285 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Admin Dashboard',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              primaryColor,
+              backgroundColor,
+            ],
+          ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, size: 22),
-            tooltip: 'Logout',
-            onPressed: () async {
-              await _authService.signOut();
-              if (mounted) {
-                Navigator.of(context).pushReplacementNamed('/login');
-              }
-            },
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(context),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildSearchBar(context),
+                      Expanded(child: _buildSuppliersList(context)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.admin_panel_settings,
+                  size: 32,
+                  color: primaryColor,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Admin Dashboard',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      'Manage suppliers & products',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: () async {
+                  await _authService.signOut();
+                  if (context.mounted) {
+                    Navigator.of(context).pushReplacementNamed('/login');
+                  }
+                },
+                icon: const Icon(Icons.logout),
+                color: Colors.white,
+                tooltip: 'Logout',
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          // Statistics Cards
+          Row(
+            children: [
+              Expanded(
+                child: _buildStatCard(
+                  'Total Products',
+                  _totalProducts.toString(),
+                  Icons.inventory_2,
+                  Colors.blue,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatCard(
+                  'In Stock',
+                  _inStock.toString(),
+                  Icons.check_circle,
+                  Colors.green,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildStatCard(
+                  'Pending',
+                  _pendingSuppliers.length.toString(),
+                  Icons.pending,
+                  Colors.orange,
+                ),
+              ),
+            ],
           ),
         ],
       ),
-      body: Column(
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      height: 105,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            color: scheme.surfaceContainerHighest,
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: SearchBar(
-                    leading: const Icon(Icons.search, size: 20),
-                    hintText: 'Search suppliers...',
-                    hintStyle: const WidgetStatePropertyAll(
-                      TextStyle(fontSize: 14),
-                    ),
-                    textStyle: const WidgetStatePropertyAll(
-                      TextStyle(fontSize: 14),
-                    ),
-                    padding: const WidgetStatePropertyAll(
-                      EdgeInsets.symmetric(horizontal: 16),
-                    ),
-                    onChanged: (v) => setState(() => _query = v),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                IconButton.filledTonal(
-                  onPressed: () async {
-                    setState(() {
-                      _isRefreshing = true;
-                    });
-                    await _loadPendingSuppliers();
-                  },
-                  icon: const Icon(Icons.refresh, size: 20),
-                  tooltip: 'Refresh',
-                ),
-              ],
+          Icon(icon, color: color, size: 26),
+          const SizedBox(height: 4),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
           ),
-          Expanded(
-            child: _isLoading
-                ? _ShimmerList()
-                : RefreshIndicator(
-                    onRefresh: () async {
-                      setState(() {
-                        _isRefreshing = true;
-                      });
-                      await _loadPendingSuppliers();
-                    },
-                    child: _filtered.isEmpty
-                        ? ListView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            children: [
-                              const SizedBox(height: 80),
-                              Icon(Icons.inbox_outlined, size: 80, color: scheme.outline),
-                              const SizedBox(height: 12),
-                              const Center(
-                                child: Text(
-                                  'No pending supplier requests',
-                                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Center(
-                                child: Text(
-                                  'Pull down to refresh or adjust your search.',
-                                  style: TextStyle(color: scheme.outline, fontSize: 14),
-                                ),
-                              ),
-                            ],
-                          )
-                        : ListView.separated(
-                            itemCount: _filtered.length,
-                            separatorBuilder: (_, __) => const Divider(height: 1),
-                            itemBuilder: (context, index) {
-                              final supplier = _filtered[index];
-                              return _SupplierTile(
-                                supplier: supplier,
-                                onTap: () => _openSupplierSheet(supplier),
-                                onApprove: () => _confirmAndUpdate(supplier['id'], 'approved'),
-                                onReject: () => _confirmAndUpdate(supplier['id'], 'rejected'),
-                              );
-                            },
-                          ),
-                  ),
+          const SizedBox(height: 2),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 9,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ),
         ],
       ),
-      floatingActionButton: _filtered.isNotEmpty
-          ? FloatingActionButton.extended(
-              onPressed: () async {
-                setState(() {
-                  _isRefreshing = true;
-                });
-                await _loadPendingSuppliers();
-              },
-              icon: const Icon(Icons.sync),
-              label: const Text('Sync'),
+    );
+  }
+
+  Widget _buildSearchBar(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Expanded(
+            child: SearchBar(
+              leading: const Icon(Icons.search, size: 20),
+              hintText: 'Search suppliers...',
+              hintStyle: const WidgetStatePropertyAll(
+                TextStyle(fontSize: 14),
+              ),
+              textStyle: const WidgetStatePropertyAll(
+                TextStyle(fontSize: 14),
+              ),
+              padding: const WidgetStatePropertyAll(
+                EdgeInsets.symmetric(horizontal: 16),
+              ),
+              onChanged: (v) => setState(() => _query = v),
+            ),
+          ),
+          const SizedBox(width: 12),
+          IconButton.filledTonal(
+            onPressed: () async {
+              setState(() {
+                _isRefreshing = true;
+              });
+              await _loadPendingSuppliers();
+              await _loadProductStats();
+            },
+            icon: const Icon(Icons.refresh, size: 20),
+            tooltip: 'Refresh',
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSuppliersList(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    
+    if (_isLoading) {
+      return _ShimmerList();
+    }
+    
+    return RefreshIndicator(
+      onRefresh: () async {
+        setState(() {
+          _isRefreshing = true;
+        });
+        await _loadPendingSuppliers();
+        await _loadProductStats();
+      },
+      child: _filtered.isEmpty
+          ? ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                const SizedBox(height: 80),
+                Icon(Icons.inbox_outlined, size: 80, color: scheme.outline),
+                const SizedBox(height: 12),
+                const Center(
+                  child: Text(
+                    'No pending supplier requests',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Center(
+                  child: Text(
+                    'Pull down to refresh or adjust your search.',
+                    style: TextStyle(color: scheme.outline, fontSize: 14),
+                  ),
+                ),
+              ],
             )
-          : null,
+          : ListView.separated(
+              itemCount: _filtered.length,
+              separatorBuilder: (_, __) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final supplier = _filtered[index];
+                return _SupplierTile(
+                  supplier: supplier,
+                  onTap: () => _openSupplierSheet(supplier),
+                  onApprove: () => _confirmAndUpdate(supplier['id'], 'approved'),
+                  onReject: () => _confirmAndUpdate(supplier['id'], 'rejected'),
+                );
+              },
+            ),
     );
   }
 }
 
-class _SupplierTile extends StatelessWidget {
+class _SupplierTile extends StatefulWidget {
   final Map<String, dynamic> supplier;
   final VoidCallback onTap;
   final VoidCallback onApprove;
@@ -379,65 +552,126 @@ class _SupplierTile extends StatelessWidget {
   });
 
   @override
+  State<_SupplierTile> createState() => _SupplierTileState();
+}
+
+class _SupplierTileState extends State<_SupplierTile> {
+  bool _isExpanded = false;
+
+  @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final fullName = supplier['full_name']?.toString().trim();
-    final avatarChar = (fullName?.isNotEmpty == true ? fullName![0] : 'S').toUpperCase();
+    final companyName = widget.supplier['company_name']?.toString().trim();
+    final avatarChar = (companyName?.isNotEmpty == true ? companyName![0] : 'C').toUpperCase();
 
     return InkWell(
-      onTap: onTap,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(
-          backgroundColor: scheme.primaryContainer,
-          child: Text(
-            avatarChar,
-            style: TextStyle(
-              color: scheme.onPrimaryContainer,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: _isExpanded ? scheme.primaryContainer.withOpacity(0.3) : null,
+          border: Border(
+            bottom: BorderSide(
+              color: scheme.outlineVariant.withOpacity(0.3),
+              width: 1,
             ),
           ),
         ),
-        title: Text(
-          supplier['full_name'] ?? 'N/A',
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
-        ),
-        subtitle: Column(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              supplier['email'] ?? 'N/A',
-              style: const TextStyle(fontSize: 13),
+            Row(
+              children: [
+                CircleAvatar(
+                  backgroundColor: scheme.primaryContainer,
+                  radius: 20,
+                  child: Text(
+                    avatarChar,
+                    style: TextStyle(
+                      color: scheme.onPrimaryContainer,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        companyName ?? 'N/A',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                        ),
+                      ),
+                      if (_isExpanded) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.supplier['full_name'] ?? 'N/A',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          widget.supplier['email'] ?? 'N/A',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                Icon(
+                  _isExpanded ? Icons.expand_less : Icons.expand_more,
+                  color: scheme.onSurfaceVariant,
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            Text(
-              supplier['company_name'] ?? 'N/A',
-              style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
-            ),
-          ],
-        ),
-        trailing: Wrap(
-          spacing: 6,
-          children: [
-            OutlinedButton(
-              onPressed: onReject,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                minimumSize: const Size(70, 40),
+            if (_isExpanded) ...[
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      setState(() => _isExpanded = false);
+                      widget.onReject();
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.red,
+                      side: const BorderSide(color: Colors.red),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    icon: const Icon(Icons.close, size: 18),
+                    label: const Text('Reject'),
+                  ),
+                  const SizedBox(width: 12),
+                  FilledButton.icon(
+                    onPressed: () {
+                      setState(() => _isExpanded = false);
+                      widget.onApprove();
+                    },
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ),
+                    icon: const Icon(Icons.check, size: 18),
+                    label: const Text('Approve'),
+                  ),
+                ],
               ),
-              child: const Text('Reject', style: TextStyle(fontSize: 13)),
-            ),
-            FilledButton(
-              onPressed: onApprove,
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                minimumSize: const Size(80, 40),
-              ),
-              child: const Text('Approve', style: TextStyle(fontSize: 13)),
-            ),
+            ],
           ],
         ),
       ),

@@ -27,6 +27,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
     'All Products',
     'Fungicides',
     'Bactericides',
+    'Pesticides',
     'Fertilizers',
     'Seeds',
     'Tools',
@@ -355,54 +356,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
               ),
             ),
           ),
-          
-          const SizedBox(height: 16),
-          
-          // Quick stats
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatChip('${products.length}', 'Products', Icons.inventory),
-              _buildStatChip('${products.where((p) => p['inStock']).length}', 'In Stock', Icons.check_circle),
-              _buildStatChip('${products.where((p) => p['discount'] > 0).length}', 'On Sale', Icons.local_offer),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatChip(String value, String label, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 4),
-          Column(
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -657,6 +610,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
     switch (category) {
       case 'Fungicides':
         return Icons.medication;
+      case 'Bactericides':
+        return Icons.science;
+      case 'Pesticides':
+        return Icons.pest_control;
       case 'Fertilizers':
         return Icons.eco;
       case 'Seeds':

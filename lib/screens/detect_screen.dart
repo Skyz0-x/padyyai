@@ -5,6 +5,8 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'dart:math' as math;
+import '../services/products_service.dart';
+import 'marketplace_screen.dart';
 
 class DetectScreen extends StatefulWidget {
   const DetectScreen({super.key});
@@ -16,11 +18,13 @@ class DetectScreen extends StatefulWidget {
 class _DetectScreenState extends State<DetectScreen> {
   File? _image;
   final picker = ImagePicker();
+  final ProductsService _productsService = ProductsService();
   bool _isAnalyzing = false;
   bool _isModelLoaded = false;
   Map<String, dynamic>? _result;
   List<String> _diseaseClasses = [];
   Interpreter? _interpreter;
+  List<Map<String, dynamic>> _recommendedProducts = [];
 
   // Model configuration
   static const String _modelPath = 'assets/model/model_unquant.tflite';
@@ -333,12 +337,18 @@ class _DetectScreenState extends State<DetectScreen> {
         ),
       };
 
+      // Fetch recommended products from database
+      print('🛒 Fetching recommended products for: $diseaseName');
+      final products = await _productsService.getProductsForDisease(diseaseName);
+      
       setState(() {
         _result = aiResult;
+        _recommendedProducts = products;
         _isAnalyzing = false;
       });
       
       print('✅ AI Analysis completed successfully');
+      print('✅ Found ${products.length} recommended products');
       
     } catch (e) {
       print('❌ Error during AI analysis: $e');
@@ -419,183 +429,20 @@ class _DetectScreenState extends State<DetectScreen> {
     return descriptions[diseaseName] ?? 'AI has detected this condition in your rice plant.';
   }
 
-  List<Map<String, dynamic>> _getRecommendedProducts(String diseaseName) {
-    final recommendations = {
-      'Brown Planthopper': [
-        {
-          'name': 'Imidacloprid 17.8% SL',
-          'type': 'Pesticide',
-          'price': '\$25.99',
-          'rating': 4.5,
-          'description': 'Systemic insecticide effective against brown planthopper',
-          'dosage': '2ml per liter of water',
-          'icon': '🧪',
-        },
-        {
-          'name': 'Thiamethoxam 25% WG',
-          'type': 'Pesticide',
-          'price': '\$32.50',
-          'rating': 4.7,
-          'description': 'Long-lasting control of sucking pests',
-          'dosage': '0.5g per liter of water',
-          'icon': '🧪',
-        },
-      ],
-      'Brown Spot': [
-        {
-          'name': 'Propiconazole 25% EC',
-          'type': 'Fungicide',
-          'price': '\$28.99',
-          'rating': 4.6,
-          'description': 'Effective fungicide for brown spot control',
-          'dosage': '1ml per liter of water',
-          'icon': '🍄',
-        },
-        {
-          'name': 'Tricyclazole 75% WP',
-          'type': 'Fungicide',
-          'price': '\$24.75',
-          'rating': 4.4,
-          'description': 'Preventive and curative fungicide',
-          'dosage': '0.6g per liter of water',
-          'icon': '🍄',
-        },
-      ],
-      'Leaf Blast': [
-        {
-          'name': 'Tricyclazole 75% WP',
-          'type': 'Fungicide',
-          'price': '\$24.75',
-          'rating': 4.4,
-          'description': 'Specialized treatment for blast diseases',
-          'dosage': '0.6g per liter of water',
-          'icon': '🍄',
-        },
-        {
-          'name': 'Carbendazim 50% WP',
-          'type': 'Fungicide',
-          'price': '\$22.99',
-          'rating': 4.3,
-          'description': 'Broad spectrum fungicide',
-          'dosage': '1g per liter of water',
-          'icon': '🍄',
-        },
-      ],
-      'Leaf Scald': [
-        {
-          'name': 'Mancozeb 75% WP',
-          'type': 'Fungicide',
-          'price': '\$19.99',
-          'rating': 4.2,
-          'description': 'Contact fungicide for leaf diseases',
-          'dosage': '2g per liter of water',
-          'icon': '🍄',
-        },
-        {
-          'name': 'Copper Oxychloride 50% WP',
-          'type': 'Fungicide',
-          'price': '\$18.50',
-          'rating': 4.1,
-          'description': 'Protective fungicide with copper',
-          'dosage': '3g per liter of water',
-          'icon': '🍄',
-        },
-      ],
-      'Rice Leafroller': [
-        {
-          'name': 'Chlorantraniliprole 18.5% SC',
-          'type': 'Pesticide',
-          'price': '\$35.99',
-          'rating': 4.8,
-          'description': 'Advanced insecticide for lepidopteran pests',
-          'dosage': '0.5ml per liter of water',
-          'icon': '🧪',
-        },
-        {
-          'name': 'Cartap Hydrochloride 4% G',
-          'type': 'Pesticide',
-          'price': '\$21.99',
-          'rating': 4.3,
-          'description': 'Granular insecticide for stem borers',
-          'dosage': '25kg per hectare',
-          'icon': '🧪',
-        },
-      ],
-      'Rice Yellow Stem Borer': [
-        {
-          'name': 'Cartap Hydrochloride 4% G',
-          'type': 'Pesticide',
-          'price': '\$21.99',
-          'rating': 4.3,
-          'description': 'Effective against stem borers',
-          'dosage': '25kg per hectare',
-          'icon': '🧪',
-        },
-        {
-          'name': 'Fipronil 5% SC',
-          'type': 'Pesticide',
-          'price': '\$29.50',
-          'rating': 4.5,
-          'description': 'Systemic insecticide for borer control',
-          'dosage': '2ml per liter of water',
-          'icon': '🧪',
-        },
-      ],
-      'Sheath Blight': [
-        {
-          'name': 'Hexaconazole 5% SC',
-          'type': 'Fungicide',
-          'price': '\$26.99',
-          'rating': 4.5,
-          'description': 'Triazole fungicide for sheath blight',
-          'dosage': '2ml per liter of water',
-          'icon': '🍄',
-        },
-        {
-          'name': 'Validamycin 3% L',
-          'type': 'Fungicide',
-          'price': '\$31.99',
-          'rating': 4.6,
-          'description': 'Biological fungicide for soil-borne diseases',
-          'dosage': '2.5ml per liter of water',
-          'icon': '🍄',
-        },
-      ],
-      'Healthy': [
-        {
-          'name': 'NPK 20:20:20 Water Soluble',
-          'type': 'Biofertilizer',
-          'price': '\$15.99',
-          'rating': 4.4,
-          'description': 'Balanced nutrition for healthy rice growth',
-          'dosage': '5g per liter of water',
-          'icon': '🌱',
-        },
-        {
-          'name': 'Seaweed Extract Liquid',
-          'type': 'Biofertilizer',
-          'price': '\$18.75',
-          'rating': 4.6,
-          'description': 'Natural growth booster and stress reliever',
-          'dosage': '3ml per liter of water',
-          'icon': '🌱',
-        },
-        {
-          'name': 'Humic Acid 98% Granules',
-          'type': 'Biofertilizer',
-          'price': '\$22.50',
-          'rating': 4.7,
-          'description': 'Improves soil health and nutrient uptake',
-          'dosage': '2g per liter of water',
-          'icon': '🌱',
-        },
-      ],
-    };
-    
-    return recommendations[diseaseName] ?? [];
-  }
-
   void _showProductDetails(Map<String, dynamic> product) {
+    // Determine product icon based on category
+    String getProductIcon(String? category) {
+      switch(category) {
+        case 'Fungicides': return '🍄';
+        case 'Pesticides': return '🧪';
+        case 'Fertilizers': return '🌱';
+        case 'Organic': return '🌿';
+        case 'Seeds': return '🌾';
+        case 'Tools': return '🔧';
+        default: return '📦';
+      }
+    }
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -604,158 +451,185 @@ class _DetectScreenState extends State<DetectScreen> {
           title: Row(
             children: [
               Text(
-                product['icon'],
+                getProductIcon(product['category']),
                 style: const TextStyle(fontSize: 24),
               ),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  product['name'],
+                  product['name'] ?? 'Unknown Product',
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: product['type'] == 'Biofertilizer' 
-                      ? Colors.green.shade100 
-                      : Colors.blue.shade100,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  product['type'],
-                  style: TextStyle(
-                    color: product['type'] == 'Biofertilizer' 
-                        ? Colors.green.shade700 
-                        : Colors.blue.shade700,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                product['description'],
-                style: const TextStyle(fontSize: 14, height: 1.4),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Icon(Icons.medication, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Dosage: ${product['dosage']}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.star, size: 16, color: Colors.amber.shade600),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${product['rating']}',
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
-                  ),
-                  const Spacer(),
-                  Text(
-                    product['price'],
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product Image
+                if (product['image_url'] != null) ...[
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      product['image_url'],
+                      height: 150,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 150,
+                        color: Colors.grey.shade200,
+                        child: Center(
+                          child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
+                        ),
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 12),
                 ],
-              ),
-            ],
+                
+                // Category Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
+                        ? Colors.green.shade100 
+                        : Colors.blue.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    product['category'] ?? 'Product',
+                    style: TextStyle(
+                      color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
+                          ? Colors.green.shade700 
+                          : Colors.blue.shade700,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Description
+                Text(
+                  product['description'] ?? 'No description available',
+                  style: const TextStyle(fontSize: 14, height: 1.4),
+                ),
+                const SizedBox(height: 12),
+                
+                // Effective Against Diseases
+                if (product['diseases'] != null && (product['diseases'] as List).isNotEmpty) ...[
+                  const Text(
+                    'Effective Against:',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 4,
+                    runSpacing: 4,
+                    children: (product['diseases'] as List).map((disease) => Chip(
+                      label: Text(
+                        disease.toString(),
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                      backgroundColor: Colors.orange.shade100,
+                      padding: EdgeInsets.zero,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    )).toList(),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                
+                // Price and Stock
+                Row(
+                  children: [
+                    Icon(Icons.sell, size: 16, color: Colors.grey),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Price:',
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                    ),
+                    const Spacer(),
+                    Text(
+                      'RM ${product['price']?.toStringAsFixed(2) ?? '0.00'}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      (product['in_stock'] ?? false) ? Icons.check_circle : Icons.cancel,
+                      size: 16,
+                      color: (product['in_stock'] ?? false) ? Colors.green : Colors.red,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      (product['in_stock'] ?? false) ? 'In Stock' : 'Out of Stock',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        color: (product['in_stock'] ?? false) ? Colors.green : Colors.red,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Close'),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _showOrderDialog(product);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
+            if (product['in_stock'] ?? false)
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  _addToCart(product);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Add to Cart'),
               ),
-              child: const Text('Order Now'),
-            ),
           ],
         );
       },
     );
   }
 
-  void _showOrderDialog(Map<String, dynamic> product) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Order Confirmation'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.shopping_cart,
-                size: 48,
-                color: Colors.green,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Add ${product['name']} to cart?',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                product['price'],
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${product['name']} added to cart!'),
-                    backgroundColor: Colors.green,
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Add to Cart'),
+  void _addToCart(Map<String, dynamic> product) {
+    // Show success snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text('${product['name']} added to cart!'),
             ),
           ],
-        );
-      },
+        ),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+        action: SnackBarAction(
+          label: 'VIEW CART',
+          textColor: Colors.white,
+          onPressed: () {
+            // TODO: Navigate to cart screen
+          },
+        ),
+      ),
     );
   }
 
@@ -1260,7 +1134,7 @@ class _DetectScreenState extends State<DetectScreen> {
           // Disease Detection Card
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -1282,35 +1156,39 @@ class _DetectScreenState extends State<DetectScreen> {
                   children: [
                     Text(
                       _result!['isHealthy'] ? '🌱' : '🦠',
-                      style: const TextStyle(fontSize: 24),
+                      style: const TextStyle(fontSize: 22),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _result!['disease'],
                         style: const TextStyle(
-                          fontSize: 20,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 Text(
                   _result!['description'],
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: Colors.black54,
                     height: 1.4,
                   ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           
           // Recommendations Section
           _buildRecommendationsSection(),
@@ -1320,9 +1198,8 @@ class _DetectScreenState extends State<DetectScreen> {
   }
 
   Widget _buildRecommendationsSection() {
-    final recommendations = _getRecommendedProducts(_result!['disease']);
-    
-    if (recommendations.isEmpty) {
+    // Use products from database instead of hardcoded list
+    if (_recommendedProducts.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -1332,7 +1209,7 @@ class _DetectScreenState extends State<DetectScreen> {
         Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.blue.shade100,
                 borderRadius: BorderRadius.circular(8),
@@ -1340,49 +1217,53 @@ class _DetectScreenState extends State<DetectScreen> {
               child: Icon(
                 Icons.shopping_cart,
                 color: Colors.blue.shade700,
-                size: 20,
+                size: 18,
               ),
             ),
-            const SizedBox(width: 12),
-            Text(
-              _result!['isHealthy'] ? 'Recommended Biofertilizers' : 'Recommended Treatment',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                _result!['isHealthy'] ? 'Recommended Products' : 'Treatment Products',
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         
         Container(
-          height: 200,
+          height: 190,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            itemCount: recommendations.length,
+            itemCount: _recommendedProducts.length,
             itemBuilder: (context, index) {
-              final product = recommendations[index];
+              final product = _recommendedProducts[index];
               return Container(
-                width: 280,
-                margin: const EdgeInsets.only(right: 12),
+                width: 260,
+                margin: const EdgeInsets.only(right: 10),
                 child: _buildProductCard(product),
               );
             },
           ),
         ),
         
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
         
         // View All Products Button
         Center(
           child: OutlinedButton.icon(
-            onPressed: () => _showAllProducts(recommendations),
-            icon: const Icon(Icons.store),
-            label: const Text('View All Products'),
+            onPressed: () => _showAllProducts(_recommendedProducts),
+            icon: const Icon(Icons.store, size: 18),
+            label: const Text('View All Products', style: TextStyle(fontSize: 13)),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.green.shade700,
               side: BorderSide(color: Colors.green.shade300),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
           ),
         ),
@@ -1391,30 +1272,69 @@ class _DetectScreenState extends State<DetectScreen> {
   }
 
   Widget _buildProductCard(Map<String, dynamic> product) {
+    // Determine product icon/emoji based on category
+    String getProductIcon(String? category) {
+      switch(category) {
+        case 'Fungicides': return '🍄';
+        case 'Pesticides': return '🧪';
+        case 'Fertilizers': return '🌱';
+        case 'Organic': return '🌿';
+        case 'Seeds': return '🌾';
+        case 'Tools': return '🔧';
+        default: return '📦';
+      }
+    }
+
     return Card(
       elevation: 3,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       child: InkWell(
         onTap: () => _showProductDetails(product),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Product Header
+              // Product Header with image if available
+              if (product['image_url'] != null) ...[
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(6),
+                  child: Image.network(
+                    product['image_url'],
+                    height: 70,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: 70,
+                      color: Colors.grey.shade200,
+                      child: Center(
+                        child: Text(
+                          getProductIcon(product['category']),
+                          style: const TextStyle(fontSize: 28),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 6),
+              ],
+              
+              // Product Name
               Row(
                 children: [
-                  Text(
-                    product['icon'],
-                    style: const TextStyle(fontSize: 20),
-                  ),
-                  const SizedBox(width: 8),
+                  if (product['image_url'] == null) ...[
+                    Text(
+                      getProductIcon(product['category']),
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                    const SizedBox(width: 6),
+                  ],
                   Expanded(
                     child: Text(
-                      product['name'],
+                      product['name'] ?? 'Unknown Product',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
                       maxLines: 2,
@@ -1424,40 +1344,40 @@ class _DetectScreenState extends State<DetectScreen> {
                 ],
               ),
               
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               
-              // Product Type Badge
+              // Product Category Badge
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
-                  color: product['type'] == 'Biofertilizer' 
+                  color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
                       ? Colors.green.shade100 
-                      : product['type'] == 'Fungicide'
+                      : product['category'] == 'Fungicides'
                           ? Colors.orange.shade100
                           : Colors.blue.shade100,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  product['type'],
+                  product['category'] ?? 'Product',
                   style: TextStyle(
-                    color: product['type'] == 'Biofertilizer' 
+                    color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
                         ? Colors.green.shade700 
-                        : product['type'] == 'Fungicide'
+                        : product['category'] == 'Fungicides'
                             ? Colors.orange.shade700
                             : Colors.blue.shade700,
                     fontWeight: FontWeight.w600,
-                    fontSize: 10,
+                    fontSize: 9,
                   ),
                 ),
               ),
               
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               
               // Description
               Text(
-                product['description'],
+                product['description'] ?? 'No description available',
                 style: const TextStyle(
-                  fontSize: 12,
+                  fontSize: 11,
                   color: Colors.black54,
                   height: 1.3,
                 ),
@@ -1467,34 +1387,35 @@ class _DetectScreenState extends State<DetectScreen> {
               
               const Spacer(),
               
-              // Price and Rating
+              // Price and Stock Status
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    product['price'],
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
+                  Flexible(
+                    child: Text(
+                      'RM ${product['price']?.toStringAsFixed(2) ?? '0.00'}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.green,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.star,
-                        size: 14,
-                        color: Colors.amber.shade600,
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (product['in_stock'] ?? false) ? Colors.green.shade100 : Colors.red.shade100,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      (product['in_stock'] ?? false) ? 'In Stock' : 'Out',
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: (product['in_stock'] ?? false) ? Colors.green.shade700 : Colors.red.shade700,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(width: 2),
-                      Text(
-                        '${product['rating']}',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
@@ -1506,80 +1427,15 @@ class _DetectScreenState extends State<DetectScreen> {
   }
 
   void _showAllProducts(List<Map<String, dynamic>> products) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('All Recommended Products'),
-          content: SizedBox(
-            width: double.maxFinite,
-            height: 400,
-            child: ListView.builder(
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                final product = products[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 8),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: product['type'] == 'Biofertilizer' 
-                          ? Colors.green.shade100 
-                          : Colors.blue.shade100,
-                      child: Text(
-                        product['icon'],
-                        style: const TextStyle(fontSize: 20),
-                      ),
-                    ),
-                    title: Text(
-                      product['name'],
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(product['description']),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Text(
-                              product['price'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.green,
-                              ),
-                            ),
-                            const Spacer(),
-                            Icon(Icons.star, size: 14, color: Colors.amber),
-                            Text(' ${product['rating']}'),
-                          ],
-                        ),
-                      ],
-                    ),
-                    trailing: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _showProductDetails(product);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        foregroundColor: Colors.white,
-                        minimumSize: const Size(60, 36),
-                      ),
-                      child: const Text('View'),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
-            ),
-          ],
-        );
-      },
-    );
+    // Navigate to marketplace screen with disease filter
+    final diseaseName = _result?['disease'] as String?;
+    if (diseaseName != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MarketplaceScreen(diseaseFilter: diseaseName),
+        ),
+      );
+    }
   }
 }

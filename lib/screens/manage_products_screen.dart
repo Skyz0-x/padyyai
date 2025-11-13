@@ -541,11 +541,14 @@ class _ProductDialogState extends State<ProductDialog> {
   ];
 
   final List<String> _diseases = [
-    'brown_spot',
-    'blast',
-    'bacterial_blight',
-    'tungro',
-    'sheath_blight',
+    'Brown Planthopper',
+    'Brown Spot',
+    'Leaf Blast',
+    'Leaf Scald',
+    'Rice Leafroller',
+    'Rice Yellow Stem Borer',
+    'Sheath Blight',
+    'Other',
   ];
 
   @override
@@ -829,7 +832,7 @@ class _ProductDialogState extends State<ProductDialog> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'Effective Against Diseases (Optional)',
+          'Effective Against Diseases/Pests',
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
@@ -840,7 +843,7 @@ class _ProductDialogState extends State<ProductDialog> {
             final isSelected = _selectedDiseases.contains(disease);
             return FilterChip(
               label: Text(
-                disease.replaceAll('_', ' ').toUpperCase(),
+                disease,
                 style: TextStyle(
                   color: isSelected ? Colors.white : primaryColor,
                   fontSize: 12,
