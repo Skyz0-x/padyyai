@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
 import '../config/supabase_config.dart';
 
 class AuthService {
@@ -326,8 +327,37 @@ class AuthService {
   }
 
   // Update supplier details
-  Future<Map<String, dynamic>> updateSupplierDetails(String userId, Map<String, dynamic> data) async {
+  Future<Map<String, dynamic>> updateSupplierDetails(
+    String userId, 
+    Map<String, dynamic> data,
+    {File? certificateFile}
+  ) async {
     try {
+      // Upload certificate if provided
+      if (certificateFile != null) {
+        final fileName = 'certificate_${userId}_${DateTime.now().millisecondsSinceEpoch}.${certificateFile.path.split('.').last}';
+        
+        // Upload to Supabase storage
+        final bytes = await certificateFile.readAsBytes();
+        await _client.storage
+            .from('supplier-certificates')
+            .uploadBinary(
+              fileName,
+              bytes,
+              fileOptions: const FileOptions(
+                upsert: true,
+              ),
+            );
+        
+        // Get public URL
+        final certificateUrl = _client.storage
+            .from('supplier-certificates')
+            .getPublicUrl(fileName);
+        
+        // Add certificate URL to data
+        data['certificate_url'] = certificateUrl;
+      }
+      
       data['updated_at'] = DateTime.now().toIso8601String();
       
       await _client
@@ -340,6 +370,7 @@ class AuthService {
         'message': 'Supplier details updated successfully',
       };
     } catch (e) {
+      print('❌ Error updating supplier details: $e');
       return {
         'success': false,
         'message': e.toString(),

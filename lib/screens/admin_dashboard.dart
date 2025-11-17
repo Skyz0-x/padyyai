@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import '../services/products_service.dart';
 import '../utils/constants.dart';
@@ -123,6 +124,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   void _openSupplierSheet(Map<String, dynamic> supplier) {
     final scheme = Theme.of(context).colorScheme;
+    
+    // Debug: Print supplier data
+    print('📋 Supplier Data:');
+    supplier.forEach((key, value) {
+      print('  $key: $value');
+    });
+    
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -130,58 +138,318 @@ class _AdminDashboardState extends State<AdminDashboard> {
       isScrollControlled: true,
       backgroundColor: scheme.surface,
       builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: scheme.primaryContainer,
-                  child: Text(
-                    (supplier['full_name'] ?? 'N/A')
-                        .toString()
-                        .trim()
-                        .isNotEmpty
-                        ? supplier['full_name'].toString().trim()[0].toUpperCase()
-                        : 'S',
-                    style: TextStyle(
-                      color: scheme.onPrimaryContainer,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+              // Header with Avatar and Status
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 35,
+                    backgroundColor: scheme.primaryContainer,
+                    child: Text(
+                      (supplier['full_name'] ?? 'N/A')
+                          .toString()
+                          .trim()
+                          .isNotEmpty
+                          ? supplier['full_name'].toString().trim()[0].toUpperCase()
+                          : 'S',
+                      style: TextStyle(
+                        color: scheme.onPrimaryContainer,
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                title: Text(
-                  supplier['full_name'] ?? 'N/A',
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
-                ),
-                subtitle: Text(
-                  supplier['email'] ?? 'N/A',
-                  style: const TextStyle(fontSize: 14),
-                ),
-                trailing: Chip(
-                  label: const Text('Pending', style: TextStyle(fontSize: 13)),
-                  backgroundColor: scheme.tertiaryContainer,
-                  labelStyle: TextStyle(color: scheme.onTertiaryContainer),
-                ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          supplier['full_name'] ?? 'N/A',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.email_outlined, size: 14, color: Colors.grey.shade600),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                supplier['email'] ?? 'N/A',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey.shade600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.orange.shade100,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            'Pending Approval',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.orange.shade800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 12),
-              _infoRow('Company', supplier['company_name']),
-              const SizedBox(height: 8),
-              _infoRow('Phone', supplier['phone_number']),
-              const SizedBox(height: 8),
-              _infoRow('User ID', supplier['id']),
+              
+              const SizedBox(height: 20),
+              const Divider(),
               const SizedBox(height: 16),
+              
+              // Business Information Section
+              _buildSectionHeader(Icons.business, 'Business Information', scheme),
+              const SizedBox(height: 12),
+              if (supplier['business_name'] != null && supplier['business_name'].toString().isNotEmpty)
+                Column(
+                  children: [
+                    _buildDetailCard(
+                      icon: Icons.store,
+                      label: 'Company Name',
+                      value: supplier['business_name'],
+                      scheme: scheme,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              if (supplier['business_type'] != null && supplier['business_type'].toString().isNotEmpty)
+                Column(
+                  children: [
+                    _buildDetailCard(
+                      icon: Icons.category,
+                      label: 'Business Type',
+                      value: supplier['business_type'],
+                      scheme: scheme,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              if (supplier['business_address'] != null && supplier['business_address'].toString().isNotEmpty)
+                Column(
+                  children: [
+                    _buildDetailCard(
+                      icon: Icons.location_on,
+                      label: 'Address',
+                      value: supplier['business_address'],
+                      scheme: scheme,
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              _buildDetailCard(
+                icon: Icons.phone,
+                label: 'Phone Number',
+                value: supplier['phone'] ?? 'N/A',
+                scheme: scheme,
+              ),
+              if (supplier['gst_number'] != null && supplier['gst_number'].toString().isNotEmpty)
+                Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    _buildDetailCard(
+                      icon: Icons.receipt_long,
+                      label: 'GST Number',
+                      value: supplier['gst_number'],
+                      scheme: scheme,
+                    ),
+                  ],
+                ),
+              
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 16),
+              
+              // Products & Services Section
+              _buildSectionHeader(Icons.inventory, 'Products & Services', scheme),
+              const SizedBox(height: 12),
+              if (supplier['products_offered'] != null && supplier['products_offered'].toString().isNotEmpty)
+                Column(
+                  children: [
+                    _buildDetailCard(
+                      icon: Icons.shopping_bag,
+                      label: 'Products Offered',
+                      value: supplier['products_offered'],
+                      scheme: scheme,
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              if (supplier['business_description'] != null && supplier['business_description'].toString().isNotEmpty)
+                _buildDetailCard(
+                  icon: Icons.description,
+                  label: 'Business Description',
+                  value: supplier['business_description'],
+                  scheme: scheme,
+                  maxLines: 4,
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey.shade300),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 20, color: Colors.grey.shade600),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'No products or business description provided yet',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontStyle: FontStyle.italic,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 16),
+              
+              // Certificate Section
+              _buildSectionHeader(Icons.verified, 'SSM Certificate', scheme),
+              const SizedBox(height: 12),
+              if (supplier['certificate_url'] != null && supplier['certificate_url'].toString().isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.green.shade200, width: 2),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.green.shade700, size: 24),
+                          const SizedBox(width: 12),
+                          const Expanded(
+                            child: Text(
+                              'Certificate uploaded and ready for verification',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            _viewCertificate(supplier['certificate_url']);
+                          },
+                          icon: const Icon(Icons.open_in_new, size: 20),
+                          label: const Text('View Certificate'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.green.shade600,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.shade200, width: 2),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.error, color: Colors.red.shade700, size: 24),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'No SSM certificate uploaded - Cannot approve without certificate',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 16),
+              
+              // System Information
+              _buildSectionHeader(Icons.info_outline, 'System Information', scheme),
+              const SizedBox(height: 12),
+              _buildDetailCard(
+                icon: Icons.fingerprint,
+                label: 'User ID',
+                value: supplier['id'] ?? 'N/A',
+                scheme: scheme,
+              ),
+              const SizedBox(height: 8),
+              _buildDetailCard(
+                icon: Icons.calendar_today,
+                label: 'Registration Date',
+                value: supplier['created_at'] != null 
+                    ? _formatDate(supplier['created_at'])
+                    : 'N/A',
+                scheme: scheme,
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Action Buttons
               Row(
                 children: [
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: () => Navigator.pop(ctx),
-                      icon: const Icon(Icons.close, size: 18),
-                      label: const Text('Close', style: TextStyle(fontSize: 14)),
+                      icon: const Icon(Icons.close, size: 20),
+                      label: const Text('Close'),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(color: Colors.grey.shade400),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
                     ),
                   ),
@@ -193,11 +461,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         _confirmAndUpdate(supplier['id'], 'rejected');
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: Colors.red.shade600,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      icon: const Icon(Icons.thumb_down, size: 18),
-                      label: const Text('Reject', style: TextStyle(fontSize: 14)),
+                      icon: const Icon(Icons.cancel, size: 20),
+                      label: const Text('Reject'),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -208,11 +479,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         _confirmAndUpdate(supplier['id'], 'approved');
                       },
                       style: FilledButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: Colors.green.shade600,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
                       ),
-                      icon: const Icon(Icons.thumb_up, size: 18),
-                      label: const Text('Approve', style: TextStyle(fontSize: 14)),
+                      icon: const Icon(Icons.check_circle, size: 20),
+                      label: const Text('Approve'),
                     ),
                   ),
                 ],
@@ -225,26 +499,182 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  Widget _infoRow(String label, dynamic value) {
-    final v = (value ?? 'N/A').toString();
+  Widget _buildSectionHeader(IconData icon, String title, ColorScheme scheme) {
     return Row(
       children: [
-        SizedBox(
-          width: 100,
-          child: Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-          ),
-        ),
+        Icon(icon, color: scheme.primary, size: 22),
         const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            v.isEmpty ? 'N/A' : v,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(fontSize: 14),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.bold,
+            color: scheme.primary,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildDetailCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required ColorScheme scheme,
+    int maxLines = 1,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerHighest.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 20, color: scheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value.isEmpty ? 'N/A' : value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: maxLines,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDate(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateStr;
+    }
+  }
+
+  Future<void> _viewCertificate(String certificateUrl) async {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(10),
+          child: Stack(
+            children: [
+              // Image viewer
+              InteractiveViewer(
+                minScale: 0.5,
+                maxScale: 4.0,
+                child: Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.network(
+                      certificateUrl,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Center(
+                          child: CircularProgressIndicator(
+                            value: loadingProgress.expectedTotalBytes != null
+                                ? loadingProgress.cumulativeBytesLoaded /
+                                    loadingProgress.expectedTotalBytes!
+                                : null,
+                            color: Colors.white,
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.error_outline, size: 64, color: Colors.red.shade700),
+                              const SizedBox(height: 16),
+                              const Text(
+                                'Failed to load certificate',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Error: ${error.toString()}',
+                                style: const TextStyle(fontSize: 12),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              ),
+              // Close button
+              Positioned(
+                top: 40,
+                right: 20,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 30),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black54,
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ),
+              // Download/Open externally button
+              Positioned(
+                top: 40,
+                left: 20,
+                child: IconButton(
+                  icon: const Icon(Icons.open_in_new, color: Colors.white, size: 30),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black54,
+                  ),
+                  onPressed: () async {
+                    final Uri url = Uri.parse(certificateUrl);
+                    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Could not open certificate'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -556,122 +986,101 @@ class _SupplierTile extends StatefulWidget {
 }
 
 class _SupplierTileState extends State<_SupplierTile> {
-  bool _isExpanded = false;
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final companyName = widget.supplier['company_name']?.toString().trim();
-    final avatarChar = (companyName?.isNotEmpty == true ? companyName![0] : 'C').toUpperCase();
+    
+    // Get display name - prioritize full_name, then business_name, then email
+    String displayName = 'Unknown Supplier';
+    if (widget.supplier['full_name']?.toString().trim().isNotEmpty ?? false) {
+      displayName = widget.supplier['full_name'].toString().trim();
+    } else if (widget.supplier['business_name']?.toString().trim().isNotEmpty ?? false) {
+      displayName = widget.supplier['business_name'].toString().trim();
+    } else if (widget.supplier['email']?.toString().trim().isNotEmpty ?? false) {
+      displayName = widget.supplier['email'].toString().trim().split('@')[0];
+    }
+    
+    final avatarChar = displayName[0].toUpperCase();
+    final email = widget.supplier['email']?.toString() ?? 'No email';
+    final hasCertificate = widget.supplier['certificate_url']?.toString().isNotEmpty ?? false;
 
     return InkWell(
-      onTap: () {
-        setState(() {
-          _isExpanded = !_isExpanded;
-        });
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      onTap: widget.onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: _isExpanded ? scheme.primaryContainer.withOpacity(0.3) : null,
+          color: scheme.surface,
           border: Border(
-            bottom: BorderSide(
-              color: scheme.outlineVariant.withOpacity(0.3),
-              width: 1,
-            ),
+            bottom: BorderSide(color: Colors.grey.shade200),
           ),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: scheme.primaryContainer,
-                  radius: 20,
-                  child: Text(
-                    avatarChar,
-                    style: TextStyle(
-                      color: scheme.onPrimaryContainer,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+            // Avatar
+            CircleAvatar(
+              radius: 28,
+              backgroundColor: hasCertificate ? Colors.green.shade100 : Colors.orange.shade100,
+              child: Text(
+                avatarChar,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: hasCertificate ? Colors.green.shade800 : Colors.orange.shade800,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
                     children: [
-                      Text(
-                        companyName ?? 'N/A',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
+                      Expanded(
+                        child: Text(
+                          displayName,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (_isExpanded) ...[
-                        const SizedBox(height: 4),
-                        Text(
-                          widget.supplier['full_name'] ?? 'N/A',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                        Text(
-                          widget.supplier['email'] ?? 'N/A',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: scheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+                      if (hasCertificate)
+                        Icon(Icons.verified, color: Colors.green.shade700, size: 20)
+                      else
+                        Icon(Icons.warning_amber, color: Colors.orange.shade700, size: 20),
                     ],
                   ),
-                ),
-                Icon(
-                  _isExpanded ? Icons.expand_less : Icons.expand_more,
-                  color: scheme.onSurfaceVariant,
-                ),
-              ],
-            ),
-            if (_isExpanded) ...[
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: () {
-                      setState(() => _isExpanded = false);
-                      widget.onReject();
-                    },
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: const BorderSide(color: Colors.red),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  const SizedBox(height: 4),
+                  Text(
+                    email,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
                     ),
-                    icon: const Icon(Icons.close, size: 18),
-                    label: const Text('Reject'),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(width: 12),
-                  FilledButton.icon(
-                    onPressed: () {
-                      setState(() => _isExpanded = false);
-                      widget.onApprove();
-                    },
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.green,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  const SizedBox(height: 6),
+                  Text(
+                    hasCertificate ? 'Certificate uploaded • Tap to review' : 'No certificate • Tap to view details',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: hasCertificate ? Colors.green.shade700 : Colors.orange.shade700,
+                      fontWeight: FontWeight.w500,
                     ),
-                    icon: const Icon(Icons.check, size: 18),
-                    label: const Text('Approve'),
                   ),
                 ],
               ),
-            ],
+            ),
+            const SizedBox(width: 8),
+            // Arrow icon
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.grey.shade400,
+            ),
           ],
         ),
       ),

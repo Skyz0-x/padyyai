@@ -52,6 +52,15 @@ dependencies:
   
   # HTTP for potential API calls
   http: ^1.1.0
+  
+  # Geolocator for location services
+  geolocator: ^11.0.0
+  
+  # Permission handler for location permissions
+  permission_handler: ^11.0.1
+  
+  # URL launcher for opening links
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:

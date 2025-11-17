@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../services/auth_service.dart';
 
 class SupplierDetailsScreen extends StatefulWidget {
@@ -21,6 +23,9 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
   final _productsController = TextEditingController();
   
   bool _isLoading = false;
+  File? _certificateFile;
+  String? _certificateFileName;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -33,8 +38,86 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     super.dispose();
   }
 
+  Future<void> _pickCertificate() async {
+    try {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Select Certificate'),
+          content: const Text('Choose how to upload your SSM certificate'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _pickFromGallery();
+              },
+              child: const Text('From Gallery'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _pickFromCamera();
+              },
+              child: const Text('Take Photo'),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      if (mounted) {
+        _authService.showToast(context, 'Error picking file', isError: true);
+      }
+    }
+  }
+
+  Future<void> _pickFromGallery() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _certificateFile = File(image.path);
+          _certificateFileName = image.name;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        _authService.showToast(context, 'Error selecting image', isError: true);
+      }
+    }
+  }
+
+  Future<void> _pickFromCamera() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 85,
+      );
+      
+      if (image != null) {
+        setState(() {
+          _certificateFile = File(image.path);
+          _certificateFileName = image.name;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        _authService.showToast(context, 'Error taking photo', isError: true);
+      }
+    }
+  }
+
   Future<void> _saveSupplierDetails() async {
     if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // Check if certificate is uploaded
+    if (_certificateFile == null) {
+      _authService.showToast(context, 'Please upload your SSM certificate', isError: true);
       return;
     }
 
@@ -64,6 +147,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       Map<String, dynamic> result = await _authService.updateSupplierDetails(
         currentUser.id,
         updateData,
+        certificateFile: _certificateFile,
       );
 
       if (result['success']) {
@@ -302,6 +386,11 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             
             const SizedBox(height: 24),
             
+            // Certificate Upload
+            _buildCertificateUpload(),
+            
+            const SizedBox(height: 24),
+            
             // Save Button
             _buildSaveButton(),
           ],
@@ -338,6 +427,94 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       validator: validator,
       keyboardType: keyboardType,
       maxLines: maxLines,
+    );
+  }
+
+  Widget _buildCertificateUpload() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.verified, color: Colors.blue.shade700),
+              const SizedBox(width: 8),
+              const Text(
+                'SSM Certificate Upload *',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Please upload your Companies Commission of Malaysia (SSM) registration certificate.',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.black54,
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (_certificateFile != null)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade200),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.green.shade700),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _certificateFileName ?? 'Certificate uploaded',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.green.shade900,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      setState(() {
+                        _certificateFile = null;
+                        _certificateFileName = null;
+                      });
+                    },
+                    icon: const Icon(Icons.close, size: 20),
+                    color: Colors.red,
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: _pickCertificate,
+            icon: const Icon(Icons.upload_file),
+            label: Text(_certificateFile == null ? 'Upload Certificate' : 'Change Certificate'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade600,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -3,6 +3,7 @@ import '../config/supabase_config.dart';
 import '../utils/constants.dart';
 import 'detect_screen.dart';
 import 'marketplace_screen.dart';
+import 'weather_alert_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -298,9 +299,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                () {
-                  // TODO: Navigate to weather
-                },
+                () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const WeatherAlertScreen()),
+                ),
               ),
             ),
           ],

@@ -148,10 +148,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
-            shape: BoxShape.circle,
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
@@ -160,10 +160,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               ),
             ],
           ),
-          child: Icon(
-            Icons.agriculture,
-            size: 50,
-            color: Colors.green.shade700,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Image.asset(
+              'assets/images/PadyyAI.png',
+              width: 80,
+              height: 80,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Icon(
+                  Icons.agriculture,
+                  size: 50,
+                  color: Colors.green.shade700,
+                );
+              },
+            ),
           ),
         ),
         const SizedBox(height: 16),
@@ -287,7 +298,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.all(16),
+        height: 115,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: isSelected ? Colors.green.shade50 : Colors.grey.shade50,
           borderRadius: BorderRadius.circular(12),
@@ -297,13 +309,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           ),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               icon,
               size: 32,
               color: isSelected ? Colors.green.shade700 : Colors.grey.shade600,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               title,
               style: TextStyle(
@@ -312,14 +325,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 color: isSelected ? Colors.green.shade700 : Colors.grey.shade700,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               description,
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 10,
                 color: isSelected ? Colors.green.shade600 : Colors.grey.shade600,
               ),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
