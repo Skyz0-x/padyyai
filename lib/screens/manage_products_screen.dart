@@ -97,8 +97,8 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              primaryColor,
-              backgroundColor,
+              Colors.green.shade600,
+              Colors.green.shade50,
             ],
           ),
         ),
@@ -120,7 +120,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showAddProductDialog(),
-        backgroundColor: primaryColor,
+        backgroundColor: Colors.green.shade600,
         icon: const Icon(Icons.add, color: Colors.white),
         label: const Text(
           'Add Product',
@@ -147,9 +147,9 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
                     color: Colors.white,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.arrow_back,
-                    color: primaryColor,
+                    color: Colors.green,
                     size: 24,
                   ),
                 ),

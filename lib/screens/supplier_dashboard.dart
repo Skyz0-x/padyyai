@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/products_service.dart';
 import 'manage_products_screen.dart';
 
 class SupplierDashboard extends StatefulWidget {
@@ -11,7 +12,10 @@ class SupplierDashboard extends StatefulWidget {
 
 class _SupplierDashboardState extends State<SupplierDashboard> {
   final AuthService _authService = AuthService();
+  final ProductsService _productsService = ProductsService();
   Map<String, dynamic>? userProfile;
+  List<Map<String, dynamic>> _products = [];
+  int _productCount = 0;
   bool isLoading = true;
   String userStatus = 'pending';
 
@@ -32,12 +36,32 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           userStatus = profile['status'] ?? 'pending';
           isLoading = false;
         });
+        
+        // Load products if supplier is approved
+        if (userStatus == 'approved') {
+          _loadProducts();
+        }
       }
     } catch (e) {
       print('Error loading user profile: $e');
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadProducts() async {
+    try {
+      final userId = _authService.currentUser?.id;
+      if (userId != null) {
+        final products = await _productsService.getProductsBySupplier(userId);
+        setState(() {
+          _products = products;
+          _productCount = products.length;
+        });
+      }
+    } catch (e) {
+      print('Error loading products: $e');
     }
   }
 
@@ -51,8 +75,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.blue.shade600,
-                Colors.blue.shade50,
+                Colors.green.shade600,
+                Colors.green.shade50,
               ],
             ),
           ),
@@ -72,8 +96,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.blue.shade600,
-              Colors.blue.shade50,
+              Colors.green.shade600,
+              Colors.green.shade50,
             ],
           ),
         ),
@@ -274,7 +298,20 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           Row(
             children: [
               Expanded(
-                child: _buildStatCard('Total Products', '0', Icons.inventory, Colors.green),
+                child: _buildStatCard(
+                  'Total Products', 
+                  '$_productCount', 
+                  Icons.inventory, 
+                  Colors.green,
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ManageProductsScreen(),
+                      ),
+                    );
+                  },
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -288,7 +325,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           Row(
             children: [
               Expanded(
-                child: _buildStatCard('Monthly Sales', '₹0', Icons.trending_up, Colors.orange),
+                child: _buildStatCard('Monthly Sales', 'RM0', Icons.trending_up, Colors.orange),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -487,46 +524,50 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: color, size: 24),
-              const Spacer(),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade600,
+  Widget _buildStatCard(String title, String value, IconData icon, Color color, {VoidCallback? onTap}) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
             ),
-          ),
-        ],
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: color, size: 24),
+                const Spacer(),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
