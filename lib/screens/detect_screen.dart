@@ -693,30 +693,6 @@ class _DetectScreenState extends State<DetectScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'PaddyAI Detection',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-            ),
-            Text(
-              _isModelLoaded ? '🤖 AI Ready' : '⏳ Loading AI...',
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
-            ),
-          ],
-        ),
-        backgroundColor: Colors.green.shade700,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => _showInfoDialog(),
-          ),
-        ],
-      ),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -729,34 +705,98 @@ class _DetectScreenState extends State<DetectScreen> {
           ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Status Card
-                _buildStatusCard(),
-                
-                const SizedBox(height: 20),
-                
-                // Image Display Section
-                _buildImageSection(),
-                
-                const SizedBox(height: 20),
-                
-                // Action Buttons
-                _buildActionButtons(),
-                
-                const SizedBox(height: 20),
-                
-                // Results Section
-                if (_result != null) _buildResultsSection(),
-                
-                const SizedBox(height: 20),
-              ],
-            ),
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: _buildContent(),
+                ),
+              ),
+            ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'PaddyAI Detection',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      _isModelLoaded ? '🤖 AI Ready' : '⏳ Loading AI...',
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.info_outline, color: Colors.white),
+                onPressed: () => _showInfoDialog(),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Status Card
+          _buildStatusCard(),
+          
+          const SizedBox(height: 20),
+          
+          // Image Display Section
+          _buildImageSection(),
+          
+          const SizedBox(height: 20),
+          
+          // Action Buttons
+          _buildActionButtons(),
+          
+          const SizedBox(height: 20),
+          
+          // Results Section
+          if (_result != null) _buildResultsSection(),
+          
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }

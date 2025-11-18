@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../utils/constants.dart';
 import '../services/products_service.dart';
+import '../services/cart_service.dart';
+import 'cart_screen.dart';
 
 class MarketplaceScreen extends StatefulWidget {
   final String? diseaseFilter;
@@ -13,6 +15,7 @@ class MarketplaceScreen extends StatefulWidget {
 
 class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProviderStateMixin {
   final ProductsService _productsService = ProductsService();
+  final CartService _cartService = CartService();
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   
@@ -22,6 +25,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   List<Map<String, dynamic>> _products = [];
   List<Map<String, dynamic>> _filteredProducts = [];
   bool _isLoading = true;
+  int _cartItemCount = 0;
   
   final List<String> categories = [
     'All Products',
@@ -185,6 +189,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
     super.initState();
     _initializeAnimations();
     _loadProducts();
+    _loadCartCount();
     _searchController.addListener(_onSearchChanged);
     
     // If a disease filter is provided, search for it
@@ -248,6 +253,49 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
     _filterProducts();
   }
 
+  Future<void> _loadCartCount() async {
+    final count = await _cartService.getCartItemCount();
+    setState(() => _cartItemCount = count);
+  }
+
+  Future<void> _addToCart(Map<String, dynamic> product) async {
+    final result = await _cartService.addToCart(
+      productId: product['id'].toString(),
+      productName: product['name'],
+      productPrice: (product['price'] as num).toDouble(),
+      productImage: product['image_url'],
+      productCategory: product['category'],
+      quantity: 1,
+    );
+
+    if (result['success']) {
+      await _loadCartCount();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(result['message']),
+            duration: const Duration(seconds: 2),
+            action: SnackBarAction(
+              label: 'VIEW CART',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const CartScreen()),
+                ).then((_) => _loadCartCount());
+              },
+            ),
+          ),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(result['message'])),
+        );
+      }
+    }
+  }
+
   void _filterProducts() {
     final query = _searchController.text.toLowerCase();
     final selectedCategory = categories[_selectedCategory];
@@ -281,90 +329,188 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
-      appBar: AppBar(
-        title: const Text(
-          'Marketplace',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: primaryColor,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(
-            onPressed: () {
-              // TODO: Show cart
-            },
-            icon: const Icon(Icons.shopping_cart_outlined),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              primaryColor,
+              backgroundColor,
+            ],
           ),
-        ],
-      ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: _isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : Column(
-                children: [
-                  _buildSearchAndFilter(),
-                  _buildCategories(),
-                  Expanded(child: _buildProductGrid()),
-                ],
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: _buildContent(),
+                ),
               ),
+            ],
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildSearchAndFilter() {
+  Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: primaryGradient,
-        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
       child: Column(
         children: [
-          // Search bar
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(25),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: (value) => setState(() {}),
-              decoration: InputDecoration(
-                hintText: 'Search products, suppliers...',
-                prefixIcon: const Icon(Icons.search, color: primaryColor),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {});
-                        },
-                        icon: const Icon(Icons.clear, color: primaryColor),
-                      )
-                    : null,
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
-            ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Marketplace',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      'Find products for your farm',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const CartScreen()),
+                      ).then((_) => _loadCartCount());
+                    },
+                    icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 22),
+                    tooltip: 'Cart',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
+                  if (_cartItemCount > 0)
+                    Positioned(
+                      right: -4,
+                      top: -4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          _cartItemCount > 99 ? '99+' : _cartItemCount.toString(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
           ),
+          const SizedBox(height: 12),
+          _buildSearchBar(),
         ],
       ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      height: 42,
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(21),
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (value) => setState(() {}),
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+        decoration: InputDecoration(
+          hintText: 'Search products...',
+          hintStyle: const TextStyle(color: Colors.white70, fontSize: 14),
+          prefixIcon: const Icon(Icons.search, color: Colors.white, size: 20),
+          suffixIcon: _searchController.text.isNotEmpty
+              ? IconButton(
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {});
+                  },
+                  icon: const Icon(Icons.clear, color: Colors.white, size: 18),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          isDense: true,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContent() {
+    if (_isLoading) {
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading products...'),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        _buildCategories(),
+        Expanded(child: _buildProductGrid()),
+      ],
     );
   }
 
   Widget _buildCategories() {
     return Container(
-      height: 50,
-      margin: const EdgeInsets.symmetric(vertical: 16),
+      height: 48,
+      padding: const EdgeInsets.symmetric(vertical: 6),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -378,17 +524,16 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
             },
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.only(right: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
               decoration: BoxDecoration(
-                gradient: isSelected ? primaryGradient : null,
-                color: isSelected ? null : Colors.white,
-                borderRadius: BorderRadius.circular(25),
-                border: isSelected ? null : Border.all(color: primaryColor),
+                color: isSelected ? primaryColor : Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: isSelected ? primaryColor : Colors.grey.shade300),
                 boxShadow: isSelected ? [
                   BoxShadow(
                     color: primaryColor.withOpacity(0.3),
-                    blurRadius: 8,
+                    blurRadius: 6,
                     offset: const Offset(0, 2),
                   ),
                 ] : null,
@@ -397,8 +542,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                 child: Text(
                   categories[index],
                   style: TextStyle(
-                    color: isSelected ? Colors.white : primaryColor,
+                    color: isSelected ? Colors.white : textDarkColor,
                     fontWeight: FontWeight.w600,
+                    fontSize: 13,
                   ),
                 ),
               ),
@@ -895,15 +1041,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                       Expanded(
                         flex: 2,
                         child: ElevatedButton.icon(
-                          onPressed: inStock ? () {
+                          onPressed: inStock ? () async {
                             Navigator.pop(context);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${product['name']} added to cart'),
-                                backgroundColor: Colors.green,
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
+                            await _addToCart(product);
                           } : null,
                           icon: const Icon(Icons.shopping_cart, size: 20),
                           label: Text(

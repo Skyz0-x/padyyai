@@ -61,130 +61,121 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
-      body: CustomScrollView(
-        slivers: [
-          _buildAppBar(),
-          SliverToBoxAdapter(
-            child: Column(
-              children: [
-                _buildStatsCards(),
-                _buildFilterChips(),
-              ],
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              primaryColor,
+              backgroundColor,
+            ],
           ),
-          _buildDetectionsList(),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAppBar() {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: false,
-      pinned: true,
-      backgroundColor: primaryColor,
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(gradient: primaryGradient),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 40, 16, 16),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(
-                      Icons.history,
-                      color: Colors.white,
-                      size: 28,
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              _buildHeader(),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Detect History',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text(
-                          'Your disease detection records',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _loadDetections,
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                  ),
-                ],
+                  child: _buildContent(),
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  Widget _buildStatsCards() {
-    if (_isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    final stats = _calculateStats();
-    
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Column(
         children: [
-          Expanded(
-            child: _buildStatCard(
-              'Total Scans',
-              '${stats['total']}',
-              Icons.photo_camera,
-              Colors.blue,
-            ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+              ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Detect History',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Text(
+                      'Your disease detection records',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.white70,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                onPressed: _loadDetections,
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                tooltip: 'Refresh',
+              ),
+            ],
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'Healthy',
-              '${stats['healthy']}',
-              Icons.check_circle,
-              Colors.green,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'Diseases',
-              '${stats['diseases']}',
-              Icons.warning,
-              Colors.red,
-            ),
-          ),
+          if (!_isLoading) ...[
+            const SizedBox(height: 16),
+            _buildStatsCards(),
+          ],
         ],
       ),
+    );
+  }
+
+  Widget _buildStatsCards() {
+    final stats = _calculateStats();
+    
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            'Total Scans',
+            '${stats['total']}',
+            Icons.photo_camera,
+            Colors.blue,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            'Healthy',
+            '${stats['healthy']}',
+            Icons.check_circle,
+            Colors.green,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            'Diseases',
+            '${stats['diseases']}',
+            Icons.warning,
+            Colors.red,
+          ),
+        ),
+      ],
     );
   }
 
@@ -192,26 +183,20 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withOpacity(0.2),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: Colors.white.withOpacity(0.3)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 28),
+          Icon(icon, color: Colors.white, size: 28),
           const SizedBox(height: 8),
           Text(
             value,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: color,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: 4),
@@ -219,7 +204,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
             label,
             style: const TextStyle(
               fontSize: 11,
-              color: textLightColor,
+              color: Colors.white70,
             ),
             textAlign: TextAlign.center,
           ),
@@ -229,8 +214,9 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   }
 
   Widget _buildFilterChips() {
-    return SizedBox(
-      height: 50,
+    return Container(
+      height: 60,
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -266,60 +252,72 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
     );
   }
 
-  Widget _buildDetectionsList() {
+  Widget _buildContent() {
     if (_isLoading) {
-      return const SliverFillRemaining(
-        child: Center(child: CircularProgressIndicator()),
+      return const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Loading detections...'),
+          ],
+        ),
       );
     }
 
+    return Column(
+      children: [
+        _buildFilterChips(),
+        Expanded(
+          child: _buildDetectionsList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetectionsList() {
     final detections = _filteredDetections;
 
     if (detections.isEmpty) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.image_search,
-                size: 80,
-                color: Colors.grey.shade300,
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.image_search,
+              size: 80,
+              color: Colors.grey.shade300,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No detections found',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w500,
               ),
-              const SizedBox(height: 16),
-              Text(
-                'No detections found',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.grey.shade600,
-                  fontWeight: FontWeight.w500,
-                ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Start scanning your crops',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey.shade500,
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Start scanning your crops',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade500,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
-    return SliverPadding(
+    return ListView.builder(
       padding: const EdgeInsets.all(16),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final detection = detections[index];
-            return _buildDetectionCard(detection);
-          },
-          childCount: detections.length,
-        ),
-      ),
+      itemCount: detections.length,
+      itemBuilder: (context, index) {
+        final detection = detections[index];
+        return _buildDetectionCard(detection);
+      },
     );
   }
 
