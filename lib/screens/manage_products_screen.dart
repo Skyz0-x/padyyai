@@ -97,7 +97,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.green.shade600,
+               Colors.green.shade600,
               Colors.green.shade50,
             ],
           ),

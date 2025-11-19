@@ -6,6 +6,8 @@ import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'dart:math' as math;
 import '../services/products_service.dart';
+import '../services/disease_records_service.dart';
+import '../config/supabase_config.dart';
 import 'marketplace_screen.dart';
 
 class DetectScreen extends StatefulWidget {
@@ -19,7 +21,9 @@ class _DetectScreenState extends State<DetectScreen> {
   File? _image;
   final picker = ImagePicker();
   final ProductsService _productsService = ProductsService();
+  final DiseaseRecordsService _diseaseRecordsService = DiseaseRecordsService();
   bool _isAnalyzing = false;
+  bool _isSavingToHistory = false;
   bool _isModelLoaded = false;
   Map<String, dynamic>? _result;
   List<String> _diseaseClasses = [];
@@ -348,6 +352,9 @@ class _DetectScreenState extends State<DetectScreen> {
       });
       
       print('✅ AI Analysis completed successfully');
+      
+      // Save detection to history (non-blocking)
+      _saveDetectionToHistory(diseaseName, maxProb);
       print('✅ Found ${products.length} recommended products');
       
     } catch (e) {
@@ -361,6 +368,79 @@ class _DetectScreenState extends State<DetectScreen> {
           'isHealthy': false,
         };
       });
+    }
+  }
+
+  // Save detection to history with image upload
+  Future<void> _saveDetectionToHistory(String diseaseName, double confidence) async {
+    if (_image == null) return;
+    
+    try {
+      setState(() => _isSavingToHistory = true);
+      print('💾 Saving detection to history...');
+      
+      // Upload image to Supabase Storage
+      String? imageUrl;
+      try {
+        final supabase = SupabaseConfig.client;
+        final fileName = 'detection_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final filePath = 'disease_detections/$fileName';
+        
+        print('📤 Uploading image to storage: $filePath');
+        
+        // Read image bytes
+        final bytes = await _image!.readAsBytes();
+        
+        // Upload the file
+        await supabase.storage
+            .from('disease-images')
+            .uploadBinary(
+              filePath,
+              bytes,
+            );
+        
+        // Get public URL
+        imageUrl = supabase.storage
+            .from('disease-images')
+            .getPublicUrl(filePath);
+        
+        print('✅ Image uploaded successfully: $imageUrl');
+      } catch (e) {
+        print('⚠️ Image upload failed (continuing without image): $e');
+        // Continue saving detection even if image upload fails
+      }
+      
+      // Determine severity based on confidence and disease type
+      String severity;
+      if (diseaseName.toLowerCase().contains('healthy')) {
+        severity = 'healthy';
+      } else if (confidence > 0.8) {
+        severity = 'high';
+      } else if (confidence > 0.5) {
+        severity = 'medium';
+      } else {
+        severity = 'low';
+      }
+      
+      // Save detection to database
+      final result = await _diseaseRecordsService.addDetection(
+        diseaseName: diseaseName,
+        confidence: confidence,
+        imageUrl: imageUrl,
+        severity: severity,
+        notes: 'Auto-detected using AI model',
+      );
+      
+      if (result['success']) {
+        print('✅ Detection saved to history');
+      } else {
+        print('❌ Failed to save detection: ${result['message']}');
+      }
+      
+      setState(() => _isSavingToHistory = false);
+    } catch (e) {
+      print('❌ Error saving detection to history: $e');
+      setState(() => _isSavingToHistory = false);
     }
   }
 

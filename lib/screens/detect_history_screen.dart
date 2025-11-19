@@ -17,13 +17,16 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   bool _isLoading = true;
   String? _selectedFilter;
   
-  final List<String> _severityFilters = [
+  final List<String> _diseaseFilters = [
     'All',
-    'healthy',
-    'low',
-    'medium',
-    'high',
-    'critical',
+    'Healthy',
+    'Brown Planthopper',
+    'Brown Spot',
+    'Leaf Blast',
+    'Leaf Scald',
+    'Rice Leafroller',
+    'Rice Yellow Stem Borer',
+    'Sheath Blight',
   ];
 
   @override
@@ -55,7 +58,9 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
     if (_selectedFilter == null || _selectedFilter == 'All') {
       return _allDetections;
     }
-    return _allDetections.where((d) => d['severity'] == _selectedFilter).toList();
+    return _allDetections.where((d) => 
+      (d['disease_name'] ?? '').toString().toLowerCase() == _selectedFilter!.toLowerCase()
+    ).toList();
   }
 
   @override
@@ -220,22 +225,20 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _severityFilters.length,
+        itemCount: _diseaseFilters.length,
         itemBuilder: (context, index) {
-          final severity = _severityFilters[index];
-          final isSelected = _selectedFilter == severity || 
-                            (severity == 'All' && _selectedFilter == null);
+          final disease = _diseaseFilters[index];
+          final isSelected = _selectedFilter == disease || 
+                            (disease == 'All' && _selectedFilter == null);
           
           return Padding(
             padding: const EdgeInsets.only(right: 8),
             child: FilterChip(
-              label: Text(
-                severity == 'All' ? severity : severity[0].toUpperCase() + severity.substring(1),
-              ),
+              label: Text(disease),
               selected: isSelected,
               onSelected: (selected) {
                 setState(() {
-                  _selectedFilter = severity == 'All' ? null : severity;
+                  _selectedFilter = disease == 'All' ? null : disease;
                 });
               },
               backgroundColor: Colors.white,
@@ -244,6 +247,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
               labelStyle: TextStyle(
                 color: isSelected ? primaryColor : textDarkColor,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 12,
               ),
             ),
           );
@@ -322,105 +326,147 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   }
 
   Widget _buildDetectionCard(Map<String, dynamic> detection) {
-    final severity = detection['severity'] ?? 'unknown';
-    final color = _getSeverityColor(severity);
-    final icon = _getSeverityIcon(severity);
+    final diseaseName = detection['disease_name'] ?? 'Unknown';
+    final color = _getSeverityColor(diseaseName);
+    final icon = _getSeverityIcon(diseaseName);
     final date = DateTime.parse(detection['detection_date']);
     final formattedDate = DateFormat('MMM dd, yyyy').format(date);
-    final confidence = (detection['confidence'] as num).toDouble();
-    final diseaseName = detection['disease_name'] ?? 'Unknown';
     final isHealthy = diseaseName.toLowerCase().contains('healthy');
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withOpacity(0.3),
-          width: 2,
+    return Dismissible(
+      key: Key(detection['id']),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(12),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 20),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.delete, color: Colors.white, size: 32),
+            SizedBox(height: 4),
+            Text(
+              'Delete',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: InkWell(
-        onTap: () => _showDetectionDetails(detection),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 32),
+      confirmDismiss: (direction) async {
+        return await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Detection'),
+            content: const Text('Are you sure you want to delete this detection record?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      diseaseName,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: isHealthy ? Colors.green : Colors.red.shade700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(Icons.assessment, size: 14, color: textLightColor),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${confidence.toStringAsFixed(1)}% confidence',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: textLightColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      formattedDate,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: textLightColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      severity[0].toUpperCase() + severity.substring(1),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: color,
-                      ),
-                    ),
-                  ),
-                ],
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                child: const Text('Delete'),
               ),
             ],
+          ),
+        );
+      },
+      onDismissed: (direction) async {
+        final success = await _diseaseService.deleteDetection(detection['id']);
+        
+        if (success && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$diseaseName detection deleted'),
+              backgroundColor: Colors.orange,
+              action: SnackBarAction(
+                label: 'Undo',
+                textColor: Colors.white,
+                onPressed: () {
+                  // Note: Undo would require storing the deleted data
+                  // For now, just reload
+                  _loadDetections();
+                },
+              ),
+            ),
+          );
+          _loadDetections();
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: color.withOpacity(0.3),
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: InkWell(
+          onTap: () => _showDetectionDetails(detection),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(icon, color: color, size: 32),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        diseaseName,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isHealthy ? Colors.green : Colors.red.shade700,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        formattedDate,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: textLightColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  color: Colors.red.shade400,
+                  onPressed: () => _confirmDelete(detection['id']),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  tooltip: 'Delete',
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -428,37 +474,39 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   }
 
   Color _getSeverityColor(String severity) {
-    switch (severity.toLowerCase()) {
-      case 'healthy':
-        return Colors.green;
-      case 'low':
-        return Colors.blue;
-      case 'medium':
-        return Colors.orange;
-      case 'high':
-        return Colors.deepOrange;
-      case 'critical':
-        return Colors.red;
-      default:
-        return Colors.grey;
+    // Return green for healthy, red for diseases
+    if (severity.toLowerCase().contains('healthy')) {
+      return Colors.green;
+    } else {
+      return Colors.red;
     }
   }
 
   IconData _getSeverityIcon(String severity) {
-    switch (severity.toLowerCase()) {
-      case 'healthy':
-        return Icons.check_circle;
-      case 'low':
-        return Icons.info;
-      case 'medium':
-        return Icons.warning;
-      case 'high':
-        return Icons.error;
-      case 'critical':
-        return Icons.dangerous;
-      default:
-        return Icons.help;
+    final name = severity.toLowerCase();
+    
+    // Return check_circle for healthy
+    if (name.contains('healthy')) {
+      return Icons.check_circle;
     }
+    
+    // Pests - use bug_report icon
+    if (name.contains('planthopper') || 
+        name.contains('leafroller') || 
+        name.contains('borer')) {
+      return Icons.bug_report;
+    }
+    
+    // Fungicides - use coronavirus (fungus-like) icon
+    if (name.contains('blast') || 
+        name.contains('spot') || 
+        name.contains('blight') || 
+        name.contains('scald')) {
+      return Icons.coronavirus;
+    }
+    
+    // Default
+    return Icons.warning;
   }
 
   Map<String, dynamic> _calculateStats() {
@@ -484,9 +532,8 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   void _showDetectionDetails(Map<String, dynamic> detection) {
     final date = DateTime.parse(detection['detection_date']);
     final formattedDate = DateFormat('MMMM dd, yyyy \'at\' h:mm a').format(date);
-    final severity = detection['severity'] ?? 'unknown';
-    final color = _getSeverityColor(severity);
-    final confidence = (detection['confidence'] as num).toDouble();
+    final diseaseName = detection['disease_name'] ?? 'Unknown';
+    final color = _getSeverityColor(diseaseName);
 
     showModalBottomSheet(
       context: context,
@@ -524,7 +571,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                             color: color.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(_getSeverityIcon(severity), color: color, size: 40),
+                          child: Icon(_getSeverityIcon(diseaseName), color: color, size: 40),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -538,22 +585,6 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: color.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  '${severity[0].toUpperCase()}${severity.substring(1)} Severity',
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                    color: color,
-                                  ),
-                                ),
-                              ),
                             ],
                           ),
                         ),
@@ -561,45 +592,65 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                     ),
                     const SizedBox(height: 24),
                     
-                    // Confidence meter
-                    _buildDetailSection(
-                      'Confidence Level',
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '${confidence.toStringAsFixed(1)}%',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: color,
+                    // Detection image (if available)
+                    if (detection['image_url'] != null) ...[
+                      _buildDetailSection(
+                        'Scanned Image',
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            detection['image_url'],
+                            width: double.infinity,
+                            height: 250,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return Container(
+                                height: 250,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
-                              ),
-                              Text(
-                                _getConfidenceLabel(confidence),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: textLightColor,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    value: loadingProgress.expectedTotalBytes != null
+                                        ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                        : null,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: 250,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.broken_image, 
+                                      size: 60, 
+                                      color: Colors.grey.shade400,
+                                    ),
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      'Image not available',
+                                      style: TextStyle(
+                                        color: Colors.grey.shade600,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
                           ),
-                          const SizedBox(height: 8),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(10),
-                            child: LinearProgressIndicator(
-                              value: confidence / 100,
-                              minHeight: 12,
-                              backgroundColor: Colors.grey.shade200,
-                              valueColor: AlwaysStoppedAnimation<Color>(color),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
-                    ),
+                    ],
                     
                     _buildDetailRow(Icons.calendar_today, 'Detection Date', formattedDate),
                     
@@ -707,14 +758,6 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
         ],
       ),
     );
-  }
-
-  String _getConfidenceLabel(double confidence) {
-    if (confidence >= 90) return 'Very High';
-    if (confidence >= 75) return 'High';
-    if (confidence >= 60) return 'Moderate';
-    if (confidence >= 45) return 'Low';
-    return 'Very Low';
   }
 
   void _confirmDelete(String detectionId) {

@@ -15,6 +15,7 @@ import 'screens/supplier_pending_screen.dart';
 import 'screens/admin_dashboard.dart';
 import 'screens/cart_screen.dart';
 import 'screens/payment_screen.dart';
+import 'screens/chat_bot_screen.dart';
 import 'services/auth_service.dart';
 
 void main() async {
@@ -88,6 +89,7 @@ class PaddyAIApp extends StatelessWidget {
         '/admin-dashboard': (context) => const RoleGuard(allowedRoles: ['admin'], child: AdminDashboard()),
         '/cart': (context) => const RoleGuard(allowedRoles: ['farmer'], child: CartScreen()),
         '/payment': (context) => const RoleGuard(allowedRoles: ['farmer'], child: PaymentScreen()),
+        '/chat': (context) => const RoleGuard(allowedRoles: ['farmer'], child: ChatBotScreen()),
       },
       initialRoute: '/',
     );
