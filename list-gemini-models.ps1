@@ -1,5 +1,11 @@
 # List available Gemini models
-$apiKey = "AIzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM"
+# IMPORTANT: Get API key from environment variable
+$apiKey = $env:GOOGLE_AI_API_KEY
+
+if (-not $apiKey) {
+    Write-Host "❌ Error: GOOGLE_AI_API_KEY environment variable not set!" -ForegroundColor Red
+    exit 1
+}
 
 Write-Host "Listing available Gemini models..." -ForegroundColor Cyan
 Write-Host ""

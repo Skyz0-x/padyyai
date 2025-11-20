@@ -1,7 +1,15 @@
 # Test Google Gemini API directly
 # This will help us debug the exact issue
 
-$apiKey = "AIzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM"
+# IMPORTANT: Get API key from environment variable or Supabase secrets
+# Never commit API keys to git!
+$apiKey = $env:GOOGLE_AI_API_KEY
+
+if (-not $apiKey) {
+    Write-Host "❌ Error: GOOGLE_AI_API_KEY environment variable not set!" -ForegroundColor Red
+    Write-Host "Set it with: `$env:GOOGLE_AI_API_KEY='YOUR_KEY_HERE'" -ForegroundColor Yellow
+    exit 1
+}
 
 Write-Host "Testing Google Gemini API..." -ForegroundColor Cyan
 Write-Host ""

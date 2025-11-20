@@ -25,7 +25,12 @@ Write-Host ""
 
 # Set the API key
 Write-Host "📝 Setting API key..." -ForegroundColor Cyan
-supabase secrets set GOOGLE_AI_API_KEY=AIzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM
+if (-not $env:GOOGLE_AI_API_KEY) {
+    Write-Host "❌ GOOGLE_AI_API_KEY environment variable not set!" -ForegroundColor Red
+    Write-Host "Set it first: `$env:GOOGLE_AI_API_KEY='YOUR_KEY'" -ForegroundColor Yellow
+    exit 1
+}
+npx supabase secrets set --project-ref zwkntyiujwglpibmftzf GOOGLE_AI_API_KEY=$env:GOOGLE_AI_API_KEY
 
 Write-Host ""
 Write-Host "🚀 Deploying function..." -ForegroundColor Cyan

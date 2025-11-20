@@ -12,6 +12,16 @@
 .swiftpm/
 migrate_working_dir/
 
+# Environment variables and secrets
+.env
+.env.local
+*.key
+secrets/
+
+# Test scripts with API keys
+test-*.ps1
+list-*.ps1
+
 # IntelliJ related
 *.iml
 *.ipr
