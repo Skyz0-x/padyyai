@@ -369,10 +369,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
             'Check and manage customer orders',
             Icons.list_alt,
             () {
-              // TODO: Navigate to orders
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Order management coming soon!')),
-              );
+              Navigator.pushNamed(context, '/supplier-orders');
             },
           ),
           

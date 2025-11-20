@@ -1,4 +1,3 @@
-// @deno-types="https://deno.land/std@0.168.0/http/server.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY')
@@ -8,25 +7,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface ChatRequest {
-  message: string
-  conversationHistory?: Array<{
-    role: string
-    content: string
-  }>
-}
-
-serve(async (req: Request) => {
+serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    const { message, conversationHistory = [] }: ChatRequest = await req.json()
+    const { message, conversationHistory = [] } = await req.json()
 
     if (!message) {
       throw new Error('Message is required')
+    }
+
+    if (!GOOGLE_AI_API_KEY) {
+      throw new Error('GOOGLE_AI_API_KEY is not configured')
     }
 
     // Build conversation context with rice farming expertise
@@ -71,8 +66,10 @@ Provide practical, actionable advice tailored for rice farmers. Be concise but t
     })
 
     // Call Google AI API (Gemini)
+    console.log('Calling Gemini API with', contents.length, 'messages')
+    
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GOOGLE_AI_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
       {
         method: 'POST',
         headers: {
@@ -86,32 +83,15 @@ Provide practical, actionable advice tailored for rice farmers. Be concise but t
             topP: 0.95,
             maxOutputTokens: 1024,
           },
-          safetySettings: [
-            {
-              category: "HARM_CATEGORY_HARASSMENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_HATE_SPEECH",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            },
-            {
-              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-              threshold: "BLOCK_MEDIUM_AND_ABOVE"
-            }
-          ]
         }),
       }
     )
 
     if (!response.ok) {
       const errorData = await response.text()
-      console.error('Google AI API Error:', errorData)
-      throw new Error(`Google AI API error: ${response.status}`)
+      console.error('Google AI API Error Response:', errorData)
+      console.error('API Key (first 10 chars):', GOOGLE_AI_API_KEY?.substring(0, 10))
+      throw new Error(`Google AI API error: ${response.status} - ${errorData}`)
     }
 
     const data = await response.json()
@@ -129,9 +109,9 @@ Provide practical, actionable advice tailored for rice farmers. Be concise but t
         status: 200,
       },
     )
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
+    const errorMessage = error.message || 'An unknown error occurred'
     return new Response(
       JSON.stringify({
         error: errorMessage,

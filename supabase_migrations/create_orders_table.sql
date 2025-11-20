@@ -74,6 +74,13 @@ ON public.order_items(product_id);
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Users can view own orders" ON public.orders;
+DROP POLICY IF EXISTS "Users can insert own orders" ON public.orders;
+DROP POLICY IF EXISTS "Users can update own orders" ON public.orders;
+DROP POLICY IF EXISTS "Users can view own order items" ON public.order_items;
+DROP POLICY IF EXISTS "Users can insert own order items" ON public.order_items;
+
 -- Create RLS policies for orders
 
 -- Policy: Users can view their own orders
@@ -120,6 +127,11 @@ WITH CHECK (
     AND orders.user_id = auth.uid()
   )
 );
+
+-- Drop existing functions and triggers if they exist
+DROP TRIGGER IF EXISTS update_orders_updated_at_trigger ON public.orders;
+DROP FUNCTION IF EXISTS public.update_orders_updated_at();
+DROP FUNCTION IF EXISTS public.generate_order_number();
 
 -- Create function to update orders updated_at timestamp
 CREATE OR REPLACE FUNCTION public.update_orders_updated_at()

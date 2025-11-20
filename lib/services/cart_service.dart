@@ -222,9 +222,9 @@ class CartService {
         'subtotal': subtotal,
         'tax': tax,
         'shipping_fee': shippingFee,
-        'status': 'pending',
+        'status': paymentMethod == 'cash_on_delivery' ? 'to_pay' : 'to_ship', // Set initial status based on payment
         'payment_method': paymentMethod,
-        'payment_status': 'pending',
+        'payment_status': paymentMethod == 'cash_on_delivery' ? 'pending' : 'completed', // COD is pending, others are completed
         'shipping_name': shippingName,
         'shipping_phone': shippingPhone,
         'shipping_address': shippingAddress,

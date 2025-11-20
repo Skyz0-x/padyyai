@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
 import '../services/auth_service.dart';
+import '../services/disease_records_service.dart';
+import '../services/orders_service.dart';
 import '../utils/constants.dart';
+import 'orders_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -17,8 +20,17 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   late Animation<Offset> _slideAnimation;
   
   final AuthService _authService = AuthService();
+  final DiseaseRecordsService _diseaseRecordsService = DiseaseRecordsService();
+  final OrdersService _ordersService = OrdersService();
   Map<String, dynamic>? _userProfile;
   bool _isLoading = true;
+  
+  // Farming stats
+  int _totalScans = 0;
+  int _diseasesDetected = 0;
+  int _productsPurchased = 0;
+  double _totalSpent = 0.0;
+  double _successRate = 0.0;
 
   @override
   void initState() {
@@ -32,6 +44,10 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       final currentUser = SupabaseConfig.client.auth.currentUser;
       if (currentUser != null) {
         final profile = await _authService.getUserProfileAndNavigationInfo(currentUser.id);
+        
+        // Load farming statistics
+        await _loadFarmingStats();
+        
         setState(() {
           _userProfile = profile;
           _isLoading = false;
@@ -46,6 +62,40 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _loadFarmingStats() async {
+    try {
+      // Get detection records
+      final detections = await _diseaseRecordsService.getDetections();
+      _totalScans = detections.length;
+      
+      // Count unique diseases detected (excluding healthy)
+      final uniqueDiseases = detections
+          .where((d) => !(d['disease_name'] as String).toLowerCase().contains('healthy'))
+          .map((d) => d['disease_name'])
+          .toSet()
+          .length;
+      _diseasesDetected = uniqueDiseases;
+      
+      // Calculate success rate (healthy detections vs total)
+      final healthyCount = detections
+          .where((d) => (d['disease_name'] as String).toLowerCase().contains('healthy'))
+          .length;
+      _successRate = _totalScans > 0 ? (healthyCount / _totalScans * 100) : 0.0;
+      
+      // Get order statistics
+      final orderCounts = await _ordersService.getOrderStatusCounts();
+      _productsPurchased = (orderCounts['completed'] ?? 0) + 
+                          (orderCounts['to_review'] ?? 0) +
+                          (orderCounts['to_receive'] ?? 0) +
+                          (orderCounts['to_ship'] ?? 0);
+      
+      // Get total spent
+      _totalSpent = await _ordersService.getTotalSpent();
+    } catch (e) {
+      print('Error loading farming stats: $e');
     }
   }
 
@@ -281,16 +331,22 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Your Farming Journey',
-            style: subHeadingStyle,
+          Row(
+            children: [
+              const Text(
+                'Your Farming Journey',
+                style: subHeadingStyle,
+              ),
+              const Spacer(),
+              Icon(Icons.agriculture, color: primaryColor.withOpacity(0.5), size: 24),
+            ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: _buildStatCard(
-                  '47',
+                  _totalScans.toString(),
                   'Scans Completed',
                   Icons.camera_alt,
                   Colors.blue,
@@ -299,8 +355,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  '12',
-                  'Diseases Detected',
+                  _diseasesDetected.toString(),
+                  'Diseases Found',
                   Icons.bug_report,
                   Colors.orange,
                 ),
@@ -312,8 +368,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             children: [
               Expanded(
                 child: _buildStatCard(
-                  '8',
-                  'Products Purchased',
+                  _productsPurchased.toString(),
+                  'Orders Placed',
                   Icons.shopping_bag,
                   Colors.green,
                 ),
@@ -321,13 +377,59 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               const SizedBox(width: 12),
               Expanded(
                 child: _buildStatCard(
-                  '95%',
-                  'Success Rate',
-                  Icons.trending_up,
-                  Colors.purple,
+                  '${_successRate.toStringAsFixed(0)}%',
+                  'Healthy Plants',
+                  Icons.eco,
+                  Colors.teal,
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [primaryColor.withOpacity(0.1), accentColor.withOpacity(0.1)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.account_balance_wallet, color: primaryColor, size: 28),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Total Invested',
+                        style: captionStyle.copyWith(color: textDarkColor),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'RM ${_totalSpent.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(Icons.trending_up, color: Colors.green, size: 20),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -378,20 +480,32 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'Scan History',
-            'View your previous disease detections',
-            Icons.history,
+            'My Orders',
+            'Track and manage your orders',
+            Icons.shopping_bag,
             () {
-              // TODO: Navigate to scan history
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const OrdersScreen()),
+              );
             },
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'Purchase History',
-            'Track your marketplace orders',
-            Icons.receipt_long,
+            'Detection History',
+            'View your previous disease scans',
+            Icons.history,
             () {
-              // TODO: Navigate to purchase history
+              Navigator.pushNamed(context, '/detect-history');
+            },
+          ),
+          const Divider(height: 1),
+          _buildMenuItem(
+            'Cart',
+            'View items in your shopping cart',
+            Icons.shopping_cart,
+            () {
+              Navigator.pushNamed(context, '/cart');
             },
           ),
           const Divider(height: 1),

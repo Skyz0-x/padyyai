@@ -12,10 +12,13 @@ import 'screens/farmer_dashboard.dart';
 import 'screens/supplier_dashboard.dart';
 import 'screens/supplier_details_screen.dart';
 import 'screens/supplier_pending_screen.dart';
+import 'screens/supplier_orders_screen.dart';
 import 'screens/admin_dashboard.dart';
 import 'screens/cart_screen.dart';
 import 'screens/payment_screen.dart';
 import 'screens/chat_bot_screen.dart';
+import 'screens/orders_screen.dart';
+import 'screens/detect_history_screen.dart';
 import 'services/auth_service.dart';
 
 void main() async {
@@ -86,10 +89,13 @@ class PaddyAIApp extends StatelessWidget {
         '/supplier-dashboard': (context) => const RoleGuard(allowedRoles: ['supplier'], child: SupplierDashboard()),
         '/supplier-details': (context) => const RoleGuard(allowedRoles: ['supplier'], child: SupplierDetailsScreen()),
         '/supplier-pending': (context) => const RoleGuard(allowedRoles: ['supplier'], child: SupplierPendingScreen()),
+        '/supplier-orders': (context) => const RoleGuard(allowedRoles: ['supplier'], child: SupplierOrdersScreen()),
         '/admin-dashboard': (context) => const RoleGuard(allowedRoles: ['admin'], child: AdminDashboard()),
         '/cart': (context) => const RoleGuard(allowedRoles: ['farmer'], child: CartScreen()),
         '/payment': (context) => const RoleGuard(allowedRoles: ['farmer'], child: PaymentScreen()),
         '/chat': (context) => const RoleGuard(allowedRoles: ['farmer'], child: ChatBotScreen()),
+        '/orders': (context) => const RoleGuard(allowedRoles: ['farmer'], child: OrdersScreen()),
+        '/detect-history': (context) => const RoleGuard(allowedRoles: ['farmer'], child: DetectHistoryScreen()),
       },
       initialRoute: '/',
     );

@@ -479,6 +479,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () => Navigator.pushNamed(context, '/chat'),
+        backgroundColor: Colors.teal,
+        icon: const Icon(Icons.smart_toy, color: Colors.white),
+        label: const Text(
+          'Farming Tips',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
     );
   }
 
@@ -752,26 +761,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
             ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildActionCard(
-                'Farming Tips',
-                'Ask AI assistant',
-                Icons.chat_bubble_outline,
-                LinearGradient(
-                  colors: [Colors.teal.shade300, Colors.teal.shade500],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                () => Navigator.pushNamed(context, '/chat'),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(child: Container()), // Empty space for symmetry
           ],
         ),
       ],

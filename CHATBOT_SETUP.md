@@ -5,8 +5,14 @@ This guide will help you set up the AI-powered rice farming chatbot using Google
 ## Prerequisites
 
 - Supabase project already configured
-- Google AI Studio API key (provided: `AlzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM`)
-- Supabase CLI installed
+- Google AI Studio API key: `AIzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM`
+- Supabase CLI installed (or use Supabase Dashboard)
+
+## Important Notes
+
+✅ **API Key**: `AIzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM` (correct format - starts with AIza)
+
+✅ **Model**: Using `gemini-1.5-flash` for faster responses and better reliability.
 
 ## Step 1: Deploy the Edge Function
 
@@ -39,9 +45,19 @@ supabase link --project-ref zwkntyiujwglpibmftzf
 
 ### 1.4 Set the Google AI API Key as Secret
 
+**Option A: Using Supabase Dashboard (Recommended if CLI not installed)**
+
+1. Go to https://supabase.com/dashboard/project/zwkntyiujwglpibmftzf/settings/edge-functions
+2. Scroll down to "Secrets"
+3. Click "Add new secret"
+4. Name: `GOOGLE_AI_API_KEY`
+5. Value: `AIzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM`
+6. Click "Save"
+
+**Option B: Using Supabase CLI**
+
 ```powershell
-# Set the API key as a secret in Supabase
-supabase secrets set GOOGLE_AI_API_KEY=AlzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM
+supabase secrets set GOOGLE_AI_API_KEY=AIzaSyDoVYmdDUiYfNnO6gzDHvF0DSleX8qH_yM
 ```
 
 ### 1.5 Deploy the Edge Function
