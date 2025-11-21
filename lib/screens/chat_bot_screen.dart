@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import '../services/chat_service.dart';
 import '../utils/constants.dart';
 
@@ -280,14 +281,61 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    message.text,
-                    style: TextStyle(
-                      color: message.isUser ? Colors.white : textDarkColor,
-                      fontSize: 15,
-                      height: 1.4,
+                  if (message.isUser)
+                    Text(
+                      message.text,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 15,
+                        height: 1.4,
+                      ),
+                    )
+                  else
+                    MarkdownBody(
+                      data: message.text,
+                      styleSheet: MarkdownStyleSheet(
+                        p: TextStyle(
+                          color: message.isError ? Colors.red.shade900 : textDarkColor,
+                          fontSize: 15,
+                          height: 1.4,
+                        ),
+                        strong: TextStyle(
+                          color: message.isError ? Colors.red.shade900 : textDarkColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                        em: TextStyle(
+                          color: message.isError ? Colors.red.shade900 : textDarkColor,
+                          fontStyle: FontStyle.italic,
+                          fontSize: 15,
+                        ),
+                        listBullet: TextStyle(
+                          color: message.isError ? Colors.red.shade900 : textDarkColor,
+                          fontSize: 15,
+                        ),
+                        code: TextStyle(
+                          backgroundColor: Colors.grey.shade200,
+                          color: textDarkColor,
+                          fontSize: 14,
+                          fontFamily: 'monospace',
+                        ),
+                        h1: TextStyle(
+                          color: message.isError ? Colors.red.shade900 : textDarkColor,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        h2: TextStyle(
+                          color: message.isError ? Colors.red.shade900 : textDarkColor,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        h3: TextStyle(
+                          color: message.isError ? Colors.red.shade900 : textDarkColor,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
-                  ),
                   const SizedBox(height: 4),
                   Text(
                     _formatTime(message.timestamp),

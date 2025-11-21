@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/products_service.dart';
+import '../widgets/loading_screen.dart';
 import 'manage_products_screen.dart';
 
 class SupplierDashboard extends StatefulWidget {
@@ -68,25 +69,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return Scaffold(
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.green.shade600,
-                Colors.green.shade50,
-              ],
-            ),
-          ),
-          child: const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ),
-        ),
-      );
+      return const LoadingScreen();
     }
 
     return Scaffold(
