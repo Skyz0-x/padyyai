@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import '../services/orders_service.dart';
 import '../utils/constants.dart';
+import '../l10n/app_locale.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -131,7 +133,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       ),
                     ),
                     Text(
-                      'Track and manage your purchases',
+                      AppLocale.trackOrders.getString(context),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.white.withOpacity(0.8),
@@ -186,11 +188,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             indicatorSize: TabBarIndicatorSize.label,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             tabs: [
-              Tab(child: _buildTabLabel('All', null)),
-              Tab(child: _buildTabLabel('To Pay', _orderCounts['to_pay'])),
-              Tab(child: _buildTabLabel('To Ship', _orderCounts['to_ship'])),
-              Tab(child: _buildTabLabel('To Receive', _orderCounts['to_receive'])),
-              Tab(child: _buildTabLabel('To Review', _orderCounts['to_review'])),
+              Tab(child: _buildTabLabel(AppLocale.all.getString(context), null)),
+              Tab(child: _buildTabLabel(AppLocale.toPay.getString(context), _orderCounts['to_pay'])),
+              Tab(child: _buildTabLabel(AppLocale.toShip.getString(context), _orderCounts['to_ship'])),
+              Tab(child: _buildTabLabel(AppLocale.toReceive.getString(context), _orderCounts['to_receive'])),
+              Tab(child: _buildTabLabel(AppLocale.toReview.getString(context), _orderCounts['to_review'])),
             ],
           ),
         ],

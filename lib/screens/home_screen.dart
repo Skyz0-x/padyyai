@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import '../l10n/app_locale.dart';
 import '../config/supabase_config.dart';
 import '../utils/constants.dart';
 import '../services/weather_service.dart';
@@ -570,11 +572,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '$welcomeMessage, $userName! 👋',
+            '${AppLocale.welcome.getString(context)}, $userName! 👋',
             style: headingStyle.copyWith(fontSize: 24),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Ready to take care of your crops today?',
             style: bodyStyle,
           ),
@@ -685,8 +687,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Quick Actions',
+        Text(
+          AppLocale.quickActions.getString(context),
           style: subHeadingStyle,
         ),
         const SizedBox(height: 16),
@@ -694,7 +696,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             Expanded(
               child: _buildActionCard(
-                'Detect Disease',
+                AppLocale.detectDisease.getString(context),
                 'Scan your crops',
                 Icons.camera_alt,
                 accentGradient,
@@ -707,7 +709,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             const SizedBox(width: 12),
             Expanded(
               child: _buildActionCard(
-                'Marketplace',
+                AppLocale.marketplace.getString(context),
                 'Find supplies',
                 Icons.shopping_bag,
                 LinearGradient(
@@ -828,7 +830,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Detection Overview',
                 style: subHeadingStyle,
               ),
@@ -900,7 +902,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Featured for You',
           style: subHeadingStyle,
         ),
@@ -968,8 +970,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Recent Activity',
+        Text(
+          AppLocale.recentActivity.getString(context),
           style: subHeadingStyle,
         ),
         const SizedBox(height: 16),
@@ -1107,9 +1109,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             const SizedBox(height: 20),
             
             // Variety Selection
-            const Text(
+            Text(
               'Select Your Paddy Variety',
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -1230,9 +1232,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Planting Date',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
                       ),
@@ -1283,9 +1285,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Days Elapsed',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF757575),
                       fontSize: 12,
                     ),
@@ -1304,9 +1306,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  const Text(
+                  Text(
                     'Days Remaining',
-                    style: TextStyle(
+                    style: const TextStyle(
                       color: Color(0xFF757575),
                       fontSize: 12,
                     ),
@@ -1360,7 +1362,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Harvest: ${estimatedHarvestDaysMin}-${estimatedHarvestDaysMax} days',
+                'Harvest ${estimatedHarvestDaysMin}-${estimatedHarvestDaysMax} days',
                 style: const TextStyle(
                   color: Color(0xFF757575),
                   fontSize: 12,
@@ -1411,3 +1413,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 }
+
+
+

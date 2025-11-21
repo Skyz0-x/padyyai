@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import '../services/chat_service.dart';
 import '../utils/constants.dart';
+import '../l10n/app_locale.dart';
 
 class ChatBotScreen extends StatefulWidget {
   const ChatBotScreen({super.key});
@@ -18,21 +20,24 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   bool _isLoading = false;
 
   @override
-  void initState() {
-    super.initState();
-    _addWelcomeMessage();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // We call this here because `AppLocalizations.of(context)` is not available in `initState`.
+    if (_messages.isEmpty) {
+      _addWelcomeMessage();
+    }
   }
 
   void _addWelcomeMessage() {
     setState(() {
       _messages.add(ChatMessage(
-        text: "Hello! 👋 I'm your rice farming assistant. I can help you with:\n\n"
-            "🌾 Rice cultivation techniques\n"
-            "🐛 Pest and disease management\n"
-            "💧 Water and fertilizer management\n"
-            "🌱 Planting and harvesting tips\n"
-            "🌦️ Weather considerations\n\n"
-            "How can I help you today?",
+        text: "${AppLocale.welcome.getString(context)}\n\n"
+            "🌾 ${AppLocale.riceCultivation.getString(context)}\n"
+            "🐛 ${AppLocale.pestManagement.getString(context)}\n"
+            "💧 ${AppLocale.waterManagement.getString(context)}\n"
+            "🌱 ${AppLocale.plantingTips.getString(context)}\n"
+            "🌦️ ${AppLocale.weatherConsiderations.getString(context)}\n\n"
+            "${AppLocale.howCanIHelp.getString(context)}",
         isUser: false,
         timestamp: DateTime.now(),
       ));
@@ -124,13 +129,13 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
   void _clearChat() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear Chat'),
-        content: const Text('Are you sure you want to clear the conversation?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(AppLocale.clearChat.getString(context)),
+        content: Text(AppLocale.clearConversation.getString(context)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(AppLocale.cancel.getString(context)),
           ),
           ElevatedButton(
             onPressed: () {
@@ -138,10 +143,10 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
                 _messages.clear();
                 _addWelcomeMessage();
               });
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Clear'),
+            child: Text(AppLocale.clear.getString(context)),
           ),
         ],
       ),
@@ -200,17 +205,17 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Rice Farming Assistant',
-                  style: TextStyle(
+                Text(
+                  AppLocale.riceFarmingAssistant.getString(context),
+                  style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const Text(
-                  'Get expert farming advice',
-                  style: TextStyle(fontSize: 14, color: Colors.white70),
+                Text(
+                  AppLocale.expertAdvice.getString(context),
+                  style: const TextStyle(fontSize: 14, color: Colors.white70),
                 ),
               ],
             ),
@@ -218,7 +223,7 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
           IconButton(
             onPressed: _clearChat,
             icon: const Icon(Icons.delete_outline, color: Colors.white),
-            tooltip: 'Clear chat',
+            tooltip: AppLocale.clearChat.getString(context),
           ),
         ],
       ),

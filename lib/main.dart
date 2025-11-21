@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'config/supabase_config.dart';
 import 'utils/constants.dart';
@@ -21,6 +22,7 @@ import 'screens/chat_bot_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/detect_history_screen.dart';
 import 'services/auth_service.dart';
+import 'l10n/app_locale.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,17 +35,44 @@ void main() async {
     debugPrint("Supabase initialization failed: $e");
   }
   
+  // Initialize FlutterLocalization
+  final localization = FlutterLocalization.instance;
+  await localization.ensureInitialized();
+  
   runApp(const PaddyAIApp());
 }
 
-class PaddyAIApp extends StatelessWidget {
+class PaddyAIApp extends StatefulWidget {
   const PaddyAIApp({super.key});
+
+  @override
+  State<PaddyAIApp> createState() => _PaddyAIAppState();
+}
+
+class _PaddyAIAppState extends State<PaddyAIApp> {
+  final FlutterLocalization _localization = FlutterLocalization.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _localization.init(
+      mapLocales: AppLocale.LOCALES,
+      initLanguageCode: 'en',
+    );
+    _localization.onTranslatedLanguage = _onTranslatedLanguage;
+  }
+
+  void _onTranslatedLanguage(Locale? locale) {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: appName,
+      title: 'PaddyAI',
       debugShowCheckedModeBanner: false,
+      supportedLocales: _localization.supportedLocales,
+      localizationsDelegates: _localization.localizationsDelegates,
       theme: ThemeData(
         primarySwatch: Colors.green,
         primaryColor: primaryColor,

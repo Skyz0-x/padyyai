@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import '../l10n/app_locale.dart';
 import '../utils/constants.dart';
 import '../services/products_service.dart';
 import '../services/cart_service.dart';
@@ -381,9 +383,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Marketplace',
-                      style: TextStyle(
+                    Text(
+                      AppLocale.marketplace.getString(context),
+                      style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,

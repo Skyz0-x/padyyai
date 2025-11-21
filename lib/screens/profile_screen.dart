@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import '../config/supabase_config.dart';
 import '../services/auth_service.dart';
 import '../services/disease_records_service.dart';
 import '../services/orders_service.dart';
 import '../utils/constants.dart';
+import '../l10n/app_locale.dart';
 import 'orders_screen.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -189,9 +192,9 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const Text(
-                    'Profile',
-                    style: TextStyle(
+                  Text(
+                    AppLocale.profile.getString(context),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -200,7 +203,10 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   const Spacer(),
                   IconButton(
                     onPressed: () {
-                      // TODO: Show settings
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                      );
                     },
                     icon: const Icon(
                       Icons.settings,
@@ -309,7 +315,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                 const Icon(Icons.calendar_today, color: primaryColor, size: 16),
                 const SizedBox(width: 8),
                 Text(
-                  'Member since ${_formatDate(_parseDate(currentUser?.createdAt))}',
+                  '${AppLocale.memberSince.getString(context)} ${_formatDate(_parseDate(currentUser?.createdAt))}',
                   style: const TextStyle(
                     color: primaryColor,
                     fontWeight: FontWeight.w600,
@@ -333,8 +339,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
         children: [
           Row(
             children: [
-              const Text(
-                'Your Farming Journey',
+              Text(
+                AppLocale.yourFarmingJourney.getString(context),
                 style: subHeadingStyle,
               ),
               const Spacer(),
@@ -347,7 +353,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               Expanded(
                 child: _buildStatCard(
                   _totalScans.toString(),
-                  'Scans Completed',
+                  AppLocale.scansCompleted.getString(context),
                   Icons.camera_alt,
                   Colors.blue,
                 ),
@@ -356,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               Expanded(
                 child: _buildStatCard(
                   _diseasesDetected.toString(),
-                  'Diseases Found',
+                  AppLocale.diseasesFound.getString(context),
                   Icons.bug_report,
                   Colors.orange,
                 ),
@@ -369,7 +375,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               Expanded(
                 child: _buildStatCard(
                   _productsPurchased.toString(),
-                  'Orders Placed',
+                  AppLocale.ordersPlaced.getString(context),
                   Icons.shopping_bag,
                   Colors.green,
                 ),
@@ -378,7 +384,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
               Expanded(
                 child: _buildStatCard(
                   '${_successRate.toStringAsFixed(0)}%',
-                  'Healthy Plants',
+                  AppLocale.healthyPlants.getString(context),
                   Icons.eco,
                   Colors.teal,
                 ),
@@ -405,7 +411,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Total Invested',
+                        AppLocale.totalInvested.getString(context),
                         style: captionStyle.copyWith(color: textDarkColor),
                       ),
                       const SizedBox(height: 4),
@@ -471,8 +477,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
       child: Column(
         children: [
           _buildMenuItem(
-            'Edit Profile',
-            'Update your personal information',
+            AppLocale.editProfile.getString(context),
+            AppLocale.updatePersonalInfo.getString(context),
             Icons.edit,
             () {
               // TODO: Navigate to edit profile
@@ -480,8 +486,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'My Orders',
-            'Track and manage your orders',
+            AppLocale.myOrders.getString(context),
+            AppLocale.trackOrders.getString(context),
             Icons.shopping_bag,
             () {
               Navigator.push(
@@ -492,8 +498,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'Detection History',
-            'View your previous disease scans',
+            AppLocale.detectionHistory.getString(context),
+            AppLocale.viewScans.getString(context),
             Icons.history,
             () {
               Navigator.pushNamed(context, '/detect-history');
@@ -501,8 +507,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'Cart',
-            'View items in your shopping cart',
+            AppLocale.cart.getString(context),
+            AppLocale.viewCart.getString(context),
             Icons.shopping_cart,
             () {
               Navigator.pushNamed(context, '/cart');
@@ -510,8 +516,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'Notifications',
-            'Manage your alert preferences',
+            AppLocale.notifications.getString(context),
+            AppLocale.manageAlerts.getString(context),
             Icons.notifications,
             () {
               // TODO: Navigate to notifications settings
@@ -519,8 +525,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'Help & Support',
-            'Get assistance and report issues',
+            AppLocale.helpSupport.getString(context),
+            AppLocale.getAssistance.getString(context),
             Icons.help_outline,
             () {
               // TODO: Navigate to help
@@ -528,8 +534,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'Privacy Policy',
-            'Read our privacy and data policies',
+            AppLocale.privacyPolicy.getString(context),
+            AppLocale.readPolicies.getString(context),
             Icons.privacy_tip,
             () {
               // TODO: Navigate to privacy policy
@@ -537,8 +543,20 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
           ),
           const Divider(height: 1),
           _buildMenuItem(
-            'Sign Out',
-            'Log out of your account',
+            AppLocale.settings.getString(context),
+            'Manage app settings and preferences',
+            Icons.settings,
+            () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+          ),
+          const Divider(height: 1),
+          _buildMenuItem(
+            AppLocale.signOut.getString(context),
+            AppLocale.logoutAccount.getString(context),
             Icons.logout,
             _showSignOutDialog,
             isDestructive: true,
@@ -628,8 +646,8 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
             style: captionStyle,
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Smart farming solutions for better crop health',
+          Text(
+            AppLocale.smartFarming.getString(context),
             style: captionStyle,
             textAlign: TextAlign.center,
           ),
@@ -642,7 +660,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   // TODO: Rate app
                 },
                 icon: const Icon(Icons.star_outline, size: 16),
-                label: const Text('Rate App'),
+                label: Text(AppLocale.rateApp.getString(context)),
                 style: TextButton.styleFrom(foregroundColor: primaryColor),
               ),
               const SizedBox(width: 16),
@@ -651,7 +669,7 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
                   // TODO: Share app
                 },
                 icon: const Icon(Icons.share, size: 16),
-                label: const Text('Share'),
+                label: Text(AppLocale.share.getString(context)),
                 style: TextButton.styleFrom(foregroundColor: primaryColor),
               ),
             ],
@@ -664,23 +682,23 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
   void _showSignOutDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out of your account?'),
+        title: Text(AppLocale.signOut.getString(context)),
+        content: Text(AppLocale.signOutConfirm.getString(context)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(AppLocale.cancel.getString(context)),
           ),
           ElevatedButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final authService = AuthService();
               await authService.signOut();
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Sign Out', style: TextStyle(color: Colors.white)),
+            child: Text(AppLocale.signOut.getString(context), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -713,3 +731,6 @@ class _ProfileScreenState extends State<ProfileScreen> with TickerProviderStateM
     }
   }
 }
+
+
+

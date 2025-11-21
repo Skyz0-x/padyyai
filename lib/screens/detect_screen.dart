@@ -9,6 +9,7 @@ import '../services/products_service.dart';
 import '../services/disease_records_service.dart';
 import '../config/supabase_config.dart';
 import 'marketplace_screen.dart';
+import '../l10n/app_localizations.dart';
 
 class DetectScreen extends StatefulWidget {
   const DetectScreen({super.key});
@@ -772,6 +773,8 @@ class _DetectScreenState extends State<DetectScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final localizations = AppLocalizations.of(context);
+    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
