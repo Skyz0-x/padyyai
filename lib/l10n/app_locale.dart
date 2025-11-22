@@ -123,6 +123,40 @@ class AppLocale {
   static const String findSupplies = 'find_supplies';
   static const String weatherAlert = 'weather_alert';
   static const String checkForecast = 'check_forecast';
+  static const String goodMorning = 'goodMorning';
+  static const String goodAfternoon = 'goodAfternoon';
+  static const String goodEvening = 'goodEvening';
+  static const String loadingWeather = 'loadingWeather';
+  static const String farmingTips = 'farmingTips';
+  static const String detectionOverview = 'detectionOverview';
+  static const String totalScans = 'totalScans';
+  static const String healthy = 'healthy';
+  static const String diseases = 'diseases';
+  static const String featuredForYou = 'featuredForYou';
+  static const String riceFarmingTips = 'riceFarmingTips';
+  static const String riceFarmingDesc = 'riceFarmingDesc';
+  static const String getFarmingTips = 'getFarmingTips';
+  static const String startScanningCrops = 'startScanningCrops';
+  static const String totalScansCompleted = 'totalScansCompleted';
+  static const String scansPerformed = 'scansPerformed';
+  static const String healthyCropsDetected = 'healthyCropsDetected';
+  static const String healthyScansRecorded = 'healthyScansRecorded';
+  static const String diseasesFoundTitle = 'diseasesFoundTitle';
+  static const String diseasesDetectedCheck = 'diseasesDetectedCheck';
+  static const String actionNeeded = 'actionNeeded';
+  static const String weatherUpdate = 'weatherUpdate';
+  static const String today = 'today';
+  static const String allTime = 'allTime';
+  static const String recent = 'recent';
+  static const String paddyGrowthMonitor = 'paddyGrowthMonitor';
+  static const String selectPaddyVariety = 'selectPaddyVariety';
+  static const String plantingDate = 'plantingDate';
+  static const String tapToSelectDate = 'tapToSelectDate';
+  static const String daysElapsed = 'daysElapsed';
+  static const String daysRemaining = 'daysRemaining';
+  static const String harvestDays = 'harvestDays';
+  static const String readyForHarvest = 'readyForHarvest';
+  static const String plantingDate1 = 'planting_date';
 
   static final List<MapLocale> LOCALES = [
     MapLocale(
@@ -260,6 +294,40 @@ mixin LocaleData {
     'find_supplies': 'Find supplies',
     'weather_alert': 'Weather Alert',
     'check_forecast': 'Check forecast',
+    'goodMorning': 'Good Morning',
+    'goodAfternoon': 'Good Afternoon',
+    'goodEvening': 'Good Evening',
+    'loadingWeather': 'Loading weather data...',
+    'farmingTips': 'Farming Tips',
+    'detectionOverview': 'Detection Overview',
+    'totalScans': 'Total Scans',
+    'healthy': 'Healthy',
+    'diseases': 'Diseases',
+    'featuredForYou': 'Featured for You',
+    'riceFarmingTips': '🌾 Rice Farming Tips',
+    'riceFarmingDesc': 'Learn the best practices for healthy rice cultivation and disease prevention.',
+    'getFarmingTips': 'Get Farming Tips',
+    'startScanningCrops': 'Start scanning your crops to track activity',
+    'totalScansCompleted': 'Total Scans Completed',
+    'scansPerformed': 'performed',
+    'healthyCropsDetected': 'Healthy Crops Detected',
+    'healthyScansRecorded': 'recorded',
+    'diseasesFoundTitle': 'Diseases Found',
+    'diseasesDetectedCheck': 'detected - Check history',
+    'actionNeeded': 'Action needed',
+    'weatherUpdate': 'Weather Update',
+    'today': 'Today',
+    'allTime': 'All time',
+    'recent': 'Recent',
+    'paddyGrowthMonitor': 'Paddy Growth Monitor',
+    'selectPaddyVariety': 'Select Your Paddy Variety',
+    'plantingDate': 'Planting Date',
+    'tapToSelectDate': 'Tap to select date',
+    'daysElapsed': 'Days Elapsed',
+    'daysRemaining': 'Days Remaining',
+    'harvestDays': 'days',
+    'readyForHarvest': 'Your paddy is ready for harvest! 🌾',
+    'planting_date': 'Planting Date',
   };
 
   static const Map<String, dynamic> ms = {
@@ -385,5 +453,39 @@ mixin LocaleData {
     'find_supplies': 'Cari bekalan',
     'weather_alert':  'Cuaca',
     'check_forecast': 'Semak ramalan',
+    'goodMorning': 'Selamat Pagi',
+    'goodAfternoon': 'Selamat Petang',
+    'goodEvening': 'Selamat Malam',
+    'loadingWeather': 'Memuatkan data cuaca...',
+    'farmingTips': 'Petua Pertanian',
+    'detectionOverview': 'Gambaran Pengesanan',
+    'totalScans': 'Jumlah Imbasan',
+    'healthy': 'Sihat',
+    'diseases': 'Penyakit',
+    'featuredForYou': 'Pilihan Untuk Anda',
+    'riceFarmingTips': '🌾 Petua Penanaman Padi',
+    'riceFarmingDesc': 'Pelajari amalan terbaik untuk penanaman padi yang sihat dan pencegahan penyakit.',
+    'getFarmingTips': 'Dapatkan Petua Pertanian',
+    'startScanningCrops': 'Mula mengimbas tanaman anda untuk menjejak aktiviti',
+    'totalScansCompleted': 'Jumlah Imbasan Selesai',
+    'scansPerformed': 'dilakukan',
+    'healthyCropsDetected': 'Tanaman Sihat Dikesan',
+    'healthyScansRecorded': 'direkodkan',
+    'diseasesFoundTitle': 'Penyakit Ditemui',
+    'diseasesDetectedCheck': 'dikesan - Semak sejarah',
+    'actionNeeded': 'Tindakan diperlukan',
+    'weatherUpdate': 'Kemas Kini Cuaca',
+    'today': 'Hari ini',
+    'allTime': 'Sepanjang masa',
+    'recent': 'Terkini',
+    'paddyGrowthMonitor': 'Pemantau Pertumbuhan Padi',
+    'selectPaddyVariety': 'Pilih Jenis Padi Anda',
+    'plantingDate': 'Tarikh Penanaman',
+    'tapToSelectDate': 'Ketik untuk pilih tarikh',
+    'daysElapsed': 'Hari Berlalu',
+    'daysRemaining': 'Hari Berbaki',
+    'harvestDays': 'hari',
+    'readyForHarvest': 'Padi anda sudah sedia untuk dituai! 🌾',
+    'planting_date': 'Tarikh Penanaman',
   };
 }

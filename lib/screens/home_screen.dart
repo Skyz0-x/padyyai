@@ -58,11 +58,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return user?.userMetadata?['full_name']?.split(' ')?.first ?? 'Farmer';
   }
 
-  String get welcomeMessage {
+  String getWelcomeMessage(BuildContext context) {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
+    if (hour < 12) return AppLocale.goodMorning.getString(context);
+    if (hour < 17) return AppLocale.goodAfternoon.getString(context);
+    return AppLocale.goodEvening.getString(context);
   }
 
   @override
@@ -485,9 +485,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         onPressed: () => Navigator.pushNamed(context, '/chat'),
         backgroundColor: Colors.teal,
         icon: const Icon(Icons.smart_toy, color: Colors.white),
-        label: const Text(
-          'Farming Tips',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        label: Text(
+          AppLocale.farmingTips.getString(context),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -612,7 +612,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'Loading weather data...',
+                    AppLocale.loadingWeather.getString(context),
                     style: captionStyle.copyWith(color: textDarkColor),
                   ),
                 ),
@@ -831,7 +831,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Detection Overview',
+                AppLocale.detectionOverview.getString(context),
                 style: subHeadingStyle,
               ),
               if (_loadingStats)
@@ -847,7 +847,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             children: [
               Expanded(
                 child: _buildStatItem(
-                  'Total Scans',
+                  AppLocale.totalScans.getString(context),
                   _loadingStats ? '...' : '${_farmingStats['total_detections'] ?? 0}',
                   Icons.image_search,
                   Colors.blue,
@@ -855,7 +855,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               Expanded(
                 child: _buildStatItem(
-                  'Healthy',
+                  AppLocale.healthy.getString(context),
                   _loadingStats ? '...' : '${_farmingStats['healthy_count'] ?? 0}',
                   Icons.check_circle,
                   Colors.green,
@@ -863,7 +863,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               Expanded(
                 child: _buildStatItem(
-                  'Diseases',
+                  AppLocale.diseases.getString(context),
                   _loadingStats ? '...' : '${_farmingStats['disease_count'] ?? 0}',
                   Icons.warning,
                   Colors.red,
@@ -903,7 +903,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Featured for You',
+          AppLocale.featuredForYou.getString(context),
           style: subHeadingStyle,
         ),
         const SizedBox(height: 16),
@@ -928,18 +928,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '🌾 Rice Farming Tips',
-                        style: TextStyle(
+                      Text(
+                        AppLocale.riceFarmingTips.getString(context),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      const Text(
-                        'Learn the best practices for healthy rice cultivation and disease prevention.',
-                        style: TextStyle(
+                      Text(
+                        AppLocale.riceFarmingDesc.getString(context),
+                        style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 14,
                         ),
@@ -953,7 +953,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           backgroundColor: Colors.white,
                           foregroundColor: primaryColor,
                         ),
-                        child: const Text('Get Farming Tips'),
+                        child: Text(AppLocale.getFarmingTips.getString(context)),
                       ),
                     ],
                   ),
@@ -1013,7 +1013,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Start scanning your crops to track activity',
+                        AppLocale.startScanningCrops.getString(context),
                         style: captionStyle,
                         textAlign: TextAlign.center,
                       ),
@@ -1024,41 +1024,41 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   children: [
                     if (totalDetections > 0)
                       _buildActivityItem(
-                        'Total Scans Completed',
-                        '$totalDetections scan${totalDetections > 1 ? 's' : ''} performed',
+                        AppLocale.totalScansCompleted.getString(context),
+                        '$totalDetections ${totalDetections > 1 ? AppLocale.scansPerformed.getString(context) : AppLocale.scansPerformed.getString(context)}',
                         Icons.camera_alt,
                         Colors.blue,
-                        'All time',
+                        AppLocale.allTime.getString(context),
                       ),
                     if (totalDetections > 0 && (healthyCount > 0 || diseaseCount > 0))
                       const Divider(),
                     if (healthyCount > 0)
                       _buildActivityItem(
-                        'Healthy Crops Detected',
-                        '$healthyCount healthy scan${healthyCount > 1 ? 's' : ''} recorded',
+                        AppLocale.healthyCropsDetected.getString(context),
+                        '$healthyCount ${healthyCount > 1 ? AppLocale.healthyScansRecorded.getString(context) : AppLocale.healthyScansRecorded.getString(context)}',
                         Icons.check_circle,
                         Colors.green,
-                        'Recent',
+                        AppLocale.recent.getString(context),
                       ),
                     if (healthyCount > 0 && diseaseCount > 0)
                       const Divider(),
                     if (diseaseCount > 0)
                       _buildActivityItem(
-                        'Diseases Found',
-                        '$diseaseCount disease${diseaseCount > 1 ? 's' : ''} detected - Check history',
+                        AppLocale.diseasesFoundTitle.getString(context),
+                        '$diseaseCount ${diseaseCount > 1 ? AppLocale.diseasesDetectedCheck.getString(context) : AppLocale.diseasesDetectedCheck.getString(context)}',
                         Icons.warning,
                         Colors.orange,
-                        'Action needed',
+                        AppLocale.actionNeeded.getString(context),
                       ),
                     if (_weatherData != null)
                       const Divider(),
                     if (_weatherData != null)
                       _buildActivityItem(
-                        'Weather Update',
+                        AppLocale.weatherUpdate.getString(context),
                         'Temperature: ${_weatherData!['temperature']?.round() ?? '--'}°C, Humidity: ${_weatherData!['humidity']?.round() ?? '--'}%',
                         Icons.cloud,
                         Colors.blue,
-                        'Today',
+                        AppLocale.today.getString(context),
                       ),
                   ],
                 ),
@@ -1152,10 +1152,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Paddy Growth Monitor',
-                    style: TextStyle(
+                    AppLocale.paddyGrowthMonitor.getString(context),
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -1168,7 +1168,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             
             // Variety Selection
             Text(
-              'Select Your Paddy Variety',
+              AppLocale.selectPaddyVariety.getString(context),
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 14,
@@ -1291,7 +1291,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Planting Date',
+                      '${AppLocale.plantingDate1.getString(context)}',
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
