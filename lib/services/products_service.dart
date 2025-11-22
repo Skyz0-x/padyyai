@@ -63,6 +63,7 @@ class ProductsService {
     required String supplierId,
     String? imageUrl,
     List<String>? diseases,
+    List<String>? benefits,
     bool inStock = true,
   }) async {
     try {
@@ -76,6 +77,7 @@ class ProductsService {
         'supplier_id': supplierId,
         'image_url': imageUrl,
         'diseases': diseases,
+        'benefits': benefits,
         'in_stock': inStock,
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
@@ -143,6 +145,7 @@ class ProductsService {
     String? category,
     String? imageUrl,
     List<String>? diseases,
+    List<String>? benefits,
     bool? inStock,
   }) async {
     try {
@@ -158,6 +161,7 @@ class ProductsService {
       if (category != null) updateData['category'] = category;
       if (imageUrl != null) updateData['image_url'] = imageUrl;
       if (diseases != null) updateData['diseases'] = diseases;
+      if (benefits != null) updateData['benefits'] = benefits;
       if (inStock != null) updateData['in_stock'] = inStock;
 
       final response = await _client
@@ -263,6 +267,139 @@ class ProductsService {
     } catch (e) {
       print('❌ Error getting products for disease: $e');
       return [];
+    }
+  }
+
+  // Update product benefits
+  Future<Map<String, dynamic>> updateProductBenefits({
+    required String productId,
+    required List<String> benefits,
+  }) async {
+    try {
+      print('📝 Updating benefits for product: $productId');
+      
+      final response = await _client
+          .from('products')
+          .update({
+            'benefits': benefits,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', productId)
+          .select()
+          .single();
+
+      print('✅ Benefits updated successfully');
+      return {
+        'success': true,
+        'product': response,
+        'message': 'Product benefits updated successfully',
+      };
+    } catch (e) {
+      print('❌ Error updating benefits: $e');
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  // Add a single benefit to product
+  Future<Map<String, dynamic>> addProductBenefit({
+    required String productId,
+    required String benefit,
+  }) async {
+    try {
+      print('➕ Adding benefit to product: $productId');
+      
+      // First get current benefits
+      final product = await _client
+          .from('products')
+          .select('benefits')
+          .eq('id', productId)
+          .single();
+
+      List<String> currentBenefits = [];
+      if (product['benefits'] != null) {
+        currentBenefits = List<String>.from(product['benefits']);
+      }
+
+      // Add new benefit if not already present
+      if (!currentBenefits.contains(benefit)) {
+        currentBenefits.add(benefit);
+      }
+
+      // Update with new benefits list
+      final response = await _client
+          .from('products')
+          .update({
+            'benefits': currentBenefits,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', productId)
+          .select()
+          .single();
+
+      print('✅ Benefit added successfully');
+      return {
+        'success': true,
+        'product': response,
+        'message': 'Benefit added successfully',
+      };
+    } catch (e) {
+      print('❌ Error adding benefit: $e');
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
+    }
+  }
+
+  // Remove a benefit from product
+  Future<Map<String, dynamic>> removeProductBenefit({
+    required String productId,
+    required String benefit,
+  }) async {
+    try {
+      print('➖ Removing benefit from product: $productId');
+      
+      // First get current benefits
+      final product = await _client
+          .from('products')
+          .select('benefits')
+          .eq('id', productId)
+          .single();
+
+      List<String> currentBenefits = [];
+      if (product['benefits'] != null) {
+        currentBenefits = List<String>.from(product['benefits']);
+      }
+
+      // Remove the benefit
+      currentBenefits.remove(benefit);
+
+      // Update with new benefits list
+      final response = await _client
+          .from('products')
+          .update({
+            'benefits': currentBenefits,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('id', productId)
+          .select()
+          .single();
+
+      print('✅ Benefit removed successfully');
+      return {
+        'success': true,
+        'product': response,
+        'message': 'Benefit removed successfully',
+      };
+    } catch (e) {
+      print('❌ Error removing benefit: $e');
+      return {
+        'success': false,
+        'message': e.toString(),
+      };
     }
   }
 }

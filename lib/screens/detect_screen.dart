@@ -5,11 +5,12 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:image/image.dart' as img;
 import 'dart:io';
 import 'dart:math' as math;
+import 'package:flutter_localization/flutter_localization.dart';
 import '../services/products_service.dart';
 import '../services/disease_records_service.dart';
 import '../config/supabase_config.dart';
 import 'marketplace_screen.dart';
-import '../l10n/app_localizations.dart';
+import '../l10n/app_locale.dart';
 
 class DetectScreen extends StatefulWidget {
   const DetectScreen({super.key});
@@ -497,17 +498,32 @@ class _DetectScreenState extends State<DetectScreen> {
 
   String _getDiseaseDescription(String diseaseName) {
     final descriptions = {
-      'Brown Planthopper': 'Serious insect pest that feeds on rice plants by sucking plant juices, causing yellowing and stunting.',
-      'Brown Spot': 'Fungal disease caused by Bipolaris oryzae, appears as oval brown spots on leaves.',
-      'Healthy': 'The rice plant appears healthy with no visible signs of disease or pest damage.',
-      'Leaf Blast': 'Fungal disease caused by Magnaporthe oryzae, creates diamond-shaped lesions.',
-      'Leaf Scald': 'Caused by Monographella albescens, creates whitish lesions with reddish-brown borders.',
-      'Rice Leafroller': 'Larvae fold and roll rice leaves, feeding inside and reducing photosynthesis.',
-      'Rice Yellow Stem Borer': 'Larvae bore into rice stems, causing deadhearts and whiteheads.',
-      'Sheath Blight': 'Fungal disease caused by Rhizoctonia solani, creates irregular lesions on leaf sheaths.',
+      'Brown Planthopper': AppLocale.brownPlanthopperDesc.getString(context),
+      'Brown Spot': AppLocale.brownSpotDesc.getString(context),
+      'Healthy': AppLocale.healthyDesc.getString(context),
+      'Leaf Blast': AppLocale.leafBlastDesc.getString(context),
+      'Leaf Scald': AppLocale.leafScaldDesc.getString(context),
+      'Rice Leafroller': AppLocale.riceLeafrollerDesc.getString(context),
+      'Rice Yellow Stem Borer': AppLocale.riceYellowStemBorerDesc.getString(context),
+      'Sheath Blight': AppLocale.sheathBlightDesc.getString(context),
     };
     
     return descriptions[diseaseName] ?? 'AI has detected this condition in your rice plant.';
+  }
+
+  String _getLocalizedDiseaseName(String diseaseName) {
+    final names = {
+      'Brown Planthopper': AppLocale.brownPlanthopper.getString(context),
+      'Brown Spot': AppLocale.brownSpot.getString(context),
+      'Healthy': AppLocale.healthyPlant.getString(context),
+      'Leaf Blast': AppLocale.leafBlast.getString(context),
+      'Leaf Scald': AppLocale.leafScald.getString(context),
+      'Rice Leafroller': AppLocale.riceLeafroller.getString(context),
+      'Rice Yellow Stem Borer': AppLocale.riceYellowStemBorer.getString(context),
+      'Sheath Blight': AppLocale.sheathBlight.getString(context),
+    };
+    
+    return names[diseaseName] ?? diseaseName;
   }
 
   void _showProductDetails(Map<String, dynamic> product) {
@@ -667,7 +683,7 @@ class _DetectScreenState extends State<DetectScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Close'),
+              child: Text(AppLocale.close.getString(context)),
             ),
             if (product['in_stock'] ?? false)
               ElevatedButton(
@@ -696,7 +712,7 @@ class _DetectScreenState extends State<DetectScreen> {
             const Icon(Icons.check_circle, color: Colors.white),
             const SizedBox(width: 8),
             Expanded(
-              child: Text('${product['name']} added to cart!'),
+              child: Text('${product['name']} ${AppLocale.addedToCart.getString(context)}'),
             ),
           ],
         ),
@@ -704,7 +720,7 @@ class _DetectScreenState extends State<DetectScreen> {
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
         action: SnackBarAction(
-          label: 'VIEW CART',
+          label: AppLocale.viewCart.getString(context).toUpperCase(),
           textColor: Colors.white,
           onPressed: () {
             // TODO: Navigate to cart screen
@@ -726,12 +742,12 @@ class _DetectScreenState extends State<DetectScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Error'),
+          title: Text(AppLocale.error.getString(context)),
           content: Text(message),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
+              child: Text(AppLocale.ok.getString(context)),
             ),
           ],
         );
@@ -744,13 +760,13 @@ class _DetectScreenState extends State<DetectScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Select Image Source'),
+          title: Text(AppLocale.selectImageSource.getString(context)),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: const Text('Camera'),
+                title: Text(AppLocale.camera.getString(context)),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.camera);
@@ -758,7 +774,7 @@ class _DetectScreenState extends State<DetectScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: const Text('Gallery'),
+                title: Text(AppLocale.gallery.getString(context)),
                 onTap: () {
                   Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
@@ -773,8 +789,6 @@ class _DetectScreenState extends State<DetectScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final localizations = AppLocalizations.of(context);
-    
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -819,22 +833,22 @@ class _DetectScreenState extends State<DetectScreen> {
             children: [
               IconButton(
                 icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
               ),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'PaddyAI Detection',
-                      style: TextStyle(
+                    Text(
+                      AppLocale.paddyAIDetection.getString(context),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     Text(
-                      _isModelLoaded ? '🤖 AI Ready' : '⏳ Loading AI...',
+                      _isModelLoaded ? '🤖 ${AppLocale.aiReady.getString(context)}' : '⏳ ${AppLocale.loadingAIModel.getString(context)}',  
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
@@ -918,7 +932,7 @@ class _DetectScreenState extends State<DetectScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isModelLoaded ? 'AI Model Ready' : 'Loading AI Model...',
+                  _isModelLoaded ? AppLocale.aiModelReady.getString(context) : AppLocale.loadingAIModel.getString(context),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -927,8 +941,8 @@ class _DetectScreenState extends State<DetectScreen> {
                 const SizedBox(height: 4),
                 Text(
                   _isModelLoaded 
-                      ? 'Ready to analyze rice plant diseases'
-                      : 'Please wait while we prepare the AI...',
+                      ? AppLocale.readyToAnalyze.getString(context)
+                      : AppLocale.pleaseWaitAI.getString(context),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade600,
@@ -973,7 +987,7 @@ class _DetectScreenState extends State<DetectScreen> {
           child: ElevatedButton.icon(
             onPressed: _showImageSourceDialog,
             icon: const Icon(Icons.add_a_photo),
-            label: const Text('Select Image'),
+            label: Text(AppLocale.selectImage.getString(context)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue.shade600,
               foregroundColor: Colors.white,
@@ -1002,10 +1016,10 @@ class _DetectScreenState extends State<DetectScreen> {
                   )
                 : const Icon(Icons.analytics),
             label: Text(_isAnalyzing 
-                ? 'Analyzing...' 
+                ? AppLocale.analyzing.getString(context)
                 : !_isModelLoaded 
-                    ? 'Loading AI...'
-                    : 'Analyze with AI'),
+                    ? AppLocale.loadingAIModel.getString(context)
+                    : AppLocale.analyzeWithAI.getString(context)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade600,
               foregroundColor: Colors.white,
@@ -1027,41 +1041,43 @@ class _DetectScreenState extends State<DetectScreen> {
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.info, color: Colors.blue),
-              SizedBox(width: 8),
-              Text('About PaddyAI'),
+              const Icon(Icons.info, color: Colors.blue),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(AppLocale.aboutPaddyAI.getString(context)),
+              ),
             ],
           ),
-          content: const Column(
+          content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'PaddyAI uses advanced machine learning to detect rice plant diseases and pests.',
-                style: TextStyle(fontSize: 14, height: 1.4),
+                AppLocale.aboutPaddyAIDesc.getString(context),
+                style: const TextStyle(fontSize: 14, height: 1.4),
               ),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               Text(
-                'Features:',
-                style: TextStyle(fontWeight: FontWeight.bold),
+                AppLocale.features.getString(context),
+                style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              Text('• AI-powered disease detection'),
-              Text('• Treatment recommendations'),
-              Text('• Marketplace integration'),
-              Text('• Real-time analysis'),
-              SizedBox(height: 12),
+              Text(AppLocale.featureAIPowered.getString(context)),
+              Text(AppLocale.featureTreatment.getString(context)),
+              Text(AppLocale.featureMarketplace.getString(context)),
+              Text(AppLocale.featureRealTime.getString(context)),
+              const SizedBox(height: 12),
               Text(
-                'Simply take a photo of your rice plant and let our AI provide instant diagnosis and treatment suggestions!',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                AppLocale.aboutPaddyAIFooter.getString(context),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Got it!'),
+              child: Text(AppLocale.gotIt.getString(context)),
             ),
           ],
         );
@@ -1100,7 +1116,7 @@ class _DetectScreenState extends State<DetectScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              'No image selected',
+              AppLocale.noImageSelected.getString(context),
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey.shade700,
@@ -1109,7 +1125,7 @@ class _DetectScreenState extends State<DetectScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Take a photo or select from gallery\nto start AI analysis',
+              AppLocale.takePhotoOrSelect.getString(context),
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade500,
@@ -1135,7 +1151,7 @@ class _DetectScreenState extends State<DetectScreen> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    'Tip: Use clear, well-lit photos for best results',
+                    AppLocale.tipClearPhotos.getString(context),
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.blue.shade700,
@@ -1182,9 +1198,9 @@ class _DetectScreenState extends State<DetectScreen> {
                   size: 16,
                 ),
                 const SizedBox(width: 4),
-                const Text(
-                  'Image Ready',
-                  style: TextStyle(
+                Text(
+                  AppLocale.imageReady.getString(context),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
@@ -1243,9 +1259,9 @@ class _DetectScreenState extends State<DetectScreen> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                'AI Analysis Results',
-                style: TextStyle(
+              Text(
+                AppLocale.aiAnalysisResults.getString(context),
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -1284,7 +1300,7 @@ class _DetectScreenState extends State<DetectScreen> {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        _result!['disease'],
+                        _getLocalizedDiseaseName(_result!['disease']),
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -1382,7 +1398,7 @@ class _DetectScreenState extends State<DetectScreen> {
           child: OutlinedButton.icon(
             onPressed: () => _showAllProducts(_recommendedProducts),
             icon: const Icon(Icons.store, size: 18),
-            label: const Text('View All Products', style: TextStyle(fontSize: 13)),
+            label: Text(AppLocale.viewAllProducts.getString(context), style: const TextStyle(fontSize: 13)),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.green.shade700,
               side: BorderSide(color: Colors.green.shade300),
@@ -1455,7 +1471,7 @@ class _DetectScreenState extends State<DetectScreen> {
                   ],
                   Expanded(
                     child: Text(
-                      product['name'] ?? 'Unknown Product',
+                      product['name'] ?? AppLocale.unknownProduct.getString(context),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -1498,7 +1514,7 @@ class _DetectScreenState extends State<DetectScreen> {
               
               // Description
               Text(
-                product['description'] ?? 'No description available',
+                product['description'] ?? AppLocale.noDescriptionAvailable.getString(context),
                 style: const TextStyle(
                   fontSize: 11,
                   color: Colors.black54,
@@ -1532,7 +1548,7 @@ class _DetectScreenState extends State<DetectScreen> {
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      (product['in_stock'] ?? false) ? 'In Stock' : 'Out',
+                      (product['in_stock'] ?? false) ? AppLocale.inStock.getString(context) : AppLocale.out.getString(context),
                       style: TextStyle(
                         fontSize: 9,
                         color: (product['in_stock'] ?? false) ? Colors.green.shade700 : Colors.red.shade700,

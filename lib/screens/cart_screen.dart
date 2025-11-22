@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import '../l10n/app_locale.dart';
 import '../services/cart_service.dart';
 
 class CartScreen extends StatefulWidget {
@@ -36,7 +38,7 @@ class _CartScreenState extends State<CartScreen> {
     }
     
     final tax = subtotal * 0.0; // 0% tax
-    final shippingFee = subtotal > 1000 ? 0.0 : 50.0;
+    final shippingFee = 6.0; // Fixed shipping fee RM 6
     final total = subtotal + tax + shippingFee;
     
     setState(() {
@@ -56,7 +58,7 @@ class _CartScreenState extends State<CartScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to update quantity')),
+          SnackBar(content: Text(AppLocale.failedUpdateQuantity.getString(context))),
         );
       }
     }
@@ -66,16 +68,16 @@ class _CartScreenState extends State<CartScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Remove Item'),
-        content: Text('Remove $itemName from cart?'),
+        title: Text(AppLocale.removeItem.getString(context)),
+        content: Text('${AppLocale.remove.getString(context)} $itemName ${AppLocale.removeFromCart.getString(context)}'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppLocale.cancel.getString(context)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Remove', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocale.remove.getString(context), style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -87,7 +89,7 @@ class _CartScreenState extends State<CartScreen> {
         await _loadCartItems();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('$itemName removed from cart')),
+            SnackBar(content: Text('$itemName ${AppLocale.removedFromCart.getString(context)}')),
           );
         }
       }
@@ -98,16 +100,16 @@ class _CartScreenState extends State<CartScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Clear Cart'),
-        content: const Text('Remove all items from cart?'),
+        title: Text(AppLocale.clearCart.getString(context)),
+        content: Text(AppLocale.removeAllItems.getString(context)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+            child: Text(AppLocale.cancel.getString(context)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+            child: Text(AppLocale.clear.getString(context), style: const TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -119,7 +121,7 @@ class _CartScreenState extends State<CartScreen> {
         await _loadCartItems();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Cart cleared')),
+            SnackBar(content: Text(AppLocale.cartCleared.getString(context))),
           );
         }
       }
@@ -129,7 +131,7 @@ class _CartScreenState extends State<CartScreen> {
   void _proceedToCheckout() {
     if (_cartItems.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Your cart is empty')),
+        SnackBar(content: Text(AppLocale.yourCartEmpty.getString(context))),
       );
       return;
     }
@@ -197,21 +199,21 @@ class _CartScreenState extends State<CartScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Shopping Cart',
-                  style: TextStyle(
+                  AppLocale.shoppingCart.getString(context),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Review your items',
-                  style: TextStyle(
+                  AppLocale.reviewYourItems.getString(context),
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
                   ),
@@ -241,7 +243,7 @@ class _CartScreenState extends State<CartScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'Your cart is empty',
+            AppLocale.yourCartEmpty.getString(context),
             style: TextStyle(
               fontSize: 18,
               color: Colors.grey.shade600,
@@ -250,7 +252,7 @@ class _CartScreenState extends State<CartScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Add some products to get started',
+            AppLocale.addProductsToStart.getString(context),
             style: TextStyle(
               fontSize: 14,
               color: Colors.grey.shade500,
@@ -267,7 +269,7 @@ class _CartScreenState extends State<CartScreen> {
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
-            child: const Text('Continue Shopping'),
+            child: Text(AppLocale.continueShopping.getString(context)),
           ),
         ],
       ),
@@ -459,18 +461,18 @@ class _CartScreenState extends State<CartScreen> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          _buildSummaryRow('Subtotal', _subtotal),
+          _buildSummaryRow(AppLocale.subtotal.getString(context), _subtotal),
           const SizedBox(height: 8),
-          _buildSummaryRow('Tax', _tax),
+          _buildSummaryRow(AppLocale.tax.getString(context), _tax),
           const SizedBox(height: 8),
           _buildSummaryRow(
-            'Shipping Fee',
+            AppLocale.shippingFee.getString(context),
             _shippingFee,
             highlight: _shippingFee == 0,
-            highlightText: 'FREE',
+            highlightText: AppLocale.free.getString(context),
           ),
           const Divider(height: 24),
-          _buildSummaryRow('Total', _total, isTotal: true),
+          _buildSummaryRow(AppLocale.total.getString(context), _total, isTotal: true),
           const SizedBox(height: 16),
           SizedBox(
             width: double.infinity,
@@ -488,9 +490,9 @@ class _CartScreenState extends State<CartScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text(
-                    'Proceed to Checkout',
-                    style: TextStyle(
+                  Text(
+                    AppLocale.proceedToCheckout.getString(context),
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),

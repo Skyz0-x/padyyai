@@ -275,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } else {
         if (mounted) {
           setState(() {
-            _locationName = 'Location unavailable';
+            _locationName = '${AppLocale.locationUnavailable.getString(context)}';
             _loadingWeather = false;
           });
         }
@@ -284,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       print('Error loading weather: $e');
       if (mounted) {
         setState(() {
-          _locationName = 'Weather unavailable';
+          _locationName = '${AppLocale.weatherUnavailable1.getString(context)}';
           _loadingWeather = false;
         });
       }
@@ -292,7 +292,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
   
   String _getWeatherCondition() {
-    if (_weatherData == null) return 'Perfect farming weather today';
+    if (_weatherData == null) return AppLocale.perfectWeatherToday.getString(context);
     
     final current = _weatherData!['current'];
     final temp = current['temperature_2m']?.toDouble() ?? 0.0;
@@ -302,25 +302,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Weather codes from Open-Meteo API
     if (weatherCode == 0) {
       if (temp >= 25 && temp <= 32 && humidity >= 40 && humidity <= 70) {
-        return 'Perfect farming weather today';
+        return AppLocale.perfectWeatherToday.getString(context);
       } else if (temp > 32) {
-        return 'Hot and sunny - ensure irrigation';
+        return AppLocale.hotSunnyIrrigation.getString(context);
       } else {
-        return 'Clear skies - great for field work';
+        return AppLocale.clearSkiesFieldWork.getString(context);
       }
     } else if (weatherCode <= 3) {
-      return 'Partly cloudy - good conditions';
+      return AppLocale.partlyCloudyGood.getString(context);
     } else if (weatherCode <= 67) {
-      return 'Rainy conditions - monitor fields';
+      return AppLocale.rainyMonitorFields.getString(context);
     } else if (weatherCode >= 71) {
-      return 'Poor weather - postpone field work';
+      return AppLocale.poorWeatherPostpone.getString(context);
     }
     
-    return 'Check conditions before field work';
+    return AppLocale.checkConditions.getString(context);
   }
   
   String _getWeatherDetails() {
-    if (_weatherData == null) return 'Loading weather data...';
+    if (_weatherData == null) return AppLocale.loadingWeather.getString(context);
     
     final current = _weatherData!['current'];
     final temp = current['temperature_2m']?.toDouble() ?? 0.0;
@@ -329,20 +329,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     
     String humidityLevel;
     if (humidity < 40) {
-      humidityLevel = 'Low humidity';
+      humidityLevel = AppLocale.lowHumidity.getString(context);
     } else if (humidity <= 70) {
-      humidityLevel = 'Moderate humidity';
+      humidityLevel = AppLocale.moderateHumidity.getString(context);
     } else {
-      humidityLevel = 'High humidity';
+      humidityLevel = AppLocale.highHumidity.getString(context);
     }
     
     String windCondition;
     if (windSpeed < 10) {
-      windCondition = 'Calm winds';
+      windCondition = AppLocale.calmWinds.getString(context);
     } else if (windSpeed < 20) {
-      windCondition = 'Light breeze';
+      windCondition = AppLocale.lightBreeze.getString(context);
     } else {
-      windCondition = 'Windy';
+      windCondition = AppLocale.windy.getString(context);
     }
     
     return '${temp.toStringAsFixed(1)}°C • $humidityLevel • $windCondition';
@@ -1301,7 +1301,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Text(
                       plantingDate != null
                           ? '${plantingDate!.day}/${plantingDate!.month}/${plantingDate!.year}'
-                          : 'Tap to select date',
+                          : '${AppLocale.tapToSelectDate1.getString(context)}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -1344,7 +1344,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Days Elapsed',
+                    AppLocale.daysElapsed.getString(context),
                     style: const TextStyle(
                       color: Color(0xFF757575),
                       fontSize: 12,
@@ -1352,7 +1352,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '$daysElapsed days',
+                    '$daysElapsed ${AppLocale.days.getString(context)}',
                     style: const TextStyle(
                       color: Color(0xFF2E7D32),
                       fontSize: 24,
@@ -1365,7 +1365,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'Days Remaining',
+                    AppLocale.daysRemaining.getString(context),
                     style: const TextStyle(
                       color: Color(0xFF757575),
                       fontSize: 12,
@@ -1373,7 +1373,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    daysRemaining > 0 ? '$daysRemaining days' : 'Ready!',
+                    daysRemaining > 0 
+                        ? '$daysRemaining ${AppLocale.days.getString(context)}' 
+                        : AppLocale.ready.getString(context),
                     style: TextStyle(
                       color: daysRemaining > 0 
                           ? const Color(0xFFFF6F00) 
@@ -1420,7 +1422,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Harvest ${estimatedHarvestDaysMin}-${estimatedHarvestDaysMax} days',
+                '${AppLocale.harvest.getString(context)} ${estimatedHarvestDaysMin}-${estimatedHarvestDaysMax} ${AppLocale.days.getString(context)}',
                 style: const TextStyle(
                   color: Color(0xFF757575),
                   fontSize: 12,
@@ -1445,18 +1447,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 color: const Color(0xFF2E7D32).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: const Row(
+              child: Row(
                 children: [
-                  Icon(
+                  const Icon(
                     Icons.celebration,
                     color: Color(0xFF2E7D32),
                     size: 20,
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Your paddy is ready for harvest! 🌾',
-                      style: TextStyle(
+                      AppLocale.paddyReadyForHarvest.getString(context),
+                      style: const TextStyle(
                         color: Color(0xFF2E7D32),
                         fontWeight: FontWeight.w600,
                         fontSize: 14,

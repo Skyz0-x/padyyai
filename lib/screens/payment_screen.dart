@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import '../l10n/app_locale.dart';
 import '../services/cart_service.dart';
 
 class PaymentScreen extends StatefulWidget {
@@ -76,7 +78,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           _expiryController.text.isEmpty ||
           _cvvController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please fill in all card details')),
+          SnackBar(content: Text(AppLocale.fillAllCardDetails.getString(context))),
         );
         return;
       }
@@ -110,7 +112,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(result['message'] ?? 'Payment failed')),
+          SnackBar(content: Text(result['message'] ?? AppLocale.paymentFailed.getString(context))),
         );
       }
     }
@@ -138,9 +140,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Payment Successful!',
-              style: TextStyle(
+            Text(
+              AppLocale.paymentSuccessful.getString(context),
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
@@ -163,14 +165,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Your order has been placed successfully!',
+            Text(
+              AppLocale.orderPlacedSuccess.getString(context),
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 8),
             Text(
-              'You will receive a confirmation shortly.',
+              AppLocale.confirmationShortly.getString(context),
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
@@ -252,21 +254,21 @@ class _PaymentScreenState extends State<PaymentScreen> {
             icon: const Icon(Icons.arrow_back, color: Colors.white),
             onPressed: () => Navigator.pop(context),
           ),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Checkout',
-                  style: TextStyle(
+                  AppLocale.checkout.getString(context),
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 Text(
-                  'Secure Payment',
-                  style: TextStyle(
+                  AppLocale.securePayment.getString(context),
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
                   ),
@@ -285,7 +287,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 const Icon(Icons.shopping_bag, color: Colors.white, size: 16),
                 const SizedBox(width: 4),
                 Text(
-                  '$_itemCount ${_itemCount == 1 ? 'item' : 'items'}',
+                  '$_itemCount ${_itemCount == 1 ? AppLocale.item.getString(context) : AppLocale.items.getString(context)}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 12,
@@ -311,11 +313,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildSectionTitle('Shipping Information'),
+                  _buildSectionTitle(AppLocale.shippingInformation.getString(context)),
                   const SizedBox(height: 12),
                   _buildShippingForm(),
                   const SizedBox(height: 24),
-                  _buildSectionTitle('Payment Method'),
+                  _buildSectionTitle(AppLocale.paymentMethod.getString(context)),
                   const SizedBox(height: 12),
                   _buildPaymentMethodSelector(),
                   const SizedBox(height: 16),
@@ -323,7 +325,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   if (_selectedPaymentMethod == 'bank_transfer') _buildBankTransferInfo(),
                   if (_selectedPaymentMethod == 'cash_on_delivery') _buildCODInfo(),
                   const SizedBox(height: 24),
-                  _buildSectionTitle('Order Summary'),
+                  _buildSectionTitle(AppLocale.orderSummary.getString(context)),
                   const SizedBox(height: 12),
                   _buildOrderSummary(),
                 ],
@@ -356,14 +358,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
           children: [
             TextFormField(
               controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name',
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocale.fullName.getString(context),
+                prefixIcon: const Icon(Icons.person),
+                border: const OutlineInputBorder(),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your name';
+                  return AppLocale.pleaseEnterName.getString(context);
                 }
                 return null;
               },
@@ -371,15 +373,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Phone Number',
-                prefixIcon: Icon(Icons.phone),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocale.phoneNumber.getString(context),
+                prefixIcon: const Icon(Icons.phone),
+                border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.phone,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your phone number';
+                  return AppLocale.pleaseEnterPhone.getString(context);
                 }
                 return null;
               },
@@ -387,15 +389,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _addressController,
-              decoration: const InputDecoration(
-                labelText: 'Shipping Address',
-                prefixIcon: Icon(Icons.location_on),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocale.shippingAddress.getString(context),
+                prefixIcon: const Icon(Icons.location_on),
+                border: const OutlineInputBorder(),
               ),
               maxLines: 3,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your address';
+                  return AppLocale.pleaseEnterAddress.getString(context);
                 }
                 return null;
               },
@@ -403,10 +405,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _notesController,
-              decoration: const InputDecoration(
-                labelText: 'Order Notes (Optional)',
-                prefixIcon: Icon(Icons.note),
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocale.orderNotes.getString(context),
+                prefixIcon: const Icon(Icons.note),
+                border: const OutlineInputBorder(),
               ),
               maxLines: 2,
             ),
@@ -424,19 +426,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
         children: [
           _buildPaymentMethodTile(
             'card',
-            'Credit/Debit Card',
+            AppLocale.creditDebitCard.getString(context),
             Icons.credit_card,
           ),
           const Divider(height: 1),
           _buildPaymentMethodTile(
             'bank_transfer',
-            'Bank Transfer',
+            AppLocale.bankTransfer.getString(context),
             Icons.account_balance,
           ),
           const Divider(height: 1),
           _buildPaymentMethodTile(
             'cash_on_delivery',
-            'Cash on Delivery',
+            AppLocale.cashOnDelivery.getString(context),
             Icons.local_shipping,
           ),
         ],
@@ -484,7 +486,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Icon(Icons.lock, size: 16, color: Colors.grey.shade600),
                 const SizedBox(width: 4),
                 Text(
-                  'Secure Payment',
+                  AppLocale.securePayment.getString(context),
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade600,
@@ -495,11 +497,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: 16),
             TextFormField(
               controller: _cardNumberController,
-              decoration: const InputDecoration(
-                labelText: 'Card Number',
+              decoration: InputDecoration(
+                labelText: AppLocale.cardNumber.getString(context),
                 hintText: '1234 5678 9012 3456',
-                prefixIcon: Icon(Icons.credit_card),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.credit_card),
+                border: const OutlineInputBorder(),
               ),
               keyboardType: TextInputType.number,
               inputFormatters: [
@@ -511,11 +513,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(height: 12),
             TextFormField(
               controller: _cardHolderController,
-              decoration: const InputDecoration(
-                labelText: 'Card Holder Name',
+              decoration: InputDecoration(
+                labelText: AppLocale.cardHolderName.getString(context),
                 hintText: 'JOHN DOE',
-                prefixIcon: Icon(Icons.person),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.person),
+                border: const OutlineInputBorder(),
               ),
               textCapitalization: TextCapitalization.characters,
             ),
@@ -525,11 +527,11 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _expiryController,
-                    decoration: const InputDecoration(
-                      labelText: 'Expiry Date',
+                    decoration: InputDecoration(
+                      labelText: AppLocale.expiryDate.getString(context),
                       hintText: 'MM/YY',
-                      prefixIcon: Icon(Icons.calendar_today),
-                      border: OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.calendar_today),
+                      border: const OutlineInputBorder(),
                     ),
                     keyboardType: TextInputType.number,
                     inputFormatters: [
@@ -543,8 +545,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _cvvController,
-                    decoration: const InputDecoration(
-                      labelText: 'CVV',
+                    decoration: InputDecoration(
+                      labelText: AppLocale.cvv.getString(context),
                       hintText: '123',
                       prefixIcon: Icon(Icons.security),
                       border: OutlineInputBorder(),
@@ -579,7 +581,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  'Bank Transfer Details',
+                  AppLocale.bankTransferDetails.getString(context),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: Colors.blue.shade700,
@@ -588,13 +590,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            _buildBankDetail('Bank Name', 'PaddyAI Agriculture Bank'),
-            _buildBankDetail('Account Name', 'PaddyAI Marketplace'),
-            _buildBankDetail('Account Number', '1234-5678-9012'),
-            _buildBankDetail('Reference', 'Your Order Number'),
+            _buildBankDetail(AppLocale.bankName.getString(context), 'PaddyAI Agriculture Bank'),
+            _buildBankDetail(AppLocale.accountName.getString(context), 'PaddyAI Marketplace'),
+            _buildBankDetail(AppLocale.accountNumber.getString(context), '1234-5678-9012'),
+            _buildBankDetail(AppLocale.reference.getString(context), AppLocale.yourOrderNumber.getString(context)),
             const SizedBox(height: 8),
             Text(
-              'Please complete the transfer and send the receipt to support@paddyai.com',
+              AppLocale.transferReceipt.getString(context),
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.grey.shade600,
@@ -652,7 +654,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: Text(
-                'You will pay in cash when your order is delivered. Please keep the exact amount ready.',
+                AppLocale.codInfo.getString(context),
                 style: TextStyle(
                   fontSize: 13,
                   color: Colors.grey.shade700,
@@ -673,14 +675,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            _buildSummaryRow('Subtotal', _subtotal),
+            _buildSummaryRow(AppLocale.subtotal.getString(context), _subtotal),
             const SizedBox(height: 8),
-            _buildSummaryRow('Tax', _tax),
+            _buildSummaryRow(AppLocale.tax.getString(context), _tax),
             const SizedBox(height: 8),
-            _buildSummaryRow('Shipping Fee', _shippingFee, 
+            _buildSummaryRow(AppLocale.shippingFee.getString(context), _shippingFee, 
               highlight: _shippingFee == 0),
             const Divider(height: 24),
-            _buildSummaryRow('Total', _total, isTotal: true),
+            _buildSummaryRow(AppLocale.total.getString(context), _total, isTotal: true),
           ],
         ),
       ),
@@ -704,7 +706,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ),
         Text(
           highlight && amount == 0
-              ? 'FREE'
+              ? AppLocale.free.getString(context)
               : 'RM ${amount.toStringAsFixed(2)}',
           style: TextStyle(
             fontSize: isTotal ? 16 : 14,
@@ -761,7 +763,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     const Icon(Icons.payment),
                     const SizedBox(width: 8),
                     Text(
-                      'Pay RM ${_total.toStringAsFixed(2)}',
+                      '${AppLocale.pay.getString(context)} RM ${_total.toStringAsFixed(2)}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,

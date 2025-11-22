@@ -154,9 +154,166 @@ class AppLocale {
   static const String tapToSelectDate = 'tapToSelectDate';
   static const String daysElapsed = 'daysElapsed';
   static const String daysRemaining = 'daysRemaining';
+  static const String days = 'days';
+  static const String ready = 'ready';
+  static const String harvest = 'harvest';
+  static const String harvestDaysRange = 'harvestDaysRange';
   static const String harvestDays = 'harvestDays';
-  static const String readyForHarvest = 'readyForHarvest';
+  static const String paddyReadyForHarvest = 'paddyReadyForHarvest';
   static const String plantingDate1 = 'planting_date';
+  static const String locationUnavailable = 'location_unavailable';
+  static const String weatherUnavailable1 = 'weather_unavailable';
+  static const String perfectWeatherToday = 'perfectWeatherToday';
+  static const String hotSunnyIrrigation = 'hotSunnyIrrigation';
+  static const String clearSkiesFieldWork = 'clearSkiesFieldWork';
+  static const String partlyCloudyGood = 'partlyCloudyGood';
+  static const String rainyMonitorFields = 'rainyMonitorFields';
+  static const String poorWeatherPostpone = 'poorWeatherPostpone';
+  static const String checkConditions = 'checkConditions';
+  static const String lowHumidity = 'lowHumidity';
+  static const String moderateHumidity = 'moderateHumidity';
+  static const String highHumidity = 'highHumidity';
+  static const String calmWinds = 'calmWinds';
+  static const String lightBreeze = 'lightBreeze';
+  static const String windy = 'windy';
+  static const String tapToSelectDate1 = 'tap_to_select_date';
+  static const String askRiceFarming = 'ask_rice_farming';
+  
+  // Detect Screen
+  static const String paddyAIDetection = 'paddyAIDetection';
+  static const String loadingAIModel = 'loadingAIModel';
+  static const String selectImage = 'selectImage';
+  static const String analyzeWithAI = 'analyzeWithAI';
+  static const String selectImageSource = 'selectImageSource';
+  static const String camera = 'camera';
+  static const String gallery = 'gallery';
+  static const String noImageSelected = 'noImageSelected';
+  static const String takePhotoOrSelect = 'takePhotoOrSelect';
+  static const String tipClearPhotos = 'tipClearPhotos';
+  static const String imageReady = 'imageReady';
+  static const String aiAnalysisResults = 'aiAnalysisResults';
+  static const String recommendedProducts = 'recommendedProducts';
+  static const String treatmentProducts = 'treatmentProducts';
+  static const String viewAllProducts = 'viewAllProducts';
+  static const String effectiveAgainst = 'effectiveAgainst';
+  static const String close = 'close';
+  static const String addedToCart = 'addedToCart';
+  static const String ok = 'ok';
+  static const String aboutPaddyAI = 'aboutPaddyAI';
+  static const String aboutPaddyAIDesc = 'aboutPaddyAIDesc';
+  static const String features = 'features';
+  static const String featureAIPowered = 'featureAIPowered';
+  static const String featureTreatment = 'featureTreatment';
+  static const String featureMarketplace = 'featureMarketplace';
+  static const String featureRealTime = 'featureRealTime';
+  static const String aboutPaddyAIFooter = 'aboutPaddyAIFooter';
+  static const String gotIt = 'gotIt';
+  static const String readyToAnalyze = 'readyToAnalyze';
+  static const String pleaseWaitAI = 'pleaseWaitAI';
+  static const String unknownProduct = 'unknownProduct';
+  static const String noDescriptionAvailable = 'noDescriptionAvailable';
+  static const String out = 'out';
+  
+  // Marketplace Screen
+  static const String findProductsForFarm = 'findProductsForFarm';
+  static const String searchProducts = 'searchProducts';
+  static const String loadingProducts = 'loadingProducts';
+  static const String noProductsFound = 'noProductsFound';
+  static const String adjustSearchFilter = 'adjustSearchFilter';
+  static const String supplier = 'supplier';
+  static const String description = 'description';
+  static const String effectiveAgainstLabel = 'effectiveAgainstLabel';
+  static const String keyBenefits = 'keyBenefits';
+  static const String qualityAssured = 'qualityAssured';
+  static const String trustedByFarmers = 'trustedByFarmers';
+  static const String easyToUse = 'easyToUse';
+  static const String availableImmediate = 'availableImmediate';
+  static const String contactSupplierSoon = 'contactSupplierSoon';
+  static const String allProducts = 'allProducts';
+  static const String fungicides = 'fungicides';
+  static const String herbicides = 'herbicides';
+  static const String pesticides = 'pesticides';
+  static const String fertilizers = 'fertilizers';
+  static const String seeds = 'seeds';
+  static const String tools = 'tools';
+  static const String organic = 'organic';
+  
+  // Cart Screen
+  static const String shoppingCart = 'shoppingCart';
+  static const String reviewYourItems = 'reviewYourItems';
+  static const String yourCartEmpty = 'yourCartEmpty';
+  static const String addProductsToStart = 'addProductsToStart';
+  static const String removeItem = 'removeItem';
+  static const String removeFromCart = 'removeFromCart';
+  static const String remove = 'remove';
+  static const String removedFromCart = 'removedFromCart';
+  static const String clearCart = 'clearCart';
+  static const String removeAllItems = 'removeAllItems';
+  static const String cartCleared = 'cartCleared';
+  static const String failedUpdateQuantity = 'failedUpdateQuantity';
+  static const String subtotal = 'subtotal';
+  static const String tax = 'tax';
+  static const String shippingFee = 'shippingFee';
+  static const String free = 'free';
+  static const String proceedToCheckout = 'proceedToCheckout';
+  
+  // Payment Screen
+  static const String securePayment = 'securePayment';
+  static const String item = 'item';
+  static const String items = 'items';
+  static const String shippingInformation = 'shippingInformation';
+  static const String fullName = 'fullName';
+  static const String pleaseEnterName = 'pleaseEnterName';
+  static const String phoneNumber = 'phoneNumber';
+  static const String pleaseEnterPhone = 'pleaseEnterPhone';
+  static const String shippingAddress = 'shippingAddress';
+  static const String pleaseEnterAddress = 'pleaseEnterAddress';
+  static const String orderNotes = 'orderNotes';
+  static const String optional = 'optional';
+  static const String paymentMethod = 'paymentMethod';
+  static const String creditDebitCard = 'creditDebitCard';
+  static const String bankTransfer = 'bankTransfer';
+  static const String cashOnDelivery = 'cashOnDelivery';
+  static const String cardNumber = 'cardNumber';
+  static const String cardHolderName = 'cardHolderName';
+  static const String expiryDate = 'expiryDate';
+  static const String cvv = 'cvv';
+  static const String bankTransferDetails = 'bankTransferDetails';
+  static const String bankName = 'bankName';
+  static const String accountName = 'accountName';
+  static const String accountNumber = 'accountNumber';
+  static const String reference = 'reference';
+  static const String yourOrderNumber = 'yourOrderNumber';
+  static const String transferReceipt = 'transferReceipt';
+  static const String codInfo = 'codInfo';
+  static const String orderSummary = 'orderSummary';
+  static const String paymentSuccessful = 'paymentSuccessful';
+  static const String orderPlacedSuccess = 'orderPlacedSuccess';
+  static const String confirmationShortly = 'confirmationShortly';
+  static const String backToMarketplace = 'backToMarketplace';
+  static const String paymentFailed = 'paymentFailed';
+  static const String fillAllCardDetails = 'fillAllCardDetails';
+  static const String pay = 'pay';
+  
+  // Disease Names
+  static const String brownPlanthopper = 'brownPlanthopper';
+  static const String brownSpot = 'brownSpot';
+  static const String healthyPlant = 'healthyPlant';
+  static const String leafBlast = 'leafBlast';
+  static const String leafScald = 'leafScald';
+  static const String riceLeafroller = 'riceLeafroller';
+  static const String riceYellowStemBorer = 'riceYellowStemBorer';
+  static const String sheathBlight = 'sheathBlight';
+  
+  // Disease Descriptions
+  static const String brownPlanthopperDesc = 'brownPlanthopperDesc';
+  static const String brownSpotDesc = 'brownSpotDesc';
+  static const String healthyDesc = 'healthyDesc';
+  static const String leafBlastDesc = 'leafBlastDesc';
+  static const String leafScaldDesc = 'leafScaldDesc';
+  static const String riceLeafrollerDesc = 'riceLeafrollerDesc';
+  static const String riceYellowStemBorerDesc = 'riceYellowStemBorerDesc';
+  static const String sheathBlightDesc = 'sheathBlightDesc';
 
   static final List<MapLocale> LOCALES = [
     MapLocale(
@@ -325,9 +482,165 @@ mixin LocaleData {
     'tapToSelectDate': 'Tap to select date',
     'daysElapsed': 'Days Elapsed',
     'daysRemaining': 'Days Remaining',
-    'harvestDays': 'days',
-    'readyForHarvest': 'Your paddy is ready for harvest! 🌾',
+    'days': 'days',
+    'ready': 'ready',
+    'harvest': 'Harvest',
+    'harvestDays': 'harvestDays',
+    'paddyReadyForHarvest': 'Your paddy is ready for harvest! 🌾',
     'planting_date': 'Planting Date',
+    'location_unavailable': 'Location unavailable',
+    'weather_unavailable': 'Weather unavailable',
+    'perfectWeatherToday': 'Perfect farming weather today',
+    'hotSunnyIrrigation': 'Hot and sunny - ensure irrigation',
+    'clearSkiesFieldWork': 'Clear skies - great for field work',
+    'partlyCloudyGood': 'Partly cloudy - good conditions',
+    'rainyMonitorFields': 'Rainy conditions - monitor fields',
+    'poorWeatherPostpone': 'Poor weather - postpone field work',
+    'checkConditions': 'Check conditions before field work',
+    'lowHumidity': 'Low humidity',
+    'moderateHumidity': 'Moderate humidity',
+    'highHumidity': 'High humidity',
+    'calmWinds': 'Calm winds',
+    'lightBreeze': 'Light breeze',
+    'windy': 'Windy',
+    'tap_to_select_date': 'Tap to select date',
+    'ask_rice_farming': 'Ask about rice farming...',
+    
+    // Detect Screen
+    'paddyAIDetection': 'PaddyAI Detection',
+    'loadingAIModel': 'Loading AI Model...',
+    'selectImage': 'Select Image',
+    'analyzeWithAI': 'Analyze with AI',
+    'selectImageSource': 'Select Image Source',
+    'camera': 'Camera',
+    'gallery': 'Gallery',
+    'noImageSelected': 'No image selected',
+    'takePhotoOrSelect': 'Take a photo or select from gallery\nto start AI analysis',
+    'tipClearPhotos': 'Tip: Use clear, well-lit photos for best results',
+    'imageReady': 'Image Ready',
+    'aiAnalysisResults': 'AI Analysis Results',
+    'recommendedProducts': 'Recommended Products',
+    'treatmentProducts': 'Treatment Products',
+    'viewAllProducts': 'View All Products',
+    'effectiveAgainst': 'Effective Against:',
+    'close': 'Close',
+    'addedToCart': 'added to cart!',
+    'ok': 'OK',
+    'aboutPaddyAI': 'About PaddyAI',
+    'aboutPaddyAIDesc': 'PaddyAI uses advanced machine learning to detect rice plant diseases and pests.',
+    'features': 'Features:',
+    'featureAIPowered': '• AI-powered disease detection',
+    'featureTreatment': '• Treatment recommendations',
+    'featureMarketplace': '• Marketplace integration',
+    'featureRealTime': '• Real-time analysis',
+    'aboutPaddyAIFooter': 'Simply take a photo of your rice plant and let our AI provide instant diagnosis and treatment suggestions!',
+    'gotIt': 'Got it!',
+    'readyToAnalyze': 'Ready to analyze rice plant diseases',
+    'pleaseWaitAI': 'Please wait while we prepare the AI...',
+    'unknownProduct': 'Unknown Product',
+    'noDescriptionAvailable': 'No description available',
+    'out': 'Out',
+    
+    // Marketplace Screen
+    'findProductsForFarm': 'Find products for your farm',
+    'searchProducts': 'Search products...',
+    'loadingProducts': 'Loading products...',
+    'noProductsFound': 'No products found',
+    'adjustSearchFilter': 'Try adjusting your search or category filter',
+    'supplier': 'Supplier',
+    'description': 'Description',
+    'effectiveAgainstLabel': 'Effective Against',
+    'keyBenefits': 'Key Benefits',
+    'qualityAssured': 'Quality assured product',
+    'trustedByFarmers': 'Trusted by farmers',
+    'easyToUse': 'Easy to use and apply',
+    'availableImmediate': 'Available for immediate delivery',
+    'contactSupplierSoon': 'Contact supplier feature coming soon',
+    'allProducts': 'All Products',
+    'fungicides': 'Fungicides',
+    'herbicides': 'Herbicides',
+    'pesticides': 'Pesticides',
+    'fertilizers': 'Fertilizers',
+    'seeds': 'Seeds',
+    'tools': 'Tools',
+    'organic': 'Organic',
+    
+    // Cart Screen
+    'shoppingCart': 'Shopping Cart',
+    'reviewYourItems': 'Review your items',
+    'yourCartEmpty': 'Your cart is empty',
+    'addProductsToStart': 'Add some products to get started',
+    'removeItem': 'Remove Item',
+    'removeFromCart': 'from cart?',
+    'remove': 'Remove',
+    'removedFromCart': 'removed from cart',
+    'clearCart': 'Clear Cart',
+    'removeAllItems': 'Remove all items from cart?',
+    'cartCleared': 'Cart cleared',
+    'failedUpdateQuantity': 'Failed to update quantity',
+    'subtotal': 'Subtotal',
+    'tax': 'Tax',
+    'shippingFee': 'Shipping Fee',
+    'free': 'FREE',
+    'proceedToCheckout': 'Proceed to Checkout',
+    
+    // Payment Screen
+    'securePayment': 'Secure Payment',
+    'item': 'item',
+    'items': 'items',
+    'shippingInformation': 'Shipping Information',
+    'fullName': 'Full Name',
+    'pleaseEnterName': 'Please enter your name',
+    'phoneNumber': 'Phone Number',
+    'pleaseEnterPhone': 'Please enter your phone number',
+    'shippingAddress': 'Shipping Address',
+    'pleaseEnterAddress': 'Please enter your address',
+    'orderNotes': 'Order Notes (Optional)',
+    'optional': 'Optional',
+    'paymentMethod': 'Payment Method',
+    'creditDebitCard': 'Credit/Debit Card',
+    'bankTransfer': 'Bank Transfer',
+    'cashOnDelivery': 'Cash on Delivery',
+    'cardNumber': 'Card Number',
+    'cardHolderName': 'Card Holder Name',
+    'expiryDate': 'Expiry Date',
+    'cvv': 'CVV',
+    'bankTransferDetails': 'Bank Transfer Details',
+    'bankName': 'Bank Name',
+    'accountName': 'Account Name',
+    'accountNumber': 'Account Number',
+    'reference': 'Reference',
+    'yourOrderNumber': 'Your Order Number',
+    'transferReceipt': 'Please complete the transfer and send the receipt to support@paddyai.com',
+    'codInfo': 'You will pay in cash when your order is delivered. Please keep the exact amount ready.',
+    'orderSummary': 'Order Summary',
+    'paymentSuccessful': 'Payment Successful!',
+    'orderPlacedSuccess': 'Your order has been placed successfully!',
+    'confirmationShortly': 'You will receive a confirmation shortly.',
+    'backToMarketplace': 'Back to Marketplace',
+    'paymentFailed': 'Payment failed',
+    'fillAllCardDetails': 'Please fill in all card details',
+    'pay': 'Pay',
+    
+    // Disease Names
+    'brownPlanthopper': 'Brown Planthopper',
+    'brownSpot': 'Brown Spot',
+    'healthyPlant': 'Healthy',
+    'leafBlast': 'Leaf Blast',
+    'leafScald': 'Leaf Scald',
+    'riceLeafroller': 'Rice Leafroller',
+    'riceYellowStemBorer': 'Rice Yellow Stem Borer',
+    'sheathBlight': 'Sheath Blight',
+    
+    // Disease Descriptions
+    'brownPlanthopperDesc': 'Serious insect pest that feeds on rice plants by sucking plant juices, causing yellowing and stunting.',
+    'brownSpotDesc': 'Fungal disease caused by Bipolaris oryzae, appears as oval brown spots on leaves.',
+    'healthyDesc': 'The rice plant appears healthy with no visible signs of disease or pest damage.',
+    'leafBlastDesc': 'Fungal disease caused by Magnaporthe oryzae, creates diamond-shaped lesions.',
+    'leafScaldDesc': 'Caused by Monographella albescens, creates whitish lesions with reddish-brown borders.',
+    'riceLeafrollerDesc': 'Larvae fold and roll rice leaves, feeding inside and reducing photosynthesis.',
+    'riceYellowStemBorerDesc': 'Larvae bore into rice stems, causing deadhearts and whiteheads.',
+    'sheathBlightDesc': 'Fungal disease caused by Rhizoctonia solani, creates irregular lesions on leaf sheaths.',
   };
 
   static const Map<String, dynamic> ms = {
@@ -383,7 +696,7 @@ mixin LocaleData {
     'cancel': 'Batal',
     'yes': 'Ya',
     'no': 'Tidak',
-    'riceFarmingAssistant': 'Pembantu Pertanian Padi',
+    'riceFarmingAssistant': 'Pembantu Pertanian',
     'expertAdvice': 'Dapatkan nasihat pertanian pakar',
     'clearChat': 'Kosongkan Sembang',
     'clearConversation': 'Adakah anda pasti mahu mengosongkan perbualan?',
@@ -459,7 +772,7 @@ mixin LocaleData {
     'loadingWeather': 'Memuatkan data cuaca...',
     'farmingTips': 'Petua Pertanian',
     'detectionOverview': 'Gambaran Pengesanan',
-    'totalScans': 'Jumlah Imbasan',
+    'totalScans': 'Imbasan',
     'healthy': 'Sihat',
     'diseases': 'Penyakit',
     'featuredForYou': 'Pilihan Untuk Anda',
@@ -484,8 +797,164 @@ mixin LocaleData {
     'tapToSelectDate': 'Ketik untuk pilih tarikh',
     'daysElapsed': 'Hari Berlalu',
     'daysRemaining': 'Hari Berbaki',
+    'days': 'hari',
+    'ready': 'sedia',
+    'harvest': 'Menuai',
     'harvestDays': 'hari',
-    'readyForHarvest': 'Padi anda sudah sedia untuk dituai! 🌾',
+    'paddyReadyForHarvest': 'Padi anda sudah sedia untuk dituai! 🌾',
     'planting_date': 'Tarikh Penanaman',
+    'location_unavailable': 'Lokasi tidak tersedia',
+    'weather_unavailable': 'Cuaca tidak tersedia',
+    'perfectWeatherToday': 'Cuaca sempurna untuk pertanian hari ini',
+    'hotSunnyIrrigation': 'Panas dan cerah - pastikan pengairan',
+    'clearSkiesFieldWork': 'Langit cerah - sesuai untuk kerja ladang',
+    'partlyCloudyGood': 'Sebahagian mendung - keadaan baik',
+    'rainyMonitorFields': 'Keadaan hujan - pantau ladang',
+    'poorWeatherPostpone': 'Cuaca buruk - tangguhkan kerja ladang',
+    'checkConditions': 'Semak keadaan sebelum kerja ladang',
+    'lowHumidity': 'Kelembapan rendah',
+    'moderateHumidity': 'Kelembapan sederhana',
+    'highHumidity': 'Kelembapan tinggi',
+    'calmWinds': 'Angin tenang',
+    'lightBreeze': 'Angin sepoi-sepoi',
+    'windy': 'Berangin',
+    'tap_to_select_date': 'Ketik untuk memilih tarikh',
+    'ask_rice_farming': 'Bertanya tentang penanaman padi...',
+    
+    // Detect Screen
+    'paddyAIDetection': 'Pengesanan PaddyAI',
+    'loadingAIModel': 'Memuatkan model AI...',
+    'selectImage': 'Pilih Gambar',
+    'analyzeWithAI': 'Analisis AI',
+    'selectImageSource': 'Pilih Sumber Gambar',
+    'camera': 'Kamera',
+    'gallery': 'Galeri',
+    'noImageSelected': 'Tiada gambar dipilih',
+    'takePhotoOrSelect': 'Ambil gambar atau pilih dari galeri\nuntuk memulakan analisis AI',
+    'tipClearPhotos': 'Petua: Gunakan foto yang jelas dan terang',
+    'imageReady': 'Gambar Sedia',
+    'aiAnalysisResults': 'Keputusan Analisis AI',
+    'recommendedProducts': 'Produk Disyorkan',
+    'treatmentProducts': 'Produk Rawatan',
+    'viewAllProducts': 'Lihat Semua Produk',
+    'effectiveAgainst': 'Berkesan Terhadap:',
+    'close': 'Tutup',
+    'addedToCart': 'ditambah ke troli!',
+    'ok': 'OK',
+    'aboutPaddyAI': 'Tentang PaddyAI',
+    'aboutPaddyAIDesc': 'PaddyAI menggunakan pembelajaran mesin termaju untuk mengesan penyakit dan perosak tanaman padi.',
+    'features': 'Ciri-ciri:',
+    'featureAIPowered': '• Pengesanan penyakit dikuasakan AI',
+    'featureTreatment': '• Cadangan rawatan',
+    'featureMarketplace': '• Integrasi pasaran',
+    'featureRealTime': '• Analisis masa nyata',
+    'aboutPaddyAIFooter': 'Cukup ambil gambar tanaman padi anda dan biarkan AI kami memberikan diagnosis segera dan cadangan rawatan!',
+    'gotIt': 'Faham',
+    'readyToAnalyze': 'Bersedia untuk menganalisis penyakit tanaman padi',
+    'pleaseWaitAI': 'Sila tunggu semasa kami menyediakan AI...',
+    'unknownProduct': 'Produk Tidak Diketahui',
+    'noDescriptionAvailable': 'Tiada keterangan tersedia',
+    'out': 'Habis',
+    
+    // Marketplace Screen
+    'findProductsForFarm': 'Cari produk untuk ladang anda',
+    'searchProducts': 'Cari produk...',
+    'loadingProducts': 'Memuatkan produk...',
+    'noProductsFound': 'Tiada produk dijumpai',
+    'adjustSearchFilter': 'Cuba laraskan carian atau penapis kategori anda',
+    'supplier': 'Pembekal',
+    'description': 'Keterangan',
+    'effectiveAgainstLabel': 'Berkesan Terhadap',
+    'keyBenefits': 'Faedah Utama',
+    'qualityAssured': 'Produk terjamin kualiti',
+    'trustedByFarmers': 'Dipercayai oleh petani',
+    'easyToUse': 'Mudah digunakan dan diaplikasikan',
+    'availableImmediate': 'Tersedia untuk penghantaran segera',
+    'contactSupplierSoon': 'Ciri hubungi pembekal akan datang',
+    'allProducts': 'Semua Produk',
+    'fungicides': 'Racun Kulat',
+    'herbicides': 'Racun Rumpai',
+    'pesticides': 'Racun Perosak',
+    'fertilizers': 'Baja',
+    'seeds': 'Benih',
+    'tools': 'Alat',
+    'organic': 'Organik',
+    
+    // Cart Screen
+    'shoppingCart': 'Troli Membeli-belah',
+    'reviewYourItems': 'Semak item anda',
+    'yourCartEmpty': 'Troli anda kosong',
+    'addProductsToStart': 'Tambah beberapa produk untuk bermula',
+    'removeItem': 'Buang Item',
+    'removeFromCart': 'dari troli?',
+    'remove': 'Buang',
+    'removedFromCart': 'dikeluarkan dari troli',
+    'clearCart': 'Kosongkan Troli',
+    'removeAllItems': 'Buang semua item dari troli?',
+    'cartCleared': 'Troli dikosongkan',
+    'failedUpdateQuantity': 'Gagal mengemas kini kuantiti',
+    'subtotal': 'Subjumlah',
+    'tax': 'Cukai',
+    'shippingFee': 'Cas Penghantaran',
+    'free': 'PERCUMA',
+    'proceedToCheckout': 'Teruskan ke Pembayaran',
+    
+    // Payment Screen
+    'securePayment': 'Pembayaran Selamat',
+    'item': 'item',
+    'items': 'item',
+    'shippingInformation': 'Maklumat Penghantaran',
+    'fullName': 'Nama Penuh',
+    'pleaseEnterName': 'Sila masukkan nama anda',
+    'phoneNumber': 'Nombor Telefon',
+    'pleaseEnterPhone': 'Sila masukkan nombor telefon anda',
+    'shippingAddress': 'Alamat Penghantaran',
+    'pleaseEnterAddress': 'Sila masukkan alamat anda',
+    'orderNotes': 'Nota Pesanan (Pilihan)',
+    'optional': 'Pilihan',
+    'paymentMethod': 'Kaedah Pembayaran',
+    'creditDebitCard': 'Kad Kredit/Debit',
+    'bankTransfer': 'Pindahan Bank',
+    'cashOnDelivery': 'Bayar Semasa Penghantaran',
+    'cardNumber': 'Nombor Kad',
+    'cardHolderName': 'Nama Pemegang Kad',
+    'expiryDate': 'Tarikh Luput',
+    'cvv': 'CVV',
+    'bankTransferDetails': 'Butiran Pindahan Bank',
+    'bankName': 'Nama Bank',
+    'accountName': 'Nama Akaun',
+    'accountNumber': 'Nombor Akaun',
+    'reference': 'Rujukan',
+    'yourOrderNumber': 'Nombor Pesanan Anda',
+    'transferReceipt': 'Sila lengkapkan pindahan dan hantar resit ke support@paddyai.com',
+    'codInfo': 'Anda akan membayar secara tunai semasa pesanan dihantar. Sila sediakan jumlah yang tepat.',
+    'orderSummary': 'Ringkasan Pesanan',
+    'paymentSuccessful': 'Pembayaran Berjaya!',
+    'orderPlacedSuccess': 'Pesanan anda telah dibuat dengan jayanya!',
+    'confirmationShortly': 'Anda akan menerima pengesahan tidak lama lagi.',
+    'backToMarketplace': 'Kembali ke Pasaran',
+    'paymentFailed': 'Pembayaran gagal',
+    'fillAllCardDetails': 'Sila isi semua butiran kad',
+    'pay': 'Bayar',
+    
+    // Disease Names
+    'brownPlanthopper': 'Bena Perang',
+    'brownSpot': 'Bintik Perang',
+    'healthyPlant': 'Tiada Penyakit',
+    'leafBlast': 'Karah Daun',
+    'leafScald': 'Lekur Daun',
+    'riceLeafroller': 'Ulat Penggulung Daun',
+    'riceYellowStemBorer': 'Ulat Batang Kuning',
+    'sheathBlight': 'Hawar Seludang',
+    
+    // Disease Descriptions
+    'brownPlanthopperDesc': 'Perosak serangga serius yang memakan pokok padi dengan menghisap jus tumbuhan, menyebabkan penguningan dan terbantut.',
+    'brownSpotDesc': 'Penyakit kulat yang disebabkan oleh Bipolaris oryzae, muncul sebagai bintik coklat bujur pada daun.',
+    'healthyDesc': 'Pokok padi kelihatan sihat tanpa tanda-tanda penyakit atau kerosakan perosak yang ketara.',
+    'leafBlastDesc': 'Penyakit kulat yang disebabkan oleh Magnaporthe oryzae, mencipta lesi berbentuk berlian.',
+    'leafScaldDesc': 'Disebabkan oleh Monographella albescens, mencipta lesi keputihan dengan sempadan coklat kemerahan.',
+    'riceLeafrollerDesc': 'Larva melipat dan menggulung daun padi, makan di dalamnya dan mengurangkan fotosintesis.',
+    'riceYellowStemBorerDesc': 'Larva mengorek batang padi, menyebabkan deadhearts dan whiteheads.',
+    'sheathBlightDesc': 'Penyakit kulat yang disebabkan oleh Rhizoctonia solani, mencipta lesi tidak teratur pada sarung daun.',
   };
 }

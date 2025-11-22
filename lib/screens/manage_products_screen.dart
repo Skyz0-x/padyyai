@@ -525,13 +525,15 @@ class _ProductDialogState extends State<ProductDialog> {
 
   String _selectedCategory = 'Fungicides';
   List<String> _selectedDiseases = [];
+  List<String> _benefits = [];
+  final TextEditingController _benefitController = TextEditingController();
   File? _selectedImage;
   String? _currentImageUrl;
   bool _isLoading = false;
 
   final List<String> _categories = [
     'Fungicides',
-    'Bactericides',
+    'Herbicides',
     'Fertilizers',
     'Seeds',
     'Tools',
@@ -565,6 +567,10 @@ class _ProductDialogState extends State<ProductDialog> {
         _selectedDiseases =
             List<String>.from(widget.product!['diseases']);
       }
+      
+      if (widget.product!['benefits'] != null) {
+        _benefits = List<String>.from(widget.product!['benefits']);
+      }
     }
   }
 
@@ -573,6 +579,7 @@ class _ProductDialogState extends State<ProductDialog> {
     _nameController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();
+    _benefitController.dispose();
     super.dispose();
   }
 
@@ -650,6 +657,8 @@ class _ProductDialogState extends State<ProductDialog> {
                   _buildCategoryDropdown(),
                   const SizedBox(height: 16),
                   _buildDiseaseSelection(),
+                  const SizedBox(height: 16),
+                  _buildBenefitsSection(),
                   const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -869,6 +878,84 @@ class _ProductDialogState extends State<ProductDialog> {
     );
   }
 
+  Widget _buildBenefitsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Key Benefits',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        
+        // Display existing benefits
+        if (_benefits.isNotEmpty) ...[
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _benefits.map((benefit) {
+              return Chip(
+                label: Text(
+                  benefit,
+                  style: const TextStyle(fontSize: 12),
+                ),
+                backgroundColor: Colors.green.shade50,
+                deleteIcon: const Icon(Icons.close, size: 16),
+                onDeleted: () {
+                  setState(() {
+                    _benefits.remove(benefit);
+                  });
+                },
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 8),
+        ],
+        
+        // Add new benefit
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: _benefitController,
+                decoration: InputDecoration(
+                  hintText: 'Add a benefit (e.g., Fast-acting formula)',
+                  border: const OutlineInputBorder(),
+                  filled: true,
+                  fillColor: backgroundColor,
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                ),
+                onSubmitted: (value) => _addBenefit(),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: _addBenefit,
+              icon: const Icon(Icons.add_circle),
+              color: primaryColor,
+              tooltip: 'Add Benefit',
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Add key benefits or features of this product',
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        ),
+      ],
+    );
+  }
+
+  void _addBenefit() {
+    final benefit = _benefitController.text.trim();
+    if (benefit.isNotEmpty && !_benefits.contains(benefit)) {
+      setState(() {
+        _benefits.add(benefit);
+        _benefitController.clear();
+      });
+    }
+  }
+
   Future<void> _saveProduct() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -898,6 +985,7 @@ class _ProductDialogState extends State<ProductDialog> {
           supplierId: currentUserId,
           imageUrl: imageUrl,
           diseases: _selectedDiseases.isNotEmpty ? _selectedDiseases : null,
+          benefits: _benefits.isNotEmpty ? _benefits : null,
         );
       } else {
         result = await _productsService.updateProduct(
@@ -908,6 +996,7 @@ class _ProductDialogState extends State<ProductDialog> {
           category: _selectedCategory,
           imageUrl: imageUrl,
           diseases: _selectedDiseases.isNotEmpty ? _selectedDiseases : null,
+          benefits: _benefits.isNotEmpty ? _benefits : null,
         );
       }
 

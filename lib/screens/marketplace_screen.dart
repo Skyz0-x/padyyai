@@ -29,161 +29,27 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   bool _isLoading = true;
   int _cartItemCount = 0;
   
-  final List<String> categories = [
+  List<String> get categories => [
+    AppLocale.allProducts.getString(context),
+    AppLocale.fungicides.getString(context),
+    AppLocale.herbicides.getString(context),
+    AppLocale.pesticides.getString(context),
+    AppLocale.fertilizers.getString(context),
+    AppLocale.seeds.getString(context),
+    AppLocale.tools.getString(context),
+    AppLocale.organic.getString(context),
+  ];
+  
+  // English category names for database filtering
+  final List<String> _categoriesEnglish = [
     'All Products',
     'Fungicides',
-    'Bactericides',
+    'Herbicides',
     'Pesticides',
     'Fertilizers',
     'Seeds',
     'Tools',
     'Organic',
-  ];
-
-  final List<Map<String, dynamic>> products = [
-    {
-      'name': 'Copper Fungicide Pro',
-      'supplier': 'AgriChem Solutions',
-      'price': 'RM 45.00',
-      'rating': 4.8,
-      'reviews': 156,
-      'category': 'Fungicides',
-      'description': 'Effective against brown spot and blast disease',
-      'image': 'https://placehold.co/300x300/4CAF50/FFFFFF?text=Fungicide',
-      'inStock': true,
-      'discount': 15,
-      'diseases': ['brown_spot', 'blast'],
-    },
-    {
-      'name': 'Tricyclazole 75% WP',
-      'supplier': 'CropCare Industries',
-      'price': 'RM 68.00',
-      'rating': 4.9,
-      'reviews': 203,
-      'category': 'Fungicides',
-      'description': 'Systemic fungicide specialized for blast disease control',
-      'image': 'https://placehold.co/300x300/388E3C/FFFFFF?text=Tricyclazole',
-      'inStock': true,
-      'discount': 20,
-      'diseases': ['blast'],
-    },
-    {
-      'name': 'Mancozeb 75% WP',
-      'supplier': 'Farm Nutrients Ltd',
-      'price': 'RM 32.00',
-      'rating': 4.6,
-      'reviews': 89,
-      'category': 'Fungicides',
-      'description': 'Contact fungicide for brown spot and other fungal diseases',
-      'image': 'https://placehold.co/300x300/689F38/FFFFFF?text=Mancozeb',
-      'inStock': true,
-      'discount': 10,
-      'diseases': ['brown_spot'],
-    },
-    {
-      'name': 'Copper Hydroxide 77% WP',
-      'supplier': 'BacteriaShield Pro',
-      'price': 'RM 52.00',
-      'rating': 4.7,
-      'reviews': 124,
-      'category': 'Bactericides',
-      'description': 'Copper-based bactericide effective against bacterial leaf blight',
-      'image': 'https://placehold.co/300x300/2E7D32/FFFFFF?text=Cu+Hydroxide',
-      'inStock': true,
-      'discount': 5,
-      'diseases': ['bacterial_leaf_blight'],
-    },
-    {
-      'name': 'Streptomycin Sulfate 25% WP',
-      'supplier': 'AgriBiotics Co.',
-      'price': 'RM 68.00',
-      'rating': 4.8,
-      'reviews': 167,
-      'category': 'Bactericides',
-      'description': 'Antibiotic bactericide for bacterial diseases in rice',
-      'image': 'https://placehold.co/300x300/66BB6A/FFFFFF?text=Streptomycin',
-      'inStock': true,
-      'discount': 15,
-      'diseases': ['bacterial_leaf_blight'],
-    },
-    {
-      'name': 'Propiconazole 25% EC',
-      'supplier': 'Elite Crop Solutions',
-      'price': 'RM 85.00',
-      'rating': 4.9,
-      'reviews': 89,
-      'category': 'Fungicides',
-      'description': 'Premium systemic fungicide for severe blast infections',
-      'image': 'https://placehold.co/300x300/4CAF50/FFFFFF?text=Propiconazole',
-      'inStock': true,
-      'discount': 25,
-      'diseases': ['blast'],
-    },
-    {
-      'name': 'Organic Rice Seeds',
-      'supplier': 'Green Harvest Co.',
-      'price': 'RM 120.00',
-      'rating': 4.9,
-      'reviews': 203,
-      'category': 'Seeds',
-      'description': 'High-yield disease-resistant rice variety',
-      'image': 'https://placehold.co/300x300/8BC34A/FFFFFF?text=Seeds',
-      'inStock': true,
-      'discount': 0,
-      'diseases': [],
-    },
-    {
-      'name': 'NPK Balanced Fertilizer',
-      'supplier': 'Farm Nutrients Ltd',
-      'price': 'RM 35.00',
-      'rating': 4.6,
-      'reviews': 89,
-      'category': 'Fertilizers',
-      'description': 'Balanced nutrition for healthy crop growth',
-      'image': 'https://placehold.co/300x300/689F38/FFFFFF?text=Fertilizer',
-      'inStock': true,
-      'discount': 10,
-      'diseases': [],
-    },
-    {
-      'name': 'Smart Field Sprayer',
-      'supplier': 'TechFarm Equipment',
-      'price': 'RM 890.00',
-      'rating': 4.7,
-      'reviews': 45,
-      'category': 'Tools',
-      'description': 'Precision spraying for optimal coverage',
-      'image': 'https://placehold.co/300x300/2E7D32/FFFFFF?text=Sprayer',
-      'inStock': true,
-      'discount': 20,
-      'diseases': [],
-    },
-    {
-      'name': 'Organic Neem Oil',
-      'supplier': 'EcoFarm Solutions',
-      'price': 'RM 28.00',
-      'rating': 4.5,
-      'reviews': 67,
-      'category': 'Organic',
-      'description': 'Natural pest control and disease prevention',
-      'image': 'https://placehold.co/300x300/388E3C/FFFFFF?text=Neem+Oil',
-      'inStock': false,
-      'discount': 0,
-      'diseases': ['brown_spot'],
-    },
-    {
-      'name': 'Blast Shield Fungicide',
-      'supplier': 'CropCare Industries',
-      'price': 'RM 67.00',
-      'rating': 4.8,
-      'reviews': 134,
-      'category': 'Fungicides',
-      'description': 'Specialized treatment for blast disease',
-      'image': 'https://placehold.co/300x300/66BB6A/FFFFFF?text=Blast+Shield',
-      'inStock': true,
-      'discount': 25,
-      'diseases': ['blast'],
-    },
   ];
 
   @override
@@ -197,12 +63,12 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
     // If a disease filter is provided, search for it
     if (widget.diseaseFilter != null) {
       _searchController.text = widget.diseaseFilter!;
-      // Show filter for bactericides or fungicides based on disease
+      // Show filter for herbicides or fungicides based on disease
       if (widget.diseaseFilter!.toLowerCase().contains('bacterial')) {
-        _selectedCategory = categories.indexOf('Bactericides');
+        _selectedCategory = _categoriesEnglish.indexOf('Herbicides');
       } else if (widget.diseaseFilter!.toLowerCase().contains('blast') || 
                  widget.diseaseFilter!.toLowerCase().contains('brown_spot')) {
-        _selectedCategory = categories.indexOf('Fungicides');
+        _selectedCategory = _categoriesEnglish.indexOf('Fungicides');
       }
     }
   }
@@ -300,7 +166,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
 
   void _filterProducts() {
     final query = _searchController.text.toLowerCase();
-    final selectedCategory = categories[_selectedCategory];
+    final selectedCategoryEnglish = _categoriesEnglish[_selectedCategory];
     
     setState(() {
       _filteredProducts = _products.where((product) {
@@ -309,8 +175,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
             product['description']?.toLowerCase().contains(query) == true ||
             product['category']?.toLowerCase().contains(query) == true;
             
-        final matchesCategory = selectedCategory == 'All Products' ||
-            product['category'] == selectedCategory;
+        final matchesCategory = selectedCategoryEnglish == 'All Products' ||
+            product['category'] == selectedCategoryEnglish;
             
         return matchesSearch && matchesCategory;
       }).toList();
@@ -373,7 +239,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
           Row(
             children: [
               IconButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pushReplacementNamed(context, '/'),
                 icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -391,9 +257,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                         color: Colors.white,
                       ),
                     ),
-                    const Text(
-                      'Find products for your farm',
-                      style: TextStyle(
+                    Text(
+                      AppLocale.findProductsForFarm.getString(context),
+                      style: const TextStyle(
                         fontSize: 12,
                         color: Colors.white70,
                       ),
@@ -465,7 +331,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
         onChanged: (value) => setState(() {}),
         style: const TextStyle(color: Colors.white, fontSize: 14),
         decoration: InputDecoration(
-          hintText: 'Search products...',
+          hintText: AppLocale.searchProducts.getString(context),
           hintStyle: const TextStyle(color: Colors.white70, fontSize: 14),
           prefixIcon: const Icon(Icons.search, color: Colors.white, size: 20),
           suffixIcon: _searchController.text.isNotEmpty
@@ -489,13 +355,13 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
 
   Widget _buildContent() {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Loading products...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(AppLocale.loadingProducts.getString(context)),
           ],
         ),
       );
@@ -572,7 +438,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
             ),
             const SizedBox(height: 16),
             Text(
-              'No products found',
+              AppLocale.noProductsFound.getString(context),
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey[600],
@@ -581,7 +447,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
             ),
             const SizedBox(height: 8),
             Text(
-              'Try adjusting your search or category filter',
+              AppLocale.adjustSearchFilter.getString(context),
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey[500],
@@ -610,7 +476,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   Widget _buildProductCard(Map<String, dynamic> product) {
     // For now, show 'Supplier' as placeholder since we're not joining with users table
     // This can be enhanced later once the foreign key relationship is fixed
-    final supplierName = 'Supplier'; // Placeholder
+    final supplierName = AppLocale.supplier.getString(context); // Placeholder
     
     final price = product['price']?.toDouble() ?? 0.0;
     final imageUrl = product['image_url'];
@@ -670,7 +536,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          'In Stock',
+                          AppLocale.inStock.getString(context),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 10,
@@ -900,7 +766,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              inStock ? 'In Stock' : 'Out of Stock',
+                              inStock ? AppLocale.inStock.getString(context) : AppLocale.outOfStock.getString(context),
                               style: TextStyle(
                                 fontSize: 12,
                                 color: inStock ? Colors.green : Colors.red,
@@ -933,9 +799,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
-                          'Price',
-                          style: TextStyle(
+                        Text(
+                          AppLocale.price.getString(context),
+                          style: const TextStyle(
                             color: Colors.white,
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
@@ -956,9 +822,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                   const SizedBox(height: 24),
                   
                   // Description
-                  const Text(
-                    'Description',
-                    style: TextStyle(
+                  Text(
+                    AppLocale.description.getString(context),
+                    style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: textDarkColor,
@@ -978,9 +844,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                   
                   // Effective Against Diseases (if available)
                   if (product['diseases'] != null && (product['diseases'] as List).isNotEmpty) ...[
-                    const Text(
-                      'Effective Against',
-                      style: TextStyle(
+                    Text(
+                      AppLocale.effectiveAgainstLabel.getString(context),
+                      style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: textDarkColor,
@@ -1019,23 +885,37 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                     const SizedBox(height: 24),
                   ],
                   
-                  // Key Benefits
-                  const Text(
-                    'Key Benefits',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: textDarkColor,
+                  // Key Benefits - from database or default
+                  if (product['benefits'] != null && (product['benefits'] as List).isNotEmpty) ...[
+                    Text(
+                      AppLocale.keyBenefits.getString(context),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textDarkColor,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  _buildBenefitItem('✅ Quality assured product'),
-                  _buildBenefitItem('✅ Trusted by farmers'),
-                  _buildBenefitItem('✅ Easy to use and apply'),
-                  if (inStock)
-                    _buildBenefitItem('✅ Available for immediate delivery'),
-                  
-                  const SizedBox(height: 32),
+                    const SizedBox(height: 12),
+                    ...(product['benefits'] as List).map((benefit) => _buildBenefitItem('✅ $benefit')),
+                    const SizedBox(height: 32),
+                  ] else ...[
+                    // Default benefits if supplier hasn't provided any
+                    Text(
+                      AppLocale.keyBenefits.getString(context),
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: textDarkColor,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    _buildBenefitItem('✅ ${AppLocale.qualityAssured.getString(context)}'),
+                    _buildBenefitItem('✅ ${AppLocale.trustedByFarmers.getString(context)}'),
+                    _buildBenefitItem('✅ ${AppLocale.easyToUse.getString(context)}'),
+                    if (inStock)
+                      _buildBenefitItem('✅ ${AppLocale.availableImmediate.getString(context)}'),
+                    const SizedBox(height: 32),
+                  ],
                   
                   // Action buttons
                   Row(
@@ -1049,7 +929,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                           } : null,
                           icon: const Icon(Icons.shopping_cart, size: 20),
                           label: Text(
-                            inStock ? 'Add to Cart' : 'Out of Stock',
+                            inStock ? AppLocale.addToCart.getString(context) : AppLocale.outOfStock.getString(context),
                             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -1067,8 +947,8 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                       ElevatedButton(
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Contact supplier feature coming soon'),
+                            SnackBar(
+                              content: Text(AppLocale.contactSupplierSoon.getString(context)),
                               behavior: SnackBarBehavior.floating,
                             ),
                           );

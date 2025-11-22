@@ -339,26 +339,26 @@ class MainAppScreenState extends State<MainAppScreen> with TickerProviderStateMi
           child: ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             child: BottomNavigationBar(
-              items: const [
+              items: [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.home_outlined),
-                  activeIcon: Icon(Icons.home),
-                  label: 'Home',
+                  icon: const Icon(Icons.home_outlined),
+                  activeIcon: const Icon(Icons.home),
+                  label: AppLocale.home.getString(context),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.camera_alt_outlined),
-                  activeIcon: Icon(Icons.camera_alt),
-                  label: 'Detect',
+                  icon: const Icon(Icons.camera_alt_outlined),
+                  activeIcon: const Icon(Icons.camera_alt),
+                  label: AppLocale.detect.getString(context),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.shopping_bag_outlined),
-                  activeIcon: Icon(Icons.shopping_bag),
-                  label: 'Marketplace',
+                  icon: const Icon(Icons.shopping_bag_outlined),
+                  activeIcon: const Icon(Icons.shopping_bag),
+                  label: AppLocale.marketplace.getString(context),
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.person_outline),
-                  activeIcon: Icon(Icons.person),
-                  label: 'Profile',
+                  icon: const Icon(Icons.person_outline),
+                  activeIcon: const Icon(Icons.person),
+                  label: AppLocale.profile.getString(context),
                 ),
               ],
               currentIndex: _selectedIndex,

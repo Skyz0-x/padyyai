@@ -455,10 +455,10 @@ class _ChatBotScreenState extends State<ChatBotScreen> {
               ),
               child: TextField(
                 controller: _messageController,
-                decoration: const InputDecoration(
-                  hintText: 'Ask about rice farming...',
+                decoration: InputDecoration(
+                  hintText: AppLocale.typeMessage.getString(context),
                   border: InputBorder.none,
-                  hintStyle: TextStyle(color: textLightColor),
+                  hintStyle: const TextStyle(color: textLightColor),
                 ),
                 maxLines: null,
                 textCapitalization: TextCapitalization.sentences,
