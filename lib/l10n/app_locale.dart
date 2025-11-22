@@ -118,6 +118,11 @@ class AppLocale {
   static const String recentActivity = 'recentActivity';
   static const String noActivity = 'noActivity';
   static const String viewAll = 'viewAll';
+  static const String readyToTakeCare = 'readyToTakeCare';
+  static const String scanCrops = 'scan_crops';
+  static const String findSupplies = 'find_supplies';
+  static const String weatherAlert = 'weather_alert';
+  static const String checkForecast = 'check_forecast';
 
   static final List<MapLocale> LOCALES = [
     MapLocale(
@@ -159,8 +164,8 @@ mixin LocaleData {
     'updatePersonalInfo': 'Update your personal information',
     'myOrders': 'My Orders',
     'trackOrders': 'Track and manage your orders',
-    'detectionHistory': 'Detection History',
-    'viewScans': 'View your previous disease scans',
+    'detectionHistory': 'History',
+    'viewScans': 'Previous scans',
     'viewCart': 'View items in your shopping cart',
     'notifications': 'Notifications',
     'manageAlerts': 'Manage your alert preferences',
@@ -250,11 +255,16 @@ mixin LocaleData {
     'recentActivity': 'Recent Activity',
     'noActivity': 'No recent activity',
     'viewAll': 'View All',
+    'readyToTakeCare': 'Ready to take care of your crops today?',
+    'scan_crops': 'Scan your crops',
+    'find_supplies': 'Find supplies',
+    'weather_alert': 'Weather Alert',
+    'check_forecast': 'Check forecast',
   };
 
   static const Map<String, dynamic> ms = {
     'appName': 'PaddyAI',
-    'welcome': 'Helo! 👋 Saya pembantu penanaman padi anda.',
+    'welcome': 'Hai! 👋 Saya pembantu penanaman padi anda.',
     'riceCultivation': 'Teknik penanaman padi',
     'pestManagement': 'Pengurusan perosak dan penyakit',
     'waterManagement': 'Pengurusan air dan baja',
@@ -279,8 +289,8 @@ mixin LocaleData {
     'updatePersonalInfo': 'Kemas kini maklumat peribadi anda',
     'myOrders': 'Pesanan Saya',
     'trackOrders': 'Jejak dan urus pesanan anda',
-    'detectionHistory': 'Sejarah Pengesanan',
-    'viewScans': 'Lihat imbasan penyakit terdahulu anda',
+    'detectionHistory': 'Sejarah Imbasan',
+    'viewScans': 'Lihat imbasan anda',
     'viewCart': 'Lihat item dalam troli beli-belah anda',
     'notifications': 'Notifikasi',
     'manageAlerts': 'Urus keutamaan makluman anda',
@@ -370,5 +380,10 @@ mixin LocaleData {
     'recentActivity': 'Aktiviti Terkini',
     'noActivity': 'Tiada aktiviti terkini',
     'viewAll': 'Lihat Semua',
+    'readyToTakeCare': 'Bersedia untuk menjaga tanaman anda hari ini?',
+    'scan_crops': 'Imbas tanaman anda',
+    'find_supplies': 'Cari bekalan',
+    'weather_alert':  'Cuaca',
+    'check_forecast': 'Semak ramalan',
   };
 }
