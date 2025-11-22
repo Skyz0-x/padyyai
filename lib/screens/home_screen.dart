@@ -572,12 +572,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '${AppLocale.welcome.getString(context)}, $userName! 👋',
+            '${AppLocale.welcome.getString(context)}👋',
             style: headingStyle.copyWith(fontSize: 24),
           ),
           const SizedBox(height: 8),
           Text(
-            'Ready to take care of your crops today?',
+            AppLocale.readyToTakeCare.getString(context),
             style: bodyStyle,
           ),
           const SizedBox(height: 16),
@@ -697,7 +697,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Expanded(
               child: _buildActionCard(
                 AppLocale.detectDisease.getString(context),
-                'Scan your crops',
+                '${AppLocale.scanCrops.getString(context)}',
                 Icons.camera_alt,
                 accentGradient,
                 () => Navigator.push(
@@ -710,7 +710,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Expanded(
               child: _buildActionCard(
                 AppLocale.marketplace.getString(context),
-                'Find supplies',
+                '${AppLocale.findSupplies.getString(context)}',
                 Icons.shopping_bag,
                 LinearGradient(
                   colors: [Colors.orange.shade300, Colors.orange.shade500],
@@ -730,8 +730,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             Expanded(
               child: _buildActionCard(
-                'Detect History',
-                'View scan records',
+                '${AppLocale.detectionHistory.getString(context)}',
+                '${AppLocale.viewScans.getString(context)}',
                 Icons.history,
                 LinearGradient(
                   colors: [Colors.blue.shade300, Colors.blue.shade500],
@@ -749,8 +749,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             const SizedBox(width: 12),
             Expanded(
               child: _buildActionCard(
-                'Weather Alert',
-                'Check forecast',
+                '${AppLocale.weatherAlert.getString(context)}',
+                '${AppLocale.checkForecast.getString(context)}',
                 Icons.cloud,
                 LinearGradient(
                   colors: [Colors.purple.shade300, Colors.purple.shade500],
@@ -947,13 +947,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       const Spacer(),
                       ElevatedButton(
                         onPressed: () {
-                          // TODO: Navigate to tips
+                          Navigator.pushNamed(context, '/chat');
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: primaryColor,
                         ),
-                        child: const Text('Read More'),
+                        child: const Text('Get Farming Tips'),
                       ),
                     ],
                   ),
@@ -967,43 +967,101 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildRecentActivity() {
+    final totalDetections = _farmingStats['total_detections'] ?? 0;
+    final diseaseCount = _farmingStats['disease_count'] ?? 0;
+    final healthyCount = _farmingStats['healthy_count'] ?? 0;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          AppLocale.recentActivity.getString(context),
-          style: subHeadingStyle,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              AppLocale.recentActivity.getString(context),
+              style: subHeadingStyle,
+            ),
+            if (totalDetections > 0)
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/detect-history');
+                },
+                child: Text(
+                  AppLocale.viewAll.getString(context),
+                  style: const TextStyle(color: primaryColor),
+                ),
+              ),
+          ],
         ),
         const SizedBox(height: 16),
         Container(
           decoration: cardDecoration,
-          child: Column(
-            children: [
-              _buildActivityItem(
-                'Disease detected in Field A',
-                'Brown Spot found - Treatment recommended',
-                Icons.warning,
-                Colors.orange,
-                '2 hours ago',
-              ),
-              const Divider(),
-              _buildActivityItem(
-                'New product available',
-                'Organic Fungicide now in marketplace',
-                Icons.shopping_cart,
-                Colors.green,
-                '1 day ago',
-              ),
-              const Divider(),
-              _buildActivityItem(
-                'Weather alert',
-                'Heavy rain expected tomorrow',
-                Icons.cloud,
-                Colors.blue,
-                '2 days ago',
-              ),
-            ],
-          ),
+          child: totalDetections == 0
+              ? Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.history,
+                        size: 48,
+                        color: textLightColor.withOpacity(0.5),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        AppLocale.noActivity.getString(context),
+                        style: bodyStyle.copyWith(color: textLightColor),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Start scanning your crops to track activity',
+                        style: captionStyle,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
+                  children: [
+                    if (totalDetections > 0)
+                      _buildActivityItem(
+                        'Total Scans Completed',
+                        '$totalDetections scan${totalDetections > 1 ? 's' : ''} performed',
+                        Icons.camera_alt,
+                        Colors.blue,
+                        'All time',
+                      ),
+                    if (totalDetections > 0 && (healthyCount > 0 || diseaseCount > 0))
+                      const Divider(),
+                    if (healthyCount > 0)
+                      _buildActivityItem(
+                        'Healthy Crops Detected',
+                        '$healthyCount healthy scan${healthyCount > 1 ? 's' : ''} recorded',
+                        Icons.check_circle,
+                        Colors.green,
+                        'Recent',
+                      ),
+                    if (healthyCount > 0 && diseaseCount > 0)
+                      const Divider(),
+                    if (diseaseCount > 0)
+                      _buildActivityItem(
+                        'Diseases Found',
+                        '$diseaseCount disease${diseaseCount > 1 ? 's' : ''} detected - Check history',
+                        Icons.warning,
+                        Colors.orange,
+                        'Action needed',
+                      ),
+                    if (_weatherData != null)
+                      const Divider(),
+                    if (_weatherData != null)
+                      _buildActivityItem(
+                        'Weather Update',
+                        'Temperature: ${_weatherData!['temperature']?.round() ?? '--'}°C, Humidity: ${_weatherData!['humidity']?.round() ?? '--'}%',
+                        Icons.cloud,
+                        Colors.blue,
+                        'Today',
+                      ),
+                  ],
+                ),
         ),
       ],
     );
