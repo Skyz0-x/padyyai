@@ -69,6 +69,9 @@ dependencies:
   url_launcher: ^6.2.5
   flutter_localization: ^0.3.3
   
+  # Weather animation
+  weather_animation: ^1.1.2
+  
   # Internationalization and date formatting
 
 dev_dependencies:

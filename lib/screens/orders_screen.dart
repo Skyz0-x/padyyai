@@ -59,15 +59,14 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: backgroundColor,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.green.shade600,
-              Colors.green.shade50,
+              primaryColor,
+              backgroundColor,
             ],
           ),
         ),
@@ -75,17 +74,32 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           child: Column(
             children: [
               _buildCustomHeader(),
-              _buildTabBar(),
               Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildOrdersList(null),
-                    _buildOrdersList('to_pay'),
-                    _buildOrdersList('to_ship'),
-                    _buildOrdersList('to_receive'),
-                    _buildOrdersList('to_review'),
-                  ],
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildTabBar(),
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _buildOrdersList(null),
+                            _buildOrdersList('to_pay'),
+                            _buildOrdersList('to_ship'),
+                            _buildOrdersList('to_receive'),
+                            _buildOrdersList('to_review'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -97,52 +111,37 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
   Widget _buildCustomHeader() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Row(
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  AppLocale.myOrders.getString(context),
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.green,
-                    size: 24,
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'My Orders',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      AppLocale.trackOrders.getString(context),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
+                Text(
+                  AppLocale.trackOrders.getString(context),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -151,48 +150,57 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
   Widget _buildTabBar() {
     return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -5),
+            color: Colors.grey.withOpacity(0.15),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
         children: [
-          const SizedBox(height: 8),
           Container(
-            width: 40,
-            height: 4,
+            height: 5,
+            width: 50,
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
-              borderRadius: BorderRadius.circular(2),
+              gradient: LinearGradient(
+                colors: [
+                  Colors.grey.shade300,
+                  Colors.grey.shade200,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(3),
             ),
           ),
           TabBar(
             controller: _tabController,
-            isScrollable: true,
-            indicatorColor: primaryColor,
-            indicatorWeight: 3,
             labelColor: primaryColor,
             unselectedLabelColor: Colors.grey.shade600,
-            labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            unselectedLabelStyle: const TextStyle(fontSize: 14),
-            indicatorSize: TabBarIndicatorSize.label,
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            indicatorColor: primaryColor,
+            indicatorWeight: 4,
+            indicatorSize: TabBarIndicatorSize.tab,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            labelStyle: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+            unselectedLabelStyle: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
             tabs: [
-              Tab(child: _buildTabLabel(AppLocale.all.getString(context), null)),
-              Tab(child: _buildTabLabel(AppLocale.toPay.getString(context), _orderCounts['to_pay'])),
-              Tab(child: _buildTabLabel(AppLocale.toShip.getString(context), _orderCounts['to_ship'])),
-              Tab(child: _buildTabLabel(AppLocale.toReceive.getString(context), _orderCounts['to_receive'])),
-              Tab(child: _buildTabLabel(AppLocale.toReview.getString(context), _orderCounts['to_review'])),
+              _buildTab(AppLocale.all.getString(context), null),
+              _buildTab(AppLocale.toPay.getString(context), _orderCounts['to_pay']),
+              _buildTab(AppLocale.toShip.getString(context), _orderCounts['to_ship']),
+              _buildTab(AppLocale.toReceive.getString(context), _orderCounts['to_receive']),
+              _buildTab(AppLocale.toReview.getString(context), _orderCounts['to_review']),
             ],
           ),
         ],
@@ -200,22 +208,29 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildTabLabel(String label, int? count) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+  Widget _buildTab(String label, int? count) {
+    return Tab(
+      height: 50,
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(label),
+          Flexible(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
           if (count != null && count > 0) ...[
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Colors.red, Colors.orange],
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(10),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.red.withOpacity(0.3),
@@ -259,7 +274,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 Icon(Icons.error_outline, size: 64, color: Colors.red.shade300),
                 const SizedBox(height: 16),
                 Text(
-                  'Oops! Something went wrong',
+                  AppLocale.oopsSomethingWrong.getString(context),
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -268,14 +283,14 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Please try again later',
+                  AppLocale.pleaseTryAgainLater.getString(context),
                   style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
                   onPressed: () => setState(() {}),
                   icon: const Icon(Icons.refresh),
-                  label: const Text('Retry'),
+                  label: Text(AppLocale.retry.getString(context)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: primaryColor,
                     foregroundColor: Colors.white,
@@ -311,7 +326,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 ),
                 const SizedBox(height: 24),
                 Text(
-                  'No ${status != null ? _getStatusLabel(status) : ''} Orders',
+                  '${AppLocale.noOrders.getString(context)} ${status != null ? _getStatusLabel(status) : ''}',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -320,7 +335,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Your orders will appear here',
+                  AppLocale.yourOrdersAppearHere.getString(context),
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade500,
@@ -330,7 +345,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                 TextButton.icon(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.store),
-                  label: const Text('Browse Marketplace'),
+                  label: Text(AppLocale.browseMarketplace.getString(context)),
                   style: TextButton.styleFrom(
                     foregroundColor: primaryColor,
                     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -420,7 +435,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                           fontSize: 15,
                         ),
                       ),
-                      if (createdAt != null)
+                      if (createdAt != null) ...[
+                        const SizedBox(height: 4),
                         Text(
                           DateFormat('dd MMM yyyy, HH:mm').format(createdAt),
                           style: TextStyle(
@@ -428,10 +444,12 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                             color: Colors.grey.shade600,
                           ),
                         ),
+                      ],
+                      const SizedBox(height: 8),
+                      _buildStatusBadge(status, context),
                     ],
                   ),
                 ),
-                _buildStatusBadge(status),
               ],
             ),
           ),
@@ -444,7 +462,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
               children: [
                 ...orderItems.take(3).map((item) {
                   // Product data is stored directly in order_items (denormalized)
-                  final productName = item['product_name'] ?? 'Unknown Product';
+                  final productName = item['product_name'] ?? AppLocale.unknownProduct.getString(context);
                   final quantity = item['quantity'] ?? 1;
                   final price = item['product_price']?.toDouble() ?? 0.0;
                   final imageUrl = item['product_image'];
@@ -501,7 +519,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                       ),
                                     ),
                                     child: Text(
-                                      'Qty: $quantity',
+                                      '${AppLocale.qty.getString(context)}: $quantity',
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.grey.shade700,
@@ -539,7 +557,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         Icon(Icons.more_horiz, color: Colors.blue.shade700, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          '+${orderItems.length - 3} more item(s)',
+                          '+${orderItems.length - 3} ${AppLocale.moreItems.getString(context)}',
                           style: TextStyle(
                             fontSize: 13,
                             color: Colors.blue.shade700,
@@ -577,7 +595,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Total Amount',
+                          AppLocale.totalAmount.getString(context),
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey.shade700,
@@ -621,7 +639,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     );
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge(String status, BuildContext context) {
     Color color;
     String label;
     IconData icon;
@@ -629,37 +647,37 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     switch (status) {
       case 'to_pay':
         color = Colors.orange;
-        label = 'Cash on Delivery';
+        label = AppLocale.cashOnDelivery.getString(context);
         icon = Icons.payments;
         break;
       case 'to_ship':
         color = Colors.blue;
-        label = 'To Ship';
+        label = AppLocale.toShip.getString(context);
         icon = Icons.local_shipping;
         break;
       case 'to_receive':
         color = Colors.purple;
-        label = 'To Receive';
+        label = AppLocale.toReceive.getString(context);
         icon = Icons.inbox;
         break;
       case 'to_review':
         color = Colors.amber;
-        label = 'To Review';
+        label = AppLocale.toReview.getString(context);
         icon = Icons.rate_review;
         break;
       case 'completed':
         color = Colors.green;
-        label = 'Completed';
+        label = AppLocale.completed.getString(context);
         icon = Icons.check_circle;
         break;
       case 'cancelled':
         color = Colors.red;
-        label = 'Cancelled';
+        label = AppLocale.cancelled.getString(context);
         icon = Icons.cancel;
         break;
       default:
         color = Colors.grey;
-        label = 'Pending';
+        label = AppLocale.pending.getString(context);
         icon = Icons.hourglass_empty;
     }
 
@@ -704,43 +722,43 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
 
     switch (status) {
       case 'to_pay':
-        label = 'Pay Now';
+        label = AppLocale.payNow.getString(context);
         icon = Icons.payment;
         onPressed = () => _handlePayNow(orderId);
         color = Colors.orange;
         break;
       case 'to_ship':
-        label = 'Track';
+        label = AppLocale.track.getString(context);
         icon = Icons.location_on;
         onPressed = () => _handleTrackOrder(orderId);
         color = Colors.blue;
         break;
       case 'to_receive':
-        label = 'Received';
+        label = AppLocale.received.getString(context);
         icon = Icons.check;
         onPressed = () => _handleConfirmReceipt(orderId);
         color = Colors.purple;
         break;
       case 'to_review':
-        label = 'Review';
+        label = AppLocale.review.getString(context);
         icon = Icons.star;
         onPressed = () => _handleWriteReview(orderId);
         color = Colors.amber.shade700;
         break;
       case 'completed':
-        label = 'Buy Again';
+        label = AppLocale.buyAgain.getString(context);
         icon = Icons.refresh;
         onPressed = () => _handleBuyAgain(orderId);
         color = Colors.green;
         break;
       case 'cancelled':
-        label = 'Details';
+        label = AppLocale.details.getString(context);
         icon = Icons.info_outline;
         onPressed = () => _handleViewDetails(orderId);
         color = Colors.grey;
         break;
       default:
-        label = 'View';
+        label = AppLocale.view.getString(context);
         icon = Icons.visibility;
         onPressed = () => _handleViewDetails(orderId);
     }
@@ -771,19 +789,19 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   String _getStatusLabel(String status) {
     switch (status) {
       case 'to_pay':
-        return 'To Pay';
+        return AppLocale.toPay.getString(context);
       case 'to_ship':
-        return 'To Ship';
+        return AppLocale.toShip.getString(context);
       case 'to_receive':
-        return 'To Receive';
+        return AppLocale.toReceive.getString(context);
       case 'to_review':
-        return 'To Review';
+        return AppLocale.toReview.getString(context);
       case 'completed':
-        return 'Completed';
+        return AppLocale.completed.getString(context);
       case 'cancelled':
-        return 'Cancelled';
+        return AppLocale.cancelled.getString(context);
       default:
-        return 'Pending';
+        return AppLocale.pending.getString(context);
     }
   }
 
@@ -791,11 +809,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     if (orderId == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.payment, color: Colors.white),
-            SizedBox(width: 12),
-            Text('Redirecting to payment...'),
+            const Icon(Icons.payment, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(AppLocale.redirectingToPayment.getString(context)),
           ],
         ),
         backgroundColor: Colors.orange,
@@ -810,11 +828,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     if (orderId == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.local_shipping, color: Colors.white),
-            SizedBox(width: 12),
-            Text('Opening order tracking...'),
+            const Icon(Icons.local_shipping, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(AppLocale.openingOrderTracking.getString(context)),
           ],
         ),
         backgroundColor: Colors.blue,
@@ -832,26 +850,26 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.check_circle_outline, color: Colors.purple),
-            SizedBox(width: 12),
-            Text('Confirm Receipt'),
+            const Icon(Icons.check_circle_outline, color: Colors.purple),
+            const SizedBox(width: 12),
+            Text(AppLocale.confirmReceipt.getString(context)),
           ],
         ),
-        content: const Text(
-          'Have you received this order in good condition?',
+        content: Text(
+          AppLocale.receivedOrderGoodCondition.getString(context),
           style: TextStyle(fontSize: 15),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Not Yet'),
+            child: Text(AppLocale.notYet.getString(context)),
           ),
           ElevatedButton.icon(
             onPressed: () => Navigator.pop(context, true),
             icon: const Icon(Icons.check, size: 18),
-            label: const Text('Yes, Received'),
+            label: Text(AppLocale.yesReceived.getString(context)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.purple,
               foregroundColor: Colors.white,
@@ -874,11 +892,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Row(
+              content: Row(
                 children: [
-                  Icon(Icons.check_circle, color: Colors.white),
-                  SizedBox(width: 12),
-                  Text('Order marked as received!'),
+                  const Icon(Icons.check_circle, color: Colors.white),
+                  const SizedBox(width: 12),
+                  Text(AppLocale.orderMarkedReceived.getString(context)),
                 ],
               ),
               backgroundColor: Colors.green,
@@ -891,7 +909,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error: $e'),
+              content: Text('${AppLocale.error.getString(context)}: $e'),
               backgroundColor: Colors.red,
               behavior: SnackBarBehavior.floating,
             ),
@@ -905,11 +923,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     if (orderId == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.rate_review, color: Colors.white),
-            SizedBox(width: 12),
-            Text('Opening review form...'),
+            const Icon(Icons.rate_review, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(AppLocale.openingReviewForm.getString(context)),
           ],
         ),
         backgroundColor: Colors.amber.shade700,
@@ -924,11 +942,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     if (orderId == null) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Row(
+        content: Row(
           children: [
-            Icon(Icons.shopping_cart, color: Colors.white),
-            SizedBox(width: 12),
-            Text('Adding items to cart...'),
+            const Icon(Icons.shopping_cart, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(AppLocale.addingItemsToCart.getString(context)),
           ],
         ),
         backgroundColor: Colors.green,
@@ -952,7 +970,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       
       if (order.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Order not found')),
+          SnackBar(content: Text(AppLocale.orderNotFound.getString(context))),
         );
         return;
       }
@@ -960,7 +978,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
       _showOrderDetailsDialog(order);
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading order details: $e')),
+        SnackBar(content: Text('${AppLocale.errorLoadingOrderDetails.getString(context)}: $e')),
       );
     }
   }
@@ -1015,8 +1033,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Order Details',
+                          Text(
+                            AppLocale.orderDetails.getString(context),
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -1024,7 +1042,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                             ),
                           ),
                           Text(
-                            'Order #${order['id']?.toString().substring(0, 8).toUpperCase() ?? 'N/A'}',
+                            '${AppLocale.order.getString(context)} #${order['id']?.toString().substring(0, 8).toUpperCase() ?? 'N/A'}',
                             style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 13,
@@ -1053,7 +1071,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         children: [
                           Expanded(
                             child: _buildDetailItem(
-                              'Status',
+                              AppLocale.status.getString(context),
                               status.toUpperCase().replaceAll('_', ' '),
                               Icons.info_outline,
                             ),
@@ -1061,7 +1079,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                           const SizedBox(width: 12),
                           Expanded(
                             child: _buildDetailItem(
-                              'Date',
+                              AppLocale.date.getString(context),
                               createdAt != null 
                                 ? DateFormat('dd MMM yyyy').format(createdAt)
                                 : 'N/A',
@@ -1073,8 +1091,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       const SizedBox(height: 16),
                       
                       // Delivery Address
-                      const Text(
-                        'Delivery Address',
+                      Text(
+                        AppLocale.deliveryAddress.getString(context),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1132,8 +1150,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       const SizedBox(height: 16),
                       
                       // Payment Information
-                      const Text(
-                        'Payment Information',
+                      Text(
+                        AppLocale.paymentInformation.getString(context),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1149,9 +1167,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         ),
                         child: Column(
                           children: [
-                            _buildInfoRow('Method', paymentMethod.toUpperCase().replaceAll('_', ' ')),
+                            _buildInfoRow(AppLocale.method.getString(context), paymentMethod.toUpperCase().replaceAll('_', ' ')),
                             const Divider(height: 16),
-                            _buildInfoRow('Status', paymentStatus.toUpperCase()),
+                            _buildInfoRow(AppLocale.status.getString(context), paymentStatus.toUpperCase()),
                           ],
                         ),
                       ),
@@ -1173,8 +1191,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const Text(
-                                      'Tracking Number',
+                                    Text(
+                                      AppLocale.trackingNumber.getString(context),
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
@@ -1198,8 +1216,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       const SizedBox(height: 16),
                       
                       // Order Items
-                      const Text(
-                        'Order Items',
+                      Text(
+                        AppLocale.orderItems.getString(context),
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -1207,7 +1225,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       ),
                       const SizedBox(height: 12),
                       ...orderItems.map((item) {
-                        final productName = item['product_name'] ?? 'Unknown Product';
+                        final productName = item['product_name'] ?? AppLocale.unknownProduct.getString(context);
                         final quantity = item['quantity'] ?? 1;
                         final price = item['product_price']?.toDouble() ?? 0.0;
                         final subtotal = item['subtotal']?.toDouble() ?? (price * quantity);
@@ -1266,14 +1284,14 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                         ),
                         child: Column(
                           children: [
-                            _buildInfoRow('Subtotal', 'RM ${subtotal.toStringAsFixed(2)}'),
+                            _buildInfoRow(AppLocale.subtotal.getString(context), 'RM ${subtotal.toStringAsFixed(2)}'),
                             const Divider(height: 16),
-                            _buildInfoRow('Shipping Fee', 'RM ${shippingFee.toStringAsFixed(2)}'),
+                            _buildInfoRow(AppLocale.shippingFeeLabel.getString(context), 'RM ${shippingFee.toStringAsFixed(2)}'),
                             const Divider(height: 16),
-                            _buildInfoRow('Tax', 'RM ${tax.toStringAsFixed(2)}'),
+                            _buildInfoRow(AppLocale.tax.getString(context), 'RM ${tax.toStringAsFixed(2)}'),
                             const Divider(height: 16),
                             _buildInfoRow(
-                              'Total',
+                              AppLocale.total.getString(context),
                               'RM ${totalAmount.toStringAsFixed(2)}',
                               isBold: true,
                             ),
@@ -1283,8 +1301,8 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       
                       if (notes != null && notes.isNotEmpty) ...[
                         const SizedBox(height: 16),
-                        const Text(
-                          'Notes',
+                        Text(
+                          AppLocale.notes.getString(context),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

@@ -484,7 +484,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, '/chat'),
         backgroundColor: Colors.teal,
-        icon: const Icon(Icons.smart_toy, color: Colors.white),
+        icon: const Icon(Icons.chat, color: Colors.white),
         label: Text(
           AppLocale.farmingTips.getString(context),
           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

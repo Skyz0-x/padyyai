@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import '../l10n/app_locale.dart';
 import '../services/disease_records_service.dart';
 import '../utils/constants.dart';
 import 'package:intl/intl.dart';
@@ -17,22 +19,31 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   bool _isLoading = true;
   String? _selectedFilter;
   
-  final List<String> _diseaseFilters = [
-    'All',
-    'Healthy',
-    'Brown Planthopper',
-    'Brown Spot',
-    'Leaf Blast',
-    'Leaf Scald',
-    'Rice Leafroller',
-    'Rice Yellow Stem Borer',
-    'Sheath Blight',
-  ];
+  List<String> _diseaseFilters = [];
 
   @override
   void initState() {
     super.initState();
     _loadDetections();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Initialize filters after context is available
+    if (_diseaseFilters.isEmpty) {
+      _diseaseFilters = [
+        AppLocale.all.getString(context),
+        AppLocale.healthyPlant.getString(context),
+        AppLocale.brownPlanthopper.getString(context),
+        AppLocale.brownSpot.getString(context),
+        AppLocale.leafBlast.getString(context),
+        AppLocale.leafScald.getString(context),
+        AppLocale.riceLeafroller.getString(context),
+        AppLocale.riceYellowStemBorer.getString(context),
+        AppLocale.sheathBlight.getString(context),
+      ];
+    }
   }
 
   Future<void> _loadDetections() async {
@@ -55,7 +66,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   }
 
   List<Map<String, dynamic>> get _filteredDetections {
-    if (_selectedFilter == null || _selectedFilter == 'All') {
+    if (_selectedFilter == null || _selectedFilter == AppLocale.all.getString(context)) {
       return _allDetections;
     }
     return _allDetections.where((d) => 
@@ -115,17 +126,17 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Detect History',
-                      style: TextStyle(
+                    Text(
+                      AppLocale.detectHistory.getString(context),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
                     ),
-                    const Text(
-                      'Your disease detection records',
-                      style: TextStyle(
+                    Text(
+                      AppLocale.diseaseDetectionRecords.getString(context),
+                      style: const TextStyle(
                         fontSize: 14,
                         color: Colors.white70,
                       ),
@@ -136,7 +147,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
               IconButton(
                 onPressed: _loadDetections,
                 icon: const Icon(Icons.refresh, color: Colors.white),
-                tooltip: 'Refresh',
+                tooltip: AppLocale.refresh.getString(context),
               ),
             ],
           ),
@@ -156,7 +167,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
       children: [
         Expanded(
           child: _buildStatCard(
-            'Total Scans',
+            AppLocale.totalScans.getString(context),
             '${stats['total']}',
             Icons.photo_camera,
             Colors.blue,
@@ -165,7 +176,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
-            'Healthy',
+            AppLocale.healthy.getString(context),
             '${stats['healthy']}',
             Icons.check_circle,
             Colors.green,
@@ -174,7 +185,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
         const SizedBox(width: 12),
         Expanded(
           child: _buildStatCard(
-            'Diseases',
+            AppLocale.diseases.getString(context),
             '${stats['diseases']}',
             Icons.warning,
             Colors.red,
@@ -228,8 +239,9 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
         itemCount: _diseaseFilters.length,
         itemBuilder: (context, index) {
           final disease = _diseaseFilters[index];
+          final allText = AppLocale.all.getString(context);
           final isSelected = _selectedFilter == disease || 
-                            (disease == 'All' && _selectedFilter == null);
+                            (disease == allText && _selectedFilter == null);
           
           return Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -238,7 +250,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
               selected: isSelected,
               onSelected: (selected) {
                 setState(() {
-                  _selectedFilter = disease == 'All' ? null : disease;
+                  _selectedFilter = disease == allText ? null : disease;
                 });
               },
               backgroundColor: Colors.white,
@@ -295,7 +307,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'No detections found',
+              AppLocale.noDetectionsFound.getString(context),
               style: TextStyle(
                 fontSize: 18,
                 color: Colors.grey.shade600,
@@ -304,7 +316,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Start scanning your crops',
+              AppLocale.startScanningCrops.getString(context),
               style: TextStyle(
                 fontSize: 14,
                 color: Colors.grey.shade500,
@@ -326,12 +338,13 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
   }
 
   Widget _buildDetectionCard(Map<String, dynamic> detection) {
-    final diseaseName = detection['disease_name'] ?? 'Unknown';
-    final color = _getSeverityColor(diseaseName);
-    final icon = _getSeverityIcon(diseaseName);
+    final diseaseNameRaw = detection['disease_name'] ?? AppLocale.unknownDisease.getString(context);
+    final diseaseName = _getLocalizedDiseaseName(diseaseNameRaw);
+    final color = _getSeverityColor(diseaseNameRaw);
+    final icon = _getSeverityIcon(diseaseNameRaw);
     final date = DateTime.parse(detection['detection_date']);
     final formattedDate = DateFormat('MMM dd, yyyy').format(date);
-    final isHealthy = diseaseName.toLowerCase().contains('healthy');
+    final isHealthy = diseaseNameRaw.toLowerCase().contains('healthy');
 
     return Dismissible(
       key: Key(detection['id']),
@@ -344,14 +357,14 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
         ),
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.delete, color: Colors.white, size: 32),
-            SizedBox(height: 4),
+            const Icon(Icons.delete, color: Colors.white, size: 32),
+            const SizedBox(height: 4),
             Text(
-              'Delete',
-              style: TextStyle(
+              AppLocale.clear.getString(context),
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
               ),
@@ -363,17 +376,17 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
         return await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            title: const Text('Delete Detection'),
-            content: const Text('Are you sure you want to delete this detection record?'),
+            title: Text(AppLocale.deleteDetection.getString(context)),
+            content: Text(AppLocale.deleteDetectionConfirm.getString(context)),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
+                child: Text(AppLocale.cancel.getString(context)),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                child: const Text('Delete'),
+                child: Text(AppLocale.remove.getString(context)),
               ),
             ],
           ),
@@ -385,10 +398,10 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
         if (success && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('$diseaseName detection deleted'),
+              content: Text('$diseaseName ${AppLocale.detectionDeleted.getString(context)}'),
               backgroundColor: Colors.orange,
               action: SnackBarAction(
-                label: 'Undo',
+                label: 'UNDO',
                 textColor: Colors.white,
                 onPressed: () {
                   // Note: Undo would require storing the deleted data
@@ -529,11 +542,45 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
     };
   }
 
+  String _getLocalizedDiseaseName(String diseaseName) {
+    final normalizedName = diseaseName.toLowerCase().replaceAll(' ', '_');
+    
+    switch (normalizedName) {
+      case 'brown_planthopper':
+      case 'brownplanthopper':
+        return AppLocale.brownPlanthopper.getString(context);
+      case 'brown_spot':
+      case 'brownspot':
+        return AppLocale.brownSpot.getString(context);
+      case 'healthy':
+      case 'healthy_plant':
+        return AppLocale.healthyPlant.getString(context);
+      case 'leaf_blast':
+      case 'leafblast':
+        return AppLocale.leafBlast.getString(context);
+      case 'leaf_scald':
+      case 'leafscald':
+        return AppLocale.leafScald.getString(context);
+      case 'rice_leafroller':
+      case 'riceleafroller':
+        return AppLocale.riceLeafroller.getString(context);
+      case 'rice_yellow_stem_borer':
+      case 'riceyellowstemborer':
+        return AppLocale.riceYellowStemBorer.getString(context);
+      case 'sheath_blight':
+      case 'sheathblight':
+        return AppLocale.sheathBlight.getString(context);
+      default:
+        return diseaseName;
+    }
+  }
+
   void _showDetectionDetails(Map<String, dynamic> detection) {
     final date = DateTime.parse(detection['detection_date']);
     final formattedDate = DateFormat('MMMM dd, yyyy \'at\' h:mm a').format(date);
-    final diseaseName = detection['disease_name'] ?? 'Unknown';
-    final color = _getSeverityColor(diseaseName);
+    final diseaseNameRaw = detection['disease_name'] ?? AppLocale.unknownDisease.getString(context);
+    final diseaseName = _getLocalizedDiseaseName(diseaseNameRaw);
+    final color = _getSeverityColor(diseaseNameRaw);
 
     showModalBottomSheet(
       context: context,
@@ -571,7 +618,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                             color: color.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Icon(_getSeverityIcon(diseaseName), color: color, size: 40),
+                          child: Icon(_getSeverityIcon(diseaseNameRaw), color: color, size: 40),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -579,7 +626,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                detection['disease_name'] ?? 'Unknown',
+                                diseaseName,
                                 style: const TextStyle(
                                   fontSize: 22,
                                   fontWeight: FontWeight.bold,
@@ -595,7 +642,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                     // Detection image (if available)
                     if (detection['image_url'] != null) ...[
                       _buildDetailSection(
-                        'Scanned Image',
+                        AppLocale.scannedImage.getString(context),
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.network(
@@ -637,7 +684,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                                     ),
                                     const SizedBox(height: 8),
                                     Text(
-                                      'Image not available',
+                                      AppLocale.imageNotAvailable.getString(context),
                                       style: TextStyle(
                                         color: Colors.grey.shade600,
                                         fontSize: 14,
@@ -652,17 +699,17 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                       ),
                     ],
                     
-                    _buildDetailRow(Icons.calendar_today, 'Detection Date', formattedDate),
+                    _buildDetailRow(Icons.calendar_today, AppLocale.detectionDate.getString(context), formattedDate),
                     
                     if (detection['location'] != null)
                       _buildDetailRow(Icons.location_on, 'Location', detection['location']),
                     
                     if (detection['crop_variety'] != null)
-                      _buildDetailRow(Icons.grass, 'Crop Variety', detection['crop_variety']),
+                      _buildDetailRow(Icons.grass, AppLocale.cropVariety.getString(context), detection['crop_variety']),
                     
                     if (detection['treatment_recommended'] != null)
                       _buildDetailSection(
-                        'Recommended Treatment',
+                        AppLocale.recommendedTreatment.getString(context),
                         Text(
                           detection['treatment_recommended'],
                           style: const TextStyle(fontSize: 15, color: textDarkColor, height: 1.5),
@@ -682,7 +729,7 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
                               _confirmDelete(detection['id']);
                             },
                             icon: const Icon(Icons.delete_outline),
-                            label: const Text('Delete'),
+                            label: Text(AppLocale.remove.getString(context)),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.red,
                               side: const BorderSide(color: Colors.red),
@@ -764,12 +811,12 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Detection'),
-        content: const Text('Are you sure you want to delete this detection record?'),
+        title: Text(AppLocale.deleteDetection.getString(context)),
+        content: Text(AppLocale.deleteDetectionConfirm.getString(context)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocale.cancel.getString(context)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -778,8 +825,8 @@ class _DetectHistoryScreenState extends State<DetectHistoryScreen> {
               
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Detection deleted'),
+                  SnackBar(
+                    content: Text(AppLocale.detectionDeleted.getString(context)),
                     backgroundColor: Colors.orange,
                   ),
                 );

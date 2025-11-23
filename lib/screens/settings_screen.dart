@@ -61,20 +61,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const SizedBox(height: 8),
-                          _buildSectionHeader('Language Settings'),
+                          _buildSectionHeader(AppLocale.languageSettings.getString(context)),
                           const SizedBox(height: 8),
                           Container(
                             decoration: cardDecoration,
                             child: Column(
                               children: [
                                 _buildLanguageTile(
-                                  'English',
+                                  AppLocale.english.getString(context),
                                   'en',
                                   Icons.language,
                                 ),
                                 const Divider(height: 1),
                                 _buildLanguageTile(
-                                  'Bahasa Melayu',
+                                  AppLocale.bahasaMelayu.getString(context),
                                   'ms',
                                   Icons.translate,
                                 ),
@@ -82,7 +82,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          _buildSectionHeader('App Settings'),
+                          _buildSectionHeader(AppLocale.appSettings.getString(context)),
                           const SizedBox(height: 8),
                           Container(
                             decoration: cardDecoration,
@@ -90,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               children: [
                                 _buildSettingTile(
                                   AppLocale.notifications.getString(context),
-                                  'Manage notification preferences',
+                                  AppLocale.manageNotificationPreferences.getString(context),
                                   Icons.notifications_outlined,
                                   () {
                                     // TODO: Navigate to notifications settings
@@ -118,7 +118,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          _buildSectionHeader('About'),
+                          _buildSectionHeader(AppLocale.about.getString(context)),
                           const SizedBox(height: 8),
                           Container(
                             decoration: cardDecoration,
@@ -162,9 +162,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const Text(
-                  'Manage app preferences',
-                  style: TextStyle(
+                Text(
+                  AppLocale.manageAppPreferences.getString(context),
+                  style: const TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
                   ),

@@ -85,8 +85,11 @@ class AppLocale {
   static const String toShip = 'toShip';
   static const String toReceive = 'toReceive';
   static const String toReview = 'toReview';
+  static const String review = 'review';
   static const String completed = 'completed';
   static const String cancelled = 'cancelled';
+  static const String order = 'order';
+  static const String status = 'status';
   static const String orderDetails = 'orderDetails';
   static const String trackOrder = 'trackOrder';
   static const String contactSeller = 'contactSeller';
@@ -104,7 +107,7 @@ class AppLocale {
   static const String treatment = 'treatment';
   static const String prevention = 'prevention';
   static const String dashboard = 'dashboard';
-  static const String weatherToday = 'weatherToday';
+  static const String weatherToday ='weatherToday';
   static const String temperature = 'temperature';
   static const String humidity = 'humidity';
   static const String rainfall = 'rainfall';
@@ -295,6 +298,51 @@ class AppLocale {
   static const String fillAllCardDetails = 'fillAllCardDetails';
   static const String pay = 'pay';
   
+  // Orders Screen
+  static const String oopsSomethingWrong = 'oopsSomethingWrong';
+  static const String pleaseTryAgainLater = 'pleaseTryAgainLater';
+  static const String noOrders = 'noOrders';
+  static const String yourOrdersAppearHere = 'yourOrdersAppearHere';
+  static const String browseMarketplace = 'browseMarketplace';
+  static const String qty = 'qty';
+  static const String moreItems = 'moreItems';
+  static const String totalAmount = 'totalAmount';
+  static const String payNow = 'payNow';
+  static const String track = 'track';
+  static const String received = 'received';
+  static const String buyAgain = 'buyAgain';
+  static const String details = 'details';
+  static const String view = 'view';
+  static const String pending = 'pending';
+  static const String redirectingToPayment = 'redirectingToPayment';
+  static const String openingOrderTracking = 'openingOrderTracking';
+  static const String confirmReceipt = 'confirmReceipt';
+  static const String receivedOrderGoodCondition = 'receivedOrderGoodCondition';
+  static const String notYet = 'notYet';
+  static const String yesReceived = 'yesReceived';
+  static const String orderMarkedReceived = 'orderMarkedReceived';
+  static const String openingReviewForm = 'openingReviewForm';
+  static const String addingItemsToCart = 'addingItemsToCart';
+  static const String orderNotFound = 'orderNotFound';
+  static const String errorLoadingOrderDetails = 'errorLoadingOrderDetails';
+  static const String date = 'date';
+  static const String deliveryAddress = 'deliveryAddress';
+  static const String paymentInformation = 'paymentInformation';
+  static const String method = 'method';
+  static const String trackingNumber = 'trackingNumber';
+  static const String orderItems = 'orderItems';
+  static const String shippingFeeLabel = 'shippingFeeLabel';
+  static const String notes = 'notes';
+  
+  // Settings Screen
+  static const String manageAppPreferences = 'manageAppPreferences';
+  static const String languageSettings = 'languageSettings';
+  static const String english = 'english';
+  static const String bahasaMelayu = 'bahasaMelayu';
+  static const String appSettings = 'appSettings';
+  static const String manageNotificationPreferences = 'manageNotificationPreferences';
+  static const String about = 'about';
+  
   // Disease Names
   static const String brownPlanthopper = 'brownPlanthopper';
   static const String brownSpot = 'brownSpot';
@@ -314,6 +362,80 @@ class AppLocale {
   static const String riceLeafrollerDesc = 'riceLeafrollerDesc';
   static const String riceYellowStemBorerDesc = 'riceYellowStemBorerDesc';
   static const String sheathBlightDesc = 'sheathBlightDesc';
+
+  // Detect History Screen
+  static const String detectHistory = 'detectHistory';
+  static const String diseaseDetectionRecords = 'diseaseDetectionRecords';
+  static const String refresh = 'refresh';
+  static const String noDetectionsFound = 'noDetectionsFound';
+  static const String loadingDetections = 'loadingDetections';
+  static const String deleteDetection = 'deleteDetection';
+  static const String deleteDetectionConfirm = 'deleteDetectionConfirm';
+  static const String detectionDeleted = 'detectionDeleted';
+  static const String scannedImage = 'scannedImage';
+  static const String detectionDate = 'detectionDate';
+  static const String cropVariety = 'cropVariety';
+  static const String recommendedTreatment = 'recommendedTreatment';
+  static const String imageNotAvailable = 'imageNotAvailable';
+  static const String unknownDisease = 'unknownDisease';
+
+  // Weather Alert Screen
+  static const String weatherAlerts = 'weatherAlerts';
+  static const String monitorConditionsForCrops = 'monitorConditionsForCrops';
+  static const String fetchingWeatherData = 'fetchingWeatherData';
+  static const String unableGetLocation = 'unableGetLocation';
+  static const String enableLocationServices = 'enableLocationServices';
+  static const String unableFetchWeather = 'unableFetchWeather';
+  static const String pleaseTryAgain = 'pleaseTryAgain';
+  static const String retry = 'retry';
+  static const String openLocationSettings = 'openLocationSettings';
+  static const String noWeatherAlerts = 'noWeatherAlerts';
+  static const String weatherConditionsFavorable = 'weatherConditionsFavorable';
+  static const String activeAlerts = 'activeAlerts';
+  static const String sevenDayForecast = 'sevenDayForecast';
+  static const String tomorrow = 'tomorrow';
+  static const String monday = 'monday';
+  static const String tuesday = 'tuesday';
+  static const String wednesday = 'wednesday';
+  static const String thursday = 'thursday';
+  static const String friday = 'friday';
+  static const String saturday = 'saturday';
+  static const String sunday = 'sunday';
+  
+  // Weather Alert Types
+  static const String highTempAlertTitle = 'highTempAlertTitle';
+  static const String highTempAlertMsg = 'highTempAlertMsg';
+  static const String heavyRainfallTitle = 'heavyRainfallTitle';
+  static const String heavyRainfallMsg = 'heavyRainfallMsg';
+  static const String strongWindTitle = 'strongWindTitle';
+  static const String strongWindMsg = 'strongWindMsg';
+  static const String heavyRainForecastTitle = 'heavyRainForecastTitle';
+  static const String heavyRainForecastMsg = 'heavyRainForecastMsg';
+  static const String lowHumidityAlertTitle = 'lowHumidityAlertTitle';
+  static const String lowHumidityAlertMsg = 'lowHumidityAlertMsg';
+  static const String temperatureIs = 'temperatureIs';
+  static const String ensureIrrigation = 'ensureIrrigation';
+  static const String currentRainfall = 'currentRainfall';
+  static const String monitorFlooding = 'monitorFlooding';
+  static const String windSpeedIs = 'windSpeedIs';
+  static const String protectYoungPlants = 'protectYoungPlants';
+  static const String expectedRainfall = 'expectedRainfall';
+  static const String planIrrigationAccordingly = 'planIrrigationAccordingly';
+  static const String increaseIrrigationFreq = 'increaseIrrigationFreq';
+  
+  // Weather Descriptions
+  static const String clearSky = 'clearSky';
+  static const String partlyCloudy = 'partlyCloudy';
+  static const String foggy = 'foggy';
+  static const String drizzle = 'drizzle';
+  static const String rain = 'rain';
+  static const String snow = 'snow';
+  static const String snowGrains = 'snowGrains';
+  static const String rainShowers = 'rainShowers';
+  static const String snowShowers = 'snowShowers';
+  static const String thunderstorm = 'thunderstorm';
+  static const String thunderstormHail = 'thunderstormHail';
+  static const String unknown = 'unknown';
 
   static final List<MapLocale> LOCALES = [
     MapLocale(
@@ -413,8 +535,11 @@ mixin LocaleData {
     'toShip': 'To Ship',
     'toReceive': 'To Receive',
     'toReview': 'To Review',
+    'review': 'Review',
     'completed': 'Completed',
     'cancelled': 'Cancelled',
+    'order': 'Order',
+    'status': 'Status',
     'orderDetails': 'Order Details',
     'trackOrder': 'Track Order',
     'contactSeller': 'Contact Seller',
@@ -622,6 +747,51 @@ mixin LocaleData {
     'fillAllCardDetails': 'Please fill in all card details',
     'pay': 'Pay',
     
+    // Orders Screen
+    'oopsSomethingWrong': 'Oops! Something went wrong',
+    'pleaseTryAgainLater': 'Please try again later',
+    'noOrders': 'No Orders',
+    'yourOrdersAppearHere': 'Your orders will appear here',
+    'browseMarketplace': 'Browse Marketplace',
+    'qty': 'Qty',
+    'moreItems': 'more item(s)',
+    'totalAmount': 'Total Amount',
+    'payNow': 'Pay Now',
+    'track': 'Track',
+    'received': 'Received',
+    'buyAgain': 'Buy Again',
+    'details': 'Details',
+    'view': 'View',
+    'pending': 'Pending',
+    'redirectingToPayment': 'Redirecting to payment...',
+    'openingOrderTracking': 'Opening order tracking...',
+    'confirmReceipt': 'Confirm Receipt',
+    'receivedOrderGoodCondition': 'Have you received this order in good condition?',
+    'notYet': 'Not Yet',
+    'yesReceived': 'Yes, Received',
+    'orderMarkedReceived': 'Order marked as received!',
+    'openingReviewForm': 'Opening review form...',
+    'addingItemsToCart': 'Adding items to cart...',
+    'orderNotFound': 'Order not found',
+    'errorLoadingOrderDetails': 'Error loading order details',
+    'date': 'Date',
+    'deliveryAddress': 'Delivery Address',
+    'paymentInformation': 'Payment Information',
+    'method': 'Method',
+    'trackingNumber': 'Tracking Number',
+    'orderItems': 'Order Items',
+    'shippingFeeLabel': 'Shipping Fee',
+    'notes': 'Notes',
+    
+    // Settings Screen
+    'manageAppPreferences': 'Manage app preferences',
+    'languageSettings': 'Language Settings',
+    'english': 'English',
+    'bahasaMelayu': 'Bahasa Melayu',
+    'appSettings': 'App Settings',
+    'manageNotificationPreferences': 'Manage notification preferences',
+    'about': 'About',
+    
     // Disease Names
     'brownPlanthopper': 'Brown Planthopper',
     'brownSpot': 'Brown Spot',
@@ -641,7 +811,83 @@ mixin LocaleData {
     'riceLeafrollerDesc': 'Larvae fold and roll rice leaves, feeding inside and reducing photosynthesis.',
     'riceYellowStemBorerDesc': 'Larvae bore into rice stems, causing deadhearts and whiteheads.',
     'sheathBlightDesc': 'Fungal disease caused by Rhizoctonia solani, creates irregular lesions on leaf sheaths.',
+    
+    // Detect History Screen
+    'detectHistory': 'Detect History',
+    'diseaseDetectionRecords': 'Your disease detection records',
+    'refresh': 'Refresh',
+    'noDetectionsFound': 'No detections found',
+    'loadingDetections': 'Loading detections...',
+    'deleteDetection': 'Delete Detection',
+    'deleteDetectionConfirm': 'Are you sure you want to delete this detection record?',
+    'detectionDeleted': 'detection deleted',
+    'scannedImage': 'Scanned Image',
+    'detectionDate': 'Detection Date',
+    'cropVariety': 'Crop Variety',
+    'recommendedTreatment': 'Recommended Treatment',
+    'imageNotAvailable': 'Image not available',
+    'unknownDisease': 'Unknown',
+    
+    // Weather Alert Screen
+    'weatherAlerts': 'Weather Alerts',
+    'monitorConditionsForCrops': 'Monitor conditions for your crops',
+    'fetchingWeatherData': 'Fetching weather data...',
+    'unableGetLocation': 'Unable to get location. Please enable location services.',
+    'enableLocationServices': 'Enable location services',
+    'unableFetchWeather': 'Unable to fetch weather data. Please try again.',
+    'pleaseTryAgain': 'Please try again',
+    'retry': 'Retry',
+    'openLocationSettings': 'Open Location Settings',
+    'noWeatherAlerts': 'No Weather Alerts',
+    'weatherConditionsFavorable': 'Weather conditions are favorable for your crops',
+    'activeAlerts': 'Active Alerts',
+    'sevenDayForecast': '7-Day Forecast',
+    'tomorrow': 'Tomorrow',
+    'monday': 'Monday',
+    'tuesday': 'Tuesday',
+    'wednesday': 'Wednesday',
+    'thursday': 'Thursday',
+    'friday': 'Friday',
+    'saturday': 'Saturday',
+    'sunday': 'Sunday',
+    
+    // Weather Alert Types
+    'highTempAlertTitle': 'High Temperature Alert',
+    'highTempAlertMsg': 'Ensure adequate irrigation for your crops.',
+    'heavyRainfallTitle': 'Heavy Rainfall',
+    'heavyRainfallMsg': 'Monitor for flooding and disease.',
+    'strongWindTitle': 'Strong Wind Warning',
+    'strongWindMsg': 'Protect young plants.',
+    'heavyRainForecastTitle': 'Heavy Rain Forecast',
+    'heavyRainForecastMsg': 'Plan irrigation accordingly.',
+    'lowHumidityAlertTitle': 'Low Humidity Alert',
+    'lowHumidityAlertMsg': 'Increase irrigation frequency.',
+    'temperatureIs': 'Temperature is',
+    'ensureIrrigation': 'Ensure adequate irrigation for your crops.',
+    'currentRainfall': 'Current rainfall',
+    'monitorFlooding': 'Monitor for flooding and disease.',
+    'windSpeedIs': 'Wind speed',
+    'protectYoungPlants': 'Protect young plants.',
+    'expectedRainfall': 'Expected rainfall',
+    'planIrrigationAccordingly': 'Plan irrigation accordingly.',
+    'increaseIrrigationFreq': 'Increase irrigation frequency.',
+    
+    // Weather Descriptions
+    'clearSky': 'Clear sky',
+    'partlyCloudy': 'Partly cloudy',
+    'foggy': 'Foggy',
+    'drizzle': 'Drizzle',
+    'rain': 'Rain',
+    'snow': 'Snow',
+    'snowGrains': 'Snow grains',
+    'rainShowers': 'Rain showers',
+    'snowShowers': 'Snow showers',
+    'thunderstorm': 'Thunderstorm',
+    'thunderstormHail': 'Thunderstorm with hail',
+    'unknown': 'Unknown',
   };
+
+
 
   static const Map<String, dynamic> ms = {
     'appName': 'PaddyAI',
@@ -700,7 +946,7 @@ mixin LocaleData {
     'expertAdvice': 'Dapatkan nasihat pertanian pakar',
     'clearChat': 'Kosongkan Sembang',
     'clearConversation': 'Adakah anda pasti mahu mengosongkan perbualan?',
-    'clear': 'Kosongkan',
+    'clear': 'Kosongkan', 
     'typeMessage': 'Taip mesej...',
     'send': 'Hantar',
     'error': 'Ralat',
@@ -728,8 +974,11 @@ mixin LocaleData {
     'toShip': 'Untuk Hantar',
     'toReceive': 'Untuk Terima',
     'toReview': 'Untuk Ulasan',
+    'review': 'Ulasan',
     'completed': 'Selesai',
     'cancelled': 'Dibatalkan',
+    'order': 'Pesanan',
+    'status': 'Status',
     'orderDetails': 'Butiran Pesanan',
     'trackOrder': 'Jejak Pesanan',
     'contactSeller': 'Hubungi Penjual',
@@ -937,6 +1186,51 @@ mixin LocaleData {
     'fillAllCardDetails': 'Sila isi semua butiran kad',
     'pay': 'Bayar',
     
+    // Orders Screen
+    'oopsSomethingWrong': 'Alamak! Ada Masalah',
+    'pleaseTryAgainLater': 'Sila cuba lagi kemudian',
+    'noOrders': 'Tiada Pesanan',
+    'yourOrdersAppearHere': 'Pesanan anda akan muncul di sini',
+    'browseMarketplace': 'Layari Pasaran',
+    'qty': 'Kuantiit',
+    'moreItems': 'item lagi',
+    'totalAmount': 'Jumlah Keseluruhan',
+    'payNow': 'Bayar',
+    'track': 'Jejak',
+    'received': 'Diterima',
+    'buyAgain': 'Beli Lagi',
+    'details': 'Butiran',
+    'view': 'Lihat',
+    'pending': 'Menunggu',
+    'redirectingToPayment': 'Mengalihkan ke pembayaran...',
+    'openingOrderTracking': 'Membuka penjejakan pesanan...',
+    'confirmReceipt': 'Sahkan Penerimaan',
+    'receivedOrderGoodCondition': 'Adakah anda telah menerima pesanan ini dalam keadaan baik?',
+    'notYet': 'Belum Lagi',
+    'yesReceived': 'Ya, Diterima',
+    'orderMarkedReceived': 'Pesanan ditandakan sebagai diterima!',
+    'openingReviewForm': 'Membuka borang ulasan...',
+    'addingItemsToCart': 'Menambah item ke troli...',
+    'orderNotFound': 'Pesanan tidak dijumpai',
+    'errorLoadingOrderDetails': 'Ralat memuatkan butiran pesanan',
+    'date': 'Tarikh',
+    'deliveryAddress': 'Alamat Penghantaran',
+    'paymentInformation': 'Maklumat Pembayaran',
+    'method': 'Kaedah',
+    'trackingNumber': 'Nombor Penjejakan',
+    'orderItems': 'Item Pesanan',
+    'shippingFeeLabel': 'Cas Penghantaran',
+    'notes': 'Nota',
+    
+    // Settings Screen
+    'manageAppPreferences': 'Urus pilihan aplikasi',
+    'languageSettings': 'Tetapan Bahasa',
+    'english': 'Bahasa Inggeris',
+    'bahasaMelayu': 'Bahasa Melayu',
+    'appSettings': 'Tetapan Aplikasi',
+    'manageNotificationPreferences': 'Urus pilihan pemberitahuan',
+    'about': 'Mengenai',
+    
     // Disease Names
     'brownPlanthopper': 'Bena Perang',
     'brownSpot': 'Bintik Perang',
@@ -956,5 +1250,79 @@ mixin LocaleData {
     'riceLeafrollerDesc': 'Larva melipat dan menggulung daun padi, makan di dalamnya dan mengurangkan fotosintesis.',
     'riceYellowStemBorerDesc': 'Larva mengorek batang padi, menyebabkan deadhearts dan whiteheads.',
     'sheathBlightDesc': 'Penyakit kulat yang disebabkan oleh Rhizoctonia solani, mencipta lesi tidak teratur pada sarung daun.',
+    
+    // Detect History Screen
+    'detectHistory': 'Sejarah Pengesanan',
+    'diseaseDetectionRecords': 'Rekod pengesanan penyakit anda',
+    'refresh': 'Muat Semula',
+    'noDetectionsFound': 'Tiada pengesanan dijumpai',
+    'loadingDetections': 'Memuatkan pengesanan...',
+    'deleteDetection': 'Padam Pengesanan',
+    'deleteDetectionConfirm': 'Adakah anda pasti mahu memadam rekod pengesanan ini?',
+    'detectionDeleted': 'pengesanan dipadam',
+    'scannedImage': 'Gambar Imbasan',
+    'detectionDate': 'Tarikh Pengesanan',
+    'cropVariety': 'Jenis Tanaman',
+    'recommendedTreatment': 'Rawatan Disyorkan',
+    'imageNotAvailable': 'Gambar tidak tersedia',
+    'unknownDisease': 'Tidak Diketahui',
+    
+    // Weather Alert Screen
+    'weatherAlerts': 'Amaran Cuaca',
+    'monitorConditionsForCrops': 'Pantau keadaan untuk tanaman anda',
+    'fetchingWeatherData': 'Mendapatkan data cuaca...',
+    'unableGetLocation': 'Tidak dapat mendapatkan lokasi. Sila aktifkan perkhidmatan lokasi.',
+    'enableLocationServices': 'Aktifkan perkhidmatan lokasi',
+    'unableFetchWeather': 'Tidak dapat mendapatkan data cuaca. Sila cuba lagi.',
+    'pleaseTryAgain': 'Sila cuba lagi',
+    'retry': 'Cuba Lagi',
+    'openLocationSettings': 'Buka Tetapan Lokasi',
+    'noWeatherAlerts': 'Tiada Amaran Cuaca',
+    'weatherConditionsFavorable': 'Keadaan cuaca adalah baik untuk tanaman anda',
+    'activeAlerts': 'Amaran Aktif',
+    'sevenDayForecast': 'Ramalan 7 Hari',
+    'tomorrow': 'Esok',
+    'monday': 'Isnin',
+    'tuesday': 'Selasa',
+    'wednesday': 'Rabu',
+    'thursday': 'Khamis',
+    'friday': 'Jumaat',
+    'saturday': 'Sabtu',
+    'sunday': 'Ahad',
+    
+    // Weather Alert Types
+    'highTempAlertTitle': 'Amaran Suhu Tinggi',
+    'highTempAlertMsg': 'Pastikan pengairan yang mencukupi untuk tanaman anda.',
+    'heavyRainfallTitle': 'Hujan Lebat',
+    'heavyRainfallMsg': 'Pantau untuk banjir dan penyakit.',
+    'strongWindTitle': 'Amaran Angin Kuat',
+    'strongWindMsg': 'Lindungi tanaman muda.',
+    'heavyRainForecastTitle': 'Ramalan Hujan Lebat',
+    'heavyRainForecastMsg': 'Rancang pengairan dengan sewajarnya.',
+    'lowHumidityAlertTitle': 'Amaran Kelembapan Rendah',
+    'lowHumidityAlertMsg': 'Tingkatkan kekerapan pengairan.',
+    'temperatureIs': 'Suhu adalah',
+    'ensureIrrigation': 'Pastikan pengairan yang mencukupi untuk tanaman anda.',
+    'currentRainfall': 'Hujan semasa',
+    'monitorFlooding': 'Pantau untuk banjir dan penyakit.',
+    'windSpeedIs': 'Kelajuan angin',
+    'protectYoungPlants': 'Lindungi tanaman muda.',
+    'expectedRainfall': 'Hujan dijangka',
+    'planIrrigationAccordingly': 'Rancang pengairan dengan sewajarnya.',
+    'increaseIrrigationFreq': 'Tingkatkan kekerapan pengairan.',
+    
+    // Weather Descriptions
+    'clearSky': 'Langit cerah',
+    'partlyCloudy': 'Sebahagian berawan',
+    'foggy': 'Berkabus',
+    'drizzle': 'Gerimis',
+    'rain': 'Hujan',
+    'snow': 'Salji',
+    'snowGrains': 'Butiran salji',
+    'rainShowers': 'Hujan renyai',
+    'snowShowers': 'Salji renyai',
+    'thunderstorm': 'Ribut petir',
+    'thunderstormHail': 'Ribut petir dengan hujan batu',
+    'unknown': 'Tidak diketahui',
   };
 }

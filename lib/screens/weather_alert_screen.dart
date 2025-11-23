@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:weather_animation/weather_animation.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import '../services/weather_service.dart';
 import '../utils/constants.dart';
+import '../l10n/app_locale.dart';
 
 class WeatherAlertScreen extends StatefulWidget {
   const WeatherAlertScreen({super.key});
@@ -83,36 +86,46 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              primaryColor,
-              backgroundColor,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+      body: Stack(
+        children: [
+          // Weather animation background
+          if (_weatherData != null)
+            Positioned.fill(
+              child: _buildWeatherAnimation(),
+            ),
+          // Content
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  primaryColor.withOpacity(0.7),
+                  backgroundColor.withOpacity(0.7),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  _buildHeader(),
+                  Expanded(
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(30),
+                          topRight: Radius.circular(30),
+                        ),
+                      ),
+                      child: _buildContent(),
                     ),
                   ),
-                  child: _buildContent(),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -132,9 +145,9 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Weather Alerts',
-                      style: TextStyle(
+                    Text(
+                      AppLocale.weatherAlerts.getString(context),
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -163,9 +176,9 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
                         ],
                       )
                     else
-                      const Text(
-                        'Monitor conditions for your crops',
-                        style: TextStyle(
+                      Text(
+                        AppLocale.monitorConditionsForCrops.getString(context),
+                        style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
                         ),
@@ -218,7 +231,7 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _weatherService.getWeatherDescription(weatherCode),
+                    _getLocalizedWeatherDescription(weatherCode, context),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 14,
@@ -273,13 +286,13 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
 
   Widget _buildContent() {
     if (_isLoading) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Fetching weather data...'),
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(AppLocale.fetchingWeatherData.getString(context)),
           ],
         ),
       );
@@ -303,7 +316,7 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
               ElevatedButton.icon(
                 onPressed: _loadWeatherData,
                 icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                label: Text(AppLocale.retry.getString(context)),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: primaryColor,
                   foregroundColor: Colors.white,
@@ -315,7 +328,7 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
                 onPressed: () async {
                   await Geolocator.openLocationSettings();
                 },
-                child: const Text('Open Location Settings'),
+                child: Text(AppLocale.openLocationSettings.getString(context)),
               ),
             ],
           ),
@@ -355,16 +368,16 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
         children: [
           Icon(Icons.check_circle, size: 64, color: Colors.green.shade400),
           const SizedBox(height: 16),
-          const Text(
-            'No Weather Alerts',
-            style: TextStyle(
+          Text(
+            AppLocale.noWeatherAlerts.getString(context),
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Weather conditions are favorable for your crops',
+            AppLocale.weatherConditionsFavorable.getString(context),
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 14,
@@ -380,9 +393,9 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Active Alerts',
-          style: TextStyle(
+        Text(
+          AppLocale.activeAlerts.getString(context),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -421,6 +434,38 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
         alertColor = Colors.grey;
     }
 
+    // Translate alert title and message based on alert type
+    String localizedTitle = alert['title'];
+    String localizedMessage = alert['message'];
+
+    switch (alert['type']) {
+      case 'heat':
+        localizedTitle = AppLocale.highTempAlertTitle.getString(context);
+        final temp = alert['message'].toString().split('is ')[1].split('°C')[0];
+        localizedMessage = '${AppLocale.temperatureIs.getString(context)} $temp°C. ${AppLocale.ensureIrrigation.getString(context)}';
+        break;
+      case 'rain':
+        localizedTitle = AppLocale.heavyRainfallTitle.getString(context);
+        final rainfall = alert['message'].toString().split(': ')[1].split('mm')[0];
+        localizedMessage = '${AppLocale.currentRainfall.getString(context)}: ${rainfall}mm. ${AppLocale.monitorFlooding.getString(context)}';
+        break;
+      case 'wind':
+        localizedTitle = AppLocale.strongWindTitle.getString(context);
+        final windSpeed = alert['message'].toString().split(': ')[1].split(' km/h')[0];
+        localizedMessage = '${AppLocale.windSpeedIs.getString(context)}: $windSpeed km/h. ${AppLocale.protectYoungPlants.getString(context)}';
+        break;
+      case 'forecast':
+        localizedTitle = AppLocale.heavyRainForecastTitle.getString(context);
+        final expectedRain = alert['message'].toString().split(': ')[1].split('mm')[0];
+        localizedMessage = '${AppLocale.expectedRainfall.getString(context)}: ${expectedRain}mm ${AppLocale.today.getString(context).toLowerCase()}. ${AppLocale.planIrrigationAccordingly.getString(context)}';
+        break;
+      case 'drought':
+        localizedTitle = AppLocale.lowHumidityAlertTitle.getString(context);
+        final humidity = alert['message'].toString().split(': ')[1].split('%')[0];
+        localizedMessage = '${AppLocale.humidity.getString(context)}: $humidity%. ${AppLocale.increaseIrrigationFreq.getString(context)}';
+        break;
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -441,7 +486,7 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  alert['title'],
+                  localizedTitle,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -450,7 +495,7 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  alert['message'],
+                  localizedMessage,
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey.shade700,
@@ -479,9 +524,9 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '7-Day Forecast',
-          style: TextStyle(
+        Text(
+          AppLocale.sevenDayForecast.getString(context),
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
@@ -492,10 +537,10 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
           (index) {
             final date = DateTime.parse(dates[index]);
             final dayName = index == 0
-                ? 'Today'
+                ? AppLocale.today.getString(context)
                 : index == 1
-                    ? 'Tomorrow'
-                    : _getDayName(date.weekday);
+                    ? AppLocale.tomorrow.getString(context)
+                    : _getDayName(date.weekday, context);
 
             return Container(
               margin: const EdgeInsets.only(bottom: 8),
@@ -562,24 +607,91 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
     );
   }
 
-  String _getDayName(int weekday) {
+  String _getDayName(int weekday, BuildContext context) {
     switch (weekday) {
       case 1:
-        return 'Monday';
+        return AppLocale.monday.getString(context);
       case 2:
-        return 'Tuesday';
+        return AppLocale.tuesday.getString(context);
       case 3:
-        return 'Wednesday';
+        return AppLocale.wednesday.getString(context);
       case 4:
-        return 'Thursday';
+        return AppLocale.thursday.getString(context);
       case 5:
-        return 'Friday';
+        return AppLocale.friday.getString(context);
       case 6:
-        return 'Saturday';
+        return AppLocale.saturday.getString(context);
       case 7:
-        return 'Sunday';
+        return AppLocale.sunday.getString(context);
       default:
         return '';
+    }
+  }
+
+  String _getLocalizedWeatherDescription(int weatherCode, BuildContext context) {
+    switch (weatherCode) {
+      case 0:
+        return AppLocale.clearSky.getString(context);
+      case 1:
+      case 2:
+      case 3:
+        return AppLocale.partlyCloudy.getString(context);
+      case 45:
+      case 48:
+        return AppLocale.foggy.getString(context);
+      case 51:
+      case 53:
+      case 55:
+        return AppLocale.drizzle.getString(context);
+      case 61:
+      case 63:
+      case 65:
+        return AppLocale.rain.getString(context);
+      case 71:
+      case 73:
+      case 75:
+        return AppLocale.snow.getString(context);
+      case 77:
+        return AppLocale.snowGrains.getString(context);
+      case 80:
+      case 81:
+      case 82:
+        return AppLocale.rainShowers.getString(context);
+      case 85:
+      case 86:
+        return AppLocale.snowShowers.getString(context);
+      case 95:
+        return AppLocale.thunderstorm.getString(context);
+      case 96:
+      case 99:
+        return AppLocale.thunderstormHail.getString(context);
+      default:
+        return AppLocale.unknown.getString(context);
+    }
+  }
+
+  Widget _buildWeatherAnimation() {
+    if (_weatherData == null) return const SizedBox();
+    
+    final current = _weatherData!['current'];
+    final weatherCode = current['weather_code'] ?? 0;
+    
+    // Map weather codes to weather scenes
+    // Weather codes: 0=clear, 1-3=partly cloudy, 45-48=fog, 51-67=rain, 71-77=snow, 80-99=rain/storms
+    if (weatherCode == 0) {
+      return WeatherScene.scorchingSun.sceneWidget;
+    } else if (weatherCode >= 1 && weatherCode <= 3) {
+      return WeatherScene.sunset.sceneWidget;
+    } else if (weatherCode >= 51 && weatherCode <= 67) {
+      return WeatherScene.rainyOvercast.sceneWidget;
+    } else if (weatherCode >= 71 && weatherCode <= 77) {
+      return WeatherScene.frosty.sceneWidget;
+    } else if (weatherCode >= 80 && weatherCode <= 99) {
+      return WeatherScene.stormy.sceneWidget;
+    } else if (weatherCode >= 45 && weatherCode <= 48) {
+      return WeatherScene.rainyOvercast.sceneWidget;
+    } else {
+      return WeatherScene.sunset.sceneWidget;
     }
   }
 }

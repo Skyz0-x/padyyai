@@ -590,7 +590,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
-                        product['category'] ?? 'General',
+                        _getLocalizedCategoryName(product['category'] ?? 'General'),
                         style: TextStyle(
                           fontSize: 8,
                           color: primaryColor,
@@ -638,6 +638,62 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
         return Icons.nature;
       default:
         return Icons.inventory;
+    }
+  }
+
+  String _getLocalizedDiseaseName(String diseaseName) {
+    // Convert disease name to match database format
+    final normalizedName = diseaseName.toLowerCase().replaceAll(' ', '_');
+    
+    switch (normalizedName) {
+      case 'brown_planthopper':
+      case 'brownplanthopper':
+        return AppLocale.brownPlanthopper.getString(context);
+      case 'brown_spot':
+      case 'brownspot':
+        return AppLocale.brownSpot.getString(context);
+      case 'healthy':
+      case 'healthy_plant':
+        return AppLocale.healthyPlant.getString(context);
+      case 'leaf_blast':
+      case 'leafblast':
+        return AppLocale.leafBlast.getString(context);
+      case 'leaf_scald':
+      case 'leafscald':
+        return AppLocale.leafScald.getString(context);
+      case 'rice_leafroller':
+      case 'riceleafroller':
+        return AppLocale.riceLeafroller.getString(context);
+      case 'rice_yellow_stem_borer':
+      case 'riceyellowstemborer':
+        return AppLocale.riceYellowStemBorer.getString(context);
+      case 'sheath_blight':
+      case 'sheathblight':
+        return AppLocale.sheathBlight.getString(context);
+      default:
+        // Fallback to formatted version if not found
+        return diseaseName.replaceAll('_', ' ').toUpperCase();
+    }
+  }
+
+  String _getLocalizedCategoryName(String category) {
+    switch (category) {
+      case 'Fungicides':
+        return AppLocale.fungicides.getString(context);
+      case 'Herbicides':
+        return AppLocale.herbicides.getString(context);
+      case 'Pesticides':
+        return AppLocale.pesticides.getString(context);
+      case 'Fertilizers':
+        return AppLocale.fertilizers.getString(context);
+      case 'Seeds':
+        return AppLocale.seeds.getString(context);
+      case 'Tools':
+        return AppLocale.tools.getString(context);
+      case 'Organic':
+        return AppLocale.organic.getString(context);
+      default:
+        return category;
     }
   }
 
@@ -742,7 +798,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          category,
+                          _getLocalizedCategoryName(category),
                           style: TextStyle(
                             fontSize: 12,
                             color: primaryColor,
@@ -870,7 +926,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                               const Icon(Icons.check_circle, size: 16, color: Colors.green),
                               const SizedBox(width: 6),
                               Text(
-                                disease.toString().replaceAll('_', ' ').toUpperCase(),
+                                _getLocalizedDiseaseName(disease.toString()),
                                 style: const TextStyle(
                                   fontSize: 12,
                                   color: Colors.green,
