@@ -343,6 +343,41 @@ class AppLocale {
   static const String manageNotificationPreferences = 'manageNotificationPreferences';
   static const String about = 'about';
   
+  // Farming Calendar & Reminders
+  static const String farmingCalendar = 'farmingCalendar';
+  static const String upcomingTasks = 'upcomingTasks';
+  static const String noUpcomingTasks = 'noUpcomingTasks';
+  static const String addReminder = 'addReminder';
+  static const String viewAllReminders = 'viewAllReminders';
+  static const String markComplete = 'markComplete';
+  static const String fertilization = 'fertilization';
+  static const String pestControl = 'pestControl';
+  static const String fieldInspection = 'fieldInspection';
+  static const String generateCalendar = 'generateCalendar';
+  static const String calendarGenerated = 'calendarGenerated';
+  static const String todayTasks = 'todayTasks';
+  static const String thisWeekTasks = 'thisWeekTasks';
+  static const String low = 'low';
+  static const String dueToday = 'dueToday';
+  static const String overdue = 'overdue';
+  static const String taskCompleted = 'taskCompleted';
+  static const String noNotifications = 'noNotifications';
+  
+  // Reminder Form
+  static const String reminderTitle = 'reminderTitle';
+  static const String reminderDescription = 'reminderDescription';
+  static const String reminderDate = 'reminderDate';
+  static const String reminderTime = 'reminderTime';
+  static const String reminderType = 'reminderType';
+  static const String reminderPriority = 'reminderPriority';
+  static const String medium = 'medium';
+  static const String high = 'high';
+  static const String urgent = 'urgent';
+  static const String custom = 'custom';
+  static const String create = 'create';
+  static const String pleaseEnterTitle = 'pleaseEnterTitle';
+  static const String reminderCreatedSuccess = 'reminderCreatedSuccess';
+  
   // Disease Names
   static const String brownPlanthopper = 'brownPlanthopper';
   static const String brownSpot = 'brownSpot';
@@ -792,6 +827,41 @@ mixin LocaleData {
     'manageNotificationPreferences': 'Manage notification preferences',
     'about': 'About',
     
+    // Farming Calendar & Reminders
+    'farmingCalendar': 'Farming Calendar',
+    'upcomingTasks': 'Upcoming Tasks',
+    'noUpcomingTasks': 'No upcoming tasks. You\'re all caught up!',
+    'addReminder': 'Add Reminder',
+    'viewAllReminders': 'View All',
+    'markComplete': 'Mark Complete',
+    'fertilization': 'Fertilization',
+    'pestControl': 'Pest Control',
+    'fieldInspection': 'Field Inspection',
+    'generateCalendar': 'Generate Calendar',
+    'calendarGenerated': 'Farming calendar generated successfully!',
+    'todayTasks': 'Today\'s Tasks',
+    'thisWeekTasks': 'This Week',
+    'low': 'Low',
+    'dueToday': 'Due Today',
+    'overdue': 'Overdue',
+    'taskCompleted': 'Task completed!',
+    'noNotifications': 'No new notifications',
+    
+    // Reminder Form
+    'reminderTitle': 'Title',
+    'reminderDescription': 'Description',
+    'reminderDate': 'Date',
+    'reminderTime': 'Time',
+    'reminderType': 'Type',
+    'reminderPriority': 'Priority',
+    'medium': 'Medium',
+    'high': 'High',
+    'urgent': 'Urgent',
+    'custom': 'Custom',
+    'create': 'Create',
+    'pleaseEnterTitle': 'Please enter a title',
+    'reminderCreatedSuccess': 'Reminder created successfully!',
+    
     // Disease Names
     'brownPlanthopper': 'Brown Planthopper',
     'brownSpot': 'Brown Spot',
@@ -1230,6 +1300,41 @@ mixin LocaleData {
     'appSettings': 'Tetapan Aplikasi',
     'manageNotificationPreferences': 'Urus pilihan pemberitahuan',
     'about': 'Mengenai',
+    
+    // Farming Calendar & Reminders
+    'farmingCalendar': 'Kalendar Pertanian',
+    'upcomingTasks': 'Tugasan Akan Datang',
+    'noUpcomingTasks': 'Tiada tugasan akan datang. Anda sudah selesai!',
+    'addReminder': 'Tambah Peringatan',
+    'viewAllReminders': 'Lihat Semua',
+    'markComplete': 'Tandakan Selesai',
+    'fertilization': 'Pembajaan',
+    'pestControl': 'Kawalan Perosak',
+    'fieldInspection': 'Pemeriksaan Ladang',
+    'generateCalendar': 'Jana Kalendar',
+    'calendarGenerated': 'Kalendar pertanian berjaya dijana!',
+    'todayTasks': 'Tugasan Hari Ini',
+    'thisWeekTasks': 'Minggu Ini',
+    'low': 'Rendah',
+    'dueToday': 'Hari Ini',
+    'overdue': 'Tertunggak',
+    
+    // Reminder Form
+    'reminderTitle': 'Tajuk',
+    'reminderDescription': 'Penerangan',
+    'reminderDate': 'Tarikh',
+    'reminderTime': 'Masa',
+    'reminderType': 'Jenis',
+    'reminderPriority': 'Keutamaan',
+    'medium': 'Sederhana',
+    'high': 'Tinggi',
+    'urgent': 'Segera',
+    'custom': 'Lain-lain',
+    'create': 'Cipta',
+    'pleaseEnterTitle': 'Sila masukkan tajuk',
+    'reminderCreatedSuccess': 'Peringatan berjaya dicipta!',
+    'taskCompleted': 'Tugasan selesai!',
+    'noNotifications': 'Tiada pemberitahuan baharu',
     
     // Disease Names
     'brownPlanthopper': 'Bena Perang',

@@ -6,6 +6,7 @@ import '../utils/constants.dart';
 import '../services/weather_service.dart';
 import '../services/paddy_monitoring_service.dart';
 import '../services/disease_records_service.dart';
+import '../services/farming_reminders_service.dart';
 import 'detect_screen.dart';
 import 'marketplace_screen.dart';
 import 'weather_alert_screen.dart';
@@ -29,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final WeatherService _weatherService = WeatherService();
   final PaddyMonitoringService _paddyMonitoringService = PaddyMonitoringService();
   final DiseaseRecordsService _diseaseRecordsService = DiseaseRecordsService();
+  final FarmingRemindersService _remindersService = FarmingRemindersService();
   Map<String, dynamic>? _weatherData;
   String _locationName = 'Loading...';
   bool _loadingWeather = true;
@@ -36,6 +38,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Farming stats
   Map<String, dynamic> _farmingStats = {};
   bool _loadingStats = true;
+  
+  // Supabase client
+  final _supabase = SupabaseConfig.client;
+  
+  // Reminders
+  List<Map<String, dynamic>> _upcomingReminders = [];
+  int _pendingNotificationsCount = 0;
+  bool _loadingReminders = true;
+  
+  // Calendar state
+  DateTime _selectedMonth = DateTime.now();
+  DateTime? _selectedDate;
+  Map<DateTime, List<Map<String, dynamic>>> _monthReminders = {};
   
   // Paddy variety tracking
   String? selectedVariety;
@@ -72,6 +87,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     _loadWeatherData();
     _loadSavedPaddyMonitoring();
     _loadFarmingStats();
+    _loadReminders();
   }
 
   void _initializeAnimations() {
@@ -247,6 +263,28 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       if (mounted) {
         setState(() {
           _loadingStats = false;
+        });
+      }
+    }
+  }
+  
+  Future<void> _loadReminders() async {
+    try {
+      final reminders = await _remindersService.getUpcomingReminders(days: 7);
+      final notificationCount = await _remindersService.getPendingNotificationsCount();
+      
+      if (mounted) {
+        setState(() {
+          _upcomingReminders = reminders;
+          _pendingNotificationsCount = notificationCount;
+          _loadingReminders = false;
+        });
+      }
+    } catch (e) {
+      print('❌ Error loading reminders: $e');
+      if (mounted) {
+        setState(() {
+          _loadingReminders = false;
         });
       }
     }
@@ -467,6 +505,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     const SizedBox(height: 24),
                     _buildPaddyMonitoringCard(),
                     const SizedBox(height: 24),
+                    _buildFarmingCalendar(),
+                    const SizedBox(height: 24),
                     _buildQuickActions(),
                     const SizedBox(height: 24),
                     _buildFarmingStats(),
@@ -546,14 +586,43 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     ),
                   ),
                   const Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      // TODO: Show notifications
-                    },
-                    icon: const Icon(
-                      Icons.notifications_outlined,
-                      color: Colors.white,
-                    ),
+                  Stack(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          _showNotificationsSheet();
+                        },
+                        icon: const Icon(
+                          Icons.notifications_outlined,
+                          color: Colors.white,
+                        ),
+                      ),
+                      if (_pendingNotificationsCount > 0)
+                        Positioned(
+                          right: 8,
+                          top: 8,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Text(
+                              _pendingNotificationsCount > 9 ? '9+' : '$_pendingNotificationsCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ],
               ),
@@ -1469,6 +1538,1149 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFarmingCalendar() {
+    return ScaleTransition(
+      scale: _paddyCardAnimation,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1565C0).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.calendar_month,
+                  color: Colors.white,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  AppLocale.farmingCalendar.getString(context),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                onPressed: () => _showAddReminderDialog(),
+                icon: const Icon(Icons.add_circle_outline, color: Colors.white),
+                tooltip: AppLocale.addReminder.getString(context),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          
+          // Month selector
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedMonth = DateTime(
+                      _selectedMonth.year,
+                      _selectedMonth.month - 1,
+                    );
+                  });
+                  _loadReminders();
+                },
+                icon: const Icon(Icons.chevron_left, color: Colors.white, size: 24),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+              Expanded(
+                child: Text(
+                  '${_getMonthName(_selectedMonth.month)} ${_selectedMonth.year}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  setState(() {
+                    _selectedMonth = DateTime(
+                      _selectedMonth.year,
+                      _selectedMonth.month + 1,
+                    );
+                  });
+                  _loadReminders();
+                },
+                icon: const Icon(Icons.chevron_right, color: Colors.white, size: 24),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // Calendar grid
+          if (_loadingReminders)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(40),
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
+            )
+          else
+            _buildCalendarGrid(),
+        ],
+      ),
+      ),
+    );
+  }
+
+  String _getMonthName(int month) {
+    const months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return months[month - 1];
+  }
+
+  Widget _buildCalendarGrid() {
+    final firstDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
+    final lastDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
+    final firstWeekday = firstDayOfMonth.weekday % 7; // 0 = Sunday
+    final daysInMonth = lastDayOfMonth.day;
+    
+    return Column(
+      children: [
+        // Weekday headers
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+              .map((day) => Expanded(
+                    child: Center(
+                      child: Text(
+                        day,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.7),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
+                  ))
+              .toList(),
+        ),
+        const SizedBox(height: 8),
+        
+        // Calendar days
+        ...List.generate((daysInMonth + firstWeekday) ~/ 7 + 1, (weekIndex) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: List.generate(7, (dayIndex) {
+                final dayNumber = weekIndex * 7 + dayIndex - firstWeekday + 1;
+                
+                if (dayNumber < 1 || dayNumber > daysInMonth) {
+                  return const Expanded(child: SizedBox(height: 44));
+                }
+                
+                final date = DateTime(_selectedMonth.year, _selectedMonth.month, dayNumber);
+                final hasReminders = _monthReminders.containsKey(date) && 
+                                   _monthReminders[date]!.isNotEmpty;
+                final isToday = DateTime.now().year == date.year &&
+                              DateTime.now().month == date.month &&
+                              DateTime.now().day == date.day;
+                final isSelected = _selectedDate?.year == date.year &&
+                                 _selectedDate?.month == date.month &&
+                                 _selectedDate?.day == date.day;
+                
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() => _selectedDate = date);
+                      if (hasReminders) {
+                        _showDayReminders(date);
+                      } else {
+                        _showAddReminderDialog(preselectedDate: date);
+                      }
+                    },
+                    child: Container(
+                      height: 38,
+                      margin: const EdgeInsets.all(1.5),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? Colors.white
+                            : isToday
+                                ? Colors.white.withOpacity(0.3)
+                                : Colors.transparent,
+                        borderRadius: BorderRadius.circular(8),
+                        border: hasReminders
+                            ? Border.all(color: Colors.amber, width: 2)
+                            : null,
+                      ),
+                      child: Stack(
+                        children: [
+                          Center(
+                            child: Text(
+                              '$dayNumber',
+                              style: TextStyle(
+                                color: isSelected
+                                    ? const Color(0xFF1565C0)
+                                    : Colors.white,
+                                fontWeight: isToday || hasReminders
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                          if (hasReminders)
+                            Positioned(
+                              top: 2,
+                              right: 2,
+                              child: Container(
+                                width: 6,
+                                height: 6,
+                                decoration: const BoxDecoration(
+                                  color: Colors.amber,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  void _showDayReminders(DateTime date) {
+    final reminders = _monthReminders[date] ?? [];
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${date.day}/${date.month}/${date.year}',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1565C0),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showAddReminderDialog(preselectedDate: date);
+                  },
+                  icon: const Icon(Icons.add_circle, color: Color(0xFF1565C0)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...reminders.map((reminder) => _buildReminderCard(reminder)).toList(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReminderCard(Map<String, dynamic> reminder, {bool isToday = false}) {
+    final scheduledDate = DateTime.parse(reminder['scheduled_date']);
+    final isOverdue = scheduledDate.isBefore(DateTime.now()) && !(reminder['is_completed'] ?? false);
+    final priority = reminder['priority'] ?? 'medium';
+    final reminderType = reminder['reminder_type'] ?? 'custom';
+    
+    // Icon mapping
+    IconData getIcon() {
+      switch (reminderType) {
+        case 'fertilization':
+          return Icons.spa;
+        case 'irrigation':
+          return Icons.water_drop;
+        case 'pest_control':
+          return Icons.bug_report;
+        case 'planting':
+          return Icons.agriculture;
+        case 'harvest':
+          return Icons.grass;
+        case 'field_inspection':
+          return Icons.find_in_page;
+        case 'weather_alert':
+          return Icons.cloud;
+        default:
+          return Icons.event_note;
+      }
+    }
+    
+    // Priority color
+    Color getPriorityColor() {
+      switch (priority) {
+        case 'urgent':
+          return Colors.red;
+        case 'high':
+          return Colors.orange;
+        case 'medium':
+          return Colors.blue;
+        case 'low':
+          return Colors.grey;
+        default:
+          return Colors.blue;
+      }
+    }
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: isToday ? const Color(0xFF2E7D32).withOpacity(0.05) : Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isOverdue 
+              ? Colors.red.shade200 
+              : isToday 
+                  ? const Color(0xFF2E7D32).withOpacity(0.3)
+                  : Colors.grey.shade200,
+          width: isToday ? 2 : 1,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: getPriorityColor().withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                getIcon(),
+                color: getPriorityColor(),
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          reminder['title'] ?? '',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ),
+                      if (isToday)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E7D32),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            AppLocale.dueToday.getString(context),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      if (isOverdue)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            AppLocale.overdue.getString(context),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (reminder['description'] != null && reminder['description'].toString().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        reminder['description'],
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.access_time,
+                        size: 14,
+                        color: Colors.grey.shade500,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${scheduledDate.day}/${scheduledDate.month}/${scheduledDate.year}',
+                        style: TextStyle(
+                          color: Colors.grey.shade600,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (!(reminder['is_completed'] ?? false))
+              IconButton(
+                icon: const Icon(Icons.check_circle_outline),
+                color: const Color(0xFF2E7D32),
+                iconSize: 24,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                onPressed: () async {
+                  await _remindersService.markAsCompleted(reminder['id']);
+                  await _loadReminders();
+                  
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(AppLocale.taskCompleted.getString(context)),
+                        backgroundColor: const Color(0xFF2E7D32),
+                      ),
+                    );
+                  }
+                },
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showNotificationsSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        builder: (context, scrollController) => Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.notifications,
+                          color: Color(0xFF2E7D32),
+                          size: 24,
+                        ),
+                        const SizedBox(width: 12),
+                        Text(
+                          AppLocale.notifications.getString(context),
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1B5E20),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (_pendingNotificationsCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '$_pendingNotificationsCount',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: FutureBuilder<List<Map<String, dynamic>>>(
+                  future: _remindersService.getAllReminders(
+                    includeCompleted: false,
+                  ),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    
+                    if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.notifications_none,
+                              size: 64,
+                              color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              AppLocale.noNotifications.getString(context),
+                              style: TextStyle(
+                                color: Colors.grey.shade500,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                    
+                    final allReminders = snapshot.data!;
+                    final now = DateTime.now();
+                    final today = DateTime(now.year, now.month, now.day);
+                    
+                    // Group reminders
+                    final overdue = allReminders.where((r) {
+                      final date = DateTime.parse(r['scheduled_date']);
+                      return date.isBefore(today);
+                    }).toList();
+                    
+                    final todayReminders = allReminders.where((r) {
+                      final date = DateTime.parse(r['scheduled_date']);
+                      return date.year == today.year &&
+                             date.month == today.month &&
+                             date.day == today.day;
+                    }).toList();
+                    
+                    final upcoming = allReminders.where((r) {
+                      final date = DateTime.parse(r['scheduled_date']);
+                      return date.isAfter(today);
+                    }).toList();
+                    
+                    return ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.all(16),
+                      children: [
+                        if (overdue.isNotEmpty) ...[
+                          _buildNotificationSection(
+                            AppLocale.overdue.getString(context),
+                            overdue,
+                            Colors.red,
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (todayReminders.isNotEmpty) ...[
+                          _buildNotificationSection(
+                            AppLocale.todayTasks.getString(context),
+                            todayReminders,
+                            const Color(0xFF2E7D32),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        if (upcoming.isNotEmpty) ...[
+                          _buildNotificationSection(
+                            AppLocale.thisWeekTasks.getString(context),
+                            upcoming,
+                            Colors.blue,
+                          ),
+                        ],
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNotificationSection(
+    String title,
+    List<Map<String, dynamic>> reminders,
+    Color color,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 20,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                '${reminders.length}',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ...reminders.map((reminder) => _buildReminderCard(reminder)).toList(),
+      ],
+    );
+  }
+
+  void _showAddReminderDialog({DateTime? preselectedDate}) {
+    final TextEditingController titleController = TextEditingController();
+    final TextEditingController descriptionController = TextEditingController();
+    DateTime selectedDate = preselectedDate ?? DateTime.now();
+    TimeOfDay selectedTime = TimeOfDay.now();
+    String selectedType = 'custom';
+    String selectedPriority = 'medium';
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(maxWidth: 700),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1565C0), Color(0xFF42A5F5)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF1565C0).withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.add_task,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            AppLocale.addReminder.getString(context),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                    
+                    // Form container
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title field
+                          TextField(
+                            controller: titleController,
+                            decoration: InputDecoration(
+                              labelText: 'Title',
+                              labelStyle: const TextStyle(color: Color(0xFF1565C0)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF42A5F5)),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                              ),
+                              prefixIcon: const Icon(Icons.title, color: Color(0xFF1565C0)),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          
+                          // Description field
+                          TextField(
+                            controller: descriptionController,
+                            maxLines: 3,
+                            decoration: InputDecoration(
+                              labelText: 'Description',
+                              labelStyle: const TextStyle(color: Color(0xFF1565C0)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                              ),
+                              prefixIcon: const Icon(Icons.description, color: Color(0xFF1565C0)),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          // Date picker
+                          InkWell(
+                            onTap: () async {
+                              final date = await showDatePicker(
+                                context: context,
+                                initialDate: selectedDate,
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now().add(const Duration(days: 365)),
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: Color(0xFF1565C0),
+                                        onPrimary: Colors.white,
+                                        onSurface: Colors.black,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (date != null) {
+                                setState(() => selectedDate = date);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.calendar_today, color: Color(0xFF1565C0)),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Date',
+                                          style: TextStyle(
+                                            color: Color(0xFF1565C0),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          
+                          // Time picker
+                          InkWell(
+                            onTap: () async {
+                              final time = await showTimePicker(
+                                context: context,
+                                initialTime: selectedTime,
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: Theme.of(context).copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                        primary: Color(0xFF1565C0),
+                                        onPrimary: Colors.white,
+                                        onSurface: Colors.black,
+                                      ),
+                                    ),
+                                    child: child!,
+                                  );
+                                },
+                              );
+                              if (time != null) {
+                                setState(() => selectedTime = time);
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.access_time, color: Color(0xFF1565C0)),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Time',
+                                          style: TextStyle(
+                                            color: Color(0xFF1565C0),
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          selectedTime.format(context),
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          // Reminder type
+                          DropdownButtonFormField<String>(
+                            value: selectedType,
+                            decoration: InputDecoration(
+                              labelText: 'Type',
+                              labelStyle: const TextStyle(color: Color(0xFF1565C0)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                              ),
+                              prefixIcon: const Icon(Icons.category, color: Color(0xFF1565C0)),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'fertilization', child: Text('Fertilization')),
+                              DropdownMenuItem(value: 'irrigation', child: Text('Irrigation')),
+                              DropdownMenuItem(value: 'pest_control', child: Text('Pest Control')),
+                              DropdownMenuItem(value: 'planting', child: Text('Planting')),
+                              DropdownMenuItem(value: 'harvest', child: Text('Harvest')),
+                              DropdownMenuItem(value: 'field_inspection', child: Text('Field Inspection')),
+                              DropdownMenuItem(value: 'weather_alert', child: Text('Weather Alert')),
+                              DropdownMenuItem(value: 'custom', child: Text('Custom')),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() => selectedType = value);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                          
+                          // Priority
+                          DropdownButtonFormField<String>(
+                            value: selectedPriority,
+                            decoration: InputDecoration(
+                              labelText: 'Priority',
+                              labelStyle: const TextStyle(color: Color(0xFF1565C0)),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide(color: Colors.grey.shade300),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                              ),
+                              prefixIcon: const Icon(Icons.flag, color: Color(0xFF1565C0)),
+                              filled: true,
+                              fillColor: Colors.grey.shade50,
+                            ),
+                            items: const [
+                              DropdownMenuItem(value: 'low', child: Text('Low')),
+                              DropdownMenuItem(value: 'medium', child: Text('Medium')),
+                              DropdownMenuItem(value: 'high', child: Text('High')),
+                              DropdownMenuItem(value: 'urgent', child: Text('Urgent')),
+                            ],
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() => selectedPriority = value);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 24),
+                          
+                          // Action buttons
+                          Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    side: const BorderSide(color: Color(0xFF1565C0), width: 2),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      color: Color(0xFF1565C0),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () async {
+                                    if (titleController.text.isEmpty) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(content: Text('Please enter a title')),
+                                      );
+                                      return;
+                                    }
+
+                                    final scheduledDateTime = DateTime(
+                                      selectedDate.year,
+                                      selectedDate.month,
+                                      selectedDate.day,
+                                      selectedTime.hour,
+                                      selectedTime.minute,
+                                    );
+
+                                    final reminderData = {
+                                      'title': titleController.text,
+                                      'description': descriptionController.text,
+                                      'reminder_type': selectedType,
+                                      'scheduled_date': scheduledDateTime.toIso8601String(),
+                                      'priority': selectedPriority,
+                                      'is_completed': false,
+                                      'notification_sent': false,
+                                    };
+
+                                    final result = await _remindersService.createReminder(reminderData);
+
+                                    if (mounted) {
+                                      Navigator.pop(context);
+                                      
+                                      if (result['success']) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Reminder created successfully!'),
+                                            backgroundColor: Color(0xFF1565C0),
+                                          ),
+                                        );
+                                        await _loadReminders();
+                                      } else {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text(result['message']),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF1565C0),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    elevation: 4,
+                                  ),
+                                  child: const Text(
+                                    'Create',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
