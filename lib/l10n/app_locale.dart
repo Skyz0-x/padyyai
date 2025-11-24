@@ -353,6 +353,8 @@ class AppLocale {
   static const String fertilization = 'fertilization';
   static const String pestControl = 'pestControl';
   static const String fieldInspection = 'fieldInspection';
+  static const String irrigation = 'irrigation';
+  static const String planting = 'planting';
   static const String generateCalendar = 'generateCalendar';
   static const String calendarGenerated = 'calendarGenerated';
   static const String todayTasks = 'todayTasks';
@@ -377,6 +379,11 @@ class AppLocale {
   static const String create = 'create';
   static const String pleaseEnterTitle = 'pleaseEnterTitle';
   static const String reminderCreatedSuccess = 'reminderCreatedSuccess';
+  static const String confirmDelete = 'confirmDelete';
+  static const String deleteReminderMessage = 'deleteReminderMessage';
+  static const String delete = 'delete';
+  static const String reminderDeleted = 'reminderDeleted';
+  static const String undo = 'undo';
   
   // Disease Names
   static const String brownPlanthopper = 'brownPlanthopper';
@@ -837,6 +844,8 @@ mixin LocaleData {
     'fertilization': 'Fertilization',
     'pestControl': 'Pest Control',
     'fieldInspection': 'Field Inspection',
+    'irrigation': 'Irrigation',
+    'planting': 'Planting',
     'generateCalendar': 'Generate Calendar',
     'calendarGenerated': 'Farming calendar generated successfully!',
     'todayTasks': 'Today\'s Tasks',
@@ -861,6 +870,11 @@ mixin LocaleData {
     'create': 'Create',
     'pleaseEnterTitle': 'Please enter a title',
     'reminderCreatedSuccess': 'Reminder created successfully!',
+    'confirmDelete': 'Delete Reminder?',
+    'deleteReminderMessage': 'Are you sure you want to delete this reminder? This action cannot be undone.',
+    'delete': 'Delete',
+    'reminderDeleted': 'Reminder deleted',
+    'undo': 'Undo',
     
     // Disease Names
     'brownPlanthopper': 'Brown Planthopper',
@@ -1311,6 +1325,8 @@ mixin LocaleData {
     'fertilization': 'Pembajaan',
     'pestControl': 'Kawalan Perosak',
     'fieldInspection': 'Pemeriksaan Ladang',
+    'irrigation': 'Pengairan',
+    'planting': 'Penanaman',
     'generateCalendar': 'Jana Kalendar',
     'calendarGenerated': 'Kalendar pertanian berjaya dijana!',
     'todayTasks': 'Tugasan Hari Ini',
@@ -1333,6 +1349,11 @@ mixin LocaleData {
     'create': 'Cipta',
     'pleaseEnterTitle': 'Sila masukkan tajuk',
     'reminderCreatedSuccess': 'Peringatan berjaya dicipta!',
+    'confirmDelete': 'Padam Peringatan?',
+    'deleteReminderMessage': 'Adakah anda pasti mahu memadam peringatan ini? Tindakan ini tidak boleh dibatalkan.',
+    'delete': 'Padam',
+    'reminderDeleted': 'Peringatan dipadam',
+    'undo': 'Batal',
     'taskCompleted': 'Tugasan selesai!',
     'noNotifications': 'Tiada pemberitahuan baharu',
     

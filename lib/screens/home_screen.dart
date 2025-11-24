@@ -1673,6 +1673,51 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     return months[month - 1];
   }
 
+  Color _getReminderTypeColor(String type) {
+    switch (type) {
+      case 'fertilization':
+        return const Color(0xFF4CAF50); // Green
+      case 'irrigation':
+        return const Color(0xFF2196F3); // Blue
+      case 'pest_control':
+        return const Color(0xFFFF5722); // Deep Orange
+      case 'planting':
+        return const Color(0xFF8BC34A); // Light Green
+      case 'harvest':
+        return const Color(0xFFFFC107); // Amber
+      case 'field_inspection':
+        return const Color(0xFF9C27B0); // Purple
+      case 'weather_alert':
+        return const Color(0xFFFF9800); // Orange
+      default:
+        return const Color(0xFF607D8B); // Blue Grey
+    }
+  }
+
+  Color _getDominantReminderColor(List<Map<String, dynamic>> reminders) {
+    if (reminders.isEmpty) return Colors.amber;
+    
+    // Priority order for colors
+    final typeOrder = [
+      'weather_alert',
+      'pest_control',
+      'harvest',
+      'planting',
+      'fertilization',
+      'irrigation',
+      'field_inspection',
+      'custom',
+    ];
+    
+    for (final type in typeOrder) {
+      if (reminders.any((r) => r['reminder_type'] == type)) {
+        return _getReminderTypeColor(type);
+      }
+    }
+    
+    return _getReminderTypeColor(reminders.first['reminder_type'] ?? 'custom');
+  }
+
   Widget _buildCalendarGrid() {
     final firstDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
     final lastDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
@@ -1724,6 +1769,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                  _selectedDate?.month == date.month &&
                                  _selectedDate?.day == date.day;
                 
+                // Check if this date is planting date
+                final isPlantingDate = plantingDate != null &&
+                                      date.year == plantingDate!.year &&
+                                      date.month == plantingDate!.month &&
+                                      date.day == plantingDate!.day;
+                
+                // Check if this date is estimated harvest date
+                final isHarvestDate = plantingDate != null && 
+                                     estimatedHarvestDaysMax != null &&
+                                     date.year == plantingDate!.add(Duration(days: estimatedHarvestDaysMax!)).year &&
+                                     date.month == plantingDate!.add(Duration(days: estimatedHarvestDaysMax!)).month &&
+                                     date.day == plantingDate!.add(Duration(days: estimatedHarvestDaysMax!)).day;
+                
+                // Get dominant reminder color if has reminders
+                final reminderColor = hasReminders 
+                    ? _getDominantReminderColor(_monthReminders[date]!)
+                    : Colors.amber;
+                
                 return Expanded(
                   child: GestureDetector(
                     onTap: () {
@@ -1740,12 +1803,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Colors.white
-                            : isToday
-                                ? Colors.white.withOpacity(0.3)
-                                : Colors.transparent,
+                            : hasReminders
+                                ? reminderColor.withOpacity(0.85)
+                                : isPlantingDate
+                                    ? const Color(0xFF8BC34A).withOpacity(0.75)
+                                    : isHarvestDate
+                                        ? const Color(0xFFFFC107).withOpacity(0.75)
+                                        : isToday
+                                            ? Colors.white.withOpacity(0.3)
+                                            : Colors.transparent,
                         borderRadius: BorderRadius.circular(8),
-                        border: hasReminders
-                            ? Border.all(color: Colors.amber, width: 2)
+                        border: (hasReminders || isPlantingDate || isHarvestDate) && !isSelected
+                            ? Border.all(
+                                color: hasReminders
+                                    ? reminderColor
+                                    : isPlantingDate
+                                        ? const Color(0xFF8BC34A)
+                                        : const Color(0xFFFFC107),
+                                width: 1.5,
+                              )
                             : null,
                       ),
                       child: Stack(
@@ -1757,7 +1833,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                 color: isSelected
                                     ? const Color(0xFF1565C0)
                                     : Colors.white,
-                                fontWeight: isToday || hasReminders
+                                fontWeight: isToday || hasReminders || isPlantingDate || isHarvestDate
                                     ? FontWeight.bold
                                     : FontWeight.normal,
                                 fontSize: 13,
@@ -1771,9 +1847,42 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               child: Container(
                                 width: 6,
                                 height: 6,
-                                decoration: const BoxDecoration(
-                                  color: Colors.amber,
+                                decoration: BoxDecoration(
+                                  color: reminderColor,
                                   shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: reminderColor.withOpacity(0.5),
+                                      blurRadius: 2,
+                                      spreadRadius: 1,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          if (isPlantingDate)
+                            Positioned(
+                              bottom: 2,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Icon(
+                                  Icons.agriculture,
+                                  size: 8,
+                                  color: isSelected ? const Color(0xFF8BC34A) : Colors.white,
+                                ),
+                              ),
+                            ),
+                          if (isHarvestDate)
+                            Positioned(
+                              bottom: 2,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Icon(
+                                  Icons.grass,
+                                  size: 8,
+                                  color: isSelected ? const Color(0xFFFFC107) : Colors.white,
                                 ),
                               ),
                             ),
@@ -1834,7 +1943,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildReminderCard(Map<String, dynamic> reminder, {bool isToday = false}) {
+  Widget _buildReminderCard(Map<String, dynamic> reminder, {bool isToday = false, bool enableSwipeToDelete = false}) {
     final scheduledDate = DateTime.parse(reminder['scheduled_date']);
     final isOverdue = scheduledDate.isBefore(DateTime.now()) && !(reminder['is_completed'] ?? false);
     final priority = reminder['priority'] ?? 'medium';
@@ -1878,7 +1987,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     }
     
-    return Container(
+    final cardContent = Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isToday ? const Color(0xFF2E7D32).withOpacity(0.05) : Colors.white,
@@ -2019,6 +2128,76 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         ),
       ),
     );
+    
+    // Wrap with Dismissible if swipe to delete is enabled
+    if (enableSwipeToDelete) {
+      return Dismissible(
+        key: Key('reminder_${reminder['id']}'),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          alignment: Alignment.centerRight,
+          padding: const EdgeInsets.only(right: 20),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: const Icon(
+            Icons.delete,
+            color: Colors.white,
+            size: 28,
+          ),
+        ),
+        confirmDismiss: (direction) async {
+          return await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(AppLocale.confirmDelete.getString(context)),
+              content: Text(AppLocale.deleteReminderMessage.getString(context)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text(AppLocale.cancel.getString(context)),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: Text(AppLocale.delete.getString(context)),
+                ),
+              ],
+            ),
+          ) ?? false;
+        },
+        onDismissed: (direction) async {
+          await _remindersService.deleteReminder(reminder['id']);
+          await _loadReminders();
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(AppLocale.reminderDeleted.getString(context)),
+                backgroundColor: Colors.red,
+                action: SnackBarAction(
+                  label: AppLocale.undo.getString(context),
+                  textColor: Colors.white,
+                  onPressed: () {
+                    // Note: Undo would require storing the deleted reminder data
+                    // For now, just show that it was deleted
+                  },
+                ),
+              ),
+            );
+          }
+        },
+        child: cardContent,
+      );
+    }
+    
+    return cardContent;
   }
 
   void _showNotificationsSheet() {
@@ -2229,7 +2408,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ],
         ),
         const SizedBox(height: 12),
-        ...reminders.map((reminder) => _buildReminderCard(reminder)).toList(),
+        ...reminders.map((reminder) => _buildReminderCard(reminder, enableSwipeToDelete: true)).toList(),
       ],
     );
   }
@@ -2329,7 +2508,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           TextField(
                             controller: titleController,
                             decoration: InputDecoration(
-                              labelText: 'Title',
+                              labelText: AppLocale.reminderTitle.getString(context),
                               labelStyle: const TextStyle(color: Color(0xFF1565C0)),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -2355,7 +2534,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                             controller: descriptionController,
                             maxLines: 3,
                             decoration: InputDecoration(
-                              labelText: 'Description',
+                              labelText: AppLocale.reminderDescription.getString(context),
                               labelStyle: const TextStyle(color: Color(0xFF1565C0)),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -2415,9 +2594,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
-                                          'Date',
-                                          style: TextStyle(
+                                        Text(
+                                          AppLocale.reminderDate.getString(context),
+                                          style: const TextStyle(
                                             color: Color(0xFF1565C0),
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
@@ -2478,9 +2657,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
-                                          'Time',
-                                          style: TextStyle(
+                                        Text(
+                                          AppLocale.reminderTime.getString(context),
+                                          style: const TextStyle(
                                             color: Color(0xFF1565C0),
                                             fontSize: 12,
                                             fontWeight: FontWeight.w500,
@@ -2507,7 +2686,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           DropdownButtonFormField<String>(
                             value: selectedType,
                             decoration: InputDecoration(
-                              labelText: 'Type',
+                              labelText: AppLocale.reminderType.getString(context),
                               labelStyle: const TextStyle(color: Color(0xFF1565C0)),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -2524,15 +2703,15 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               filled: true,
                               fillColor: Colors.grey.shade50,
                             ),
-                            items: const [
-                              DropdownMenuItem(value: 'fertilization', child: Text('Fertilization')),
-                              DropdownMenuItem(value: 'irrigation', child: Text('Irrigation')),
-                              DropdownMenuItem(value: 'pest_control', child: Text('Pest Control')),
-                              DropdownMenuItem(value: 'planting', child: Text('Planting')),
-                              DropdownMenuItem(value: 'harvest', child: Text('Harvest')),
-                              DropdownMenuItem(value: 'field_inspection', child: Text('Field Inspection')),
-                              DropdownMenuItem(value: 'weather_alert', child: Text('Weather Alert')),
-                              DropdownMenuItem(value: 'custom', child: Text('Custom')),
+                            items: [
+                              DropdownMenuItem(value: 'fertilization', child: Text(AppLocale.fertilization.getString(context))),
+                              DropdownMenuItem(value: 'irrigation', child: Text(AppLocale.irrigation.getString(context))),
+                              DropdownMenuItem(value: 'pest_control', child: Text(AppLocale.pestControl.getString(context))),
+                              DropdownMenuItem(value: 'planting', child: Text(AppLocale.planting.getString(context))),
+                              DropdownMenuItem(value: 'harvest', child: Text(AppLocale.harvest.getString(context))),
+                              DropdownMenuItem(value: 'field_inspection', child: Text(AppLocale.fieldInspection.getString(context))),
+                              DropdownMenuItem(value: 'weather_alert', child: Text(AppLocale.weatherAlert.getString(context))),
+                              DropdownMenuItem(value: 'custom', child: Text(AppLocale.custom.getString(context))),
                             ],
                             onChanged: (value) {
                               if (value != null) {
@@ -2546,7 +2725,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           DropdownButtonFormField<String>(
                             value: selectedPriority,
                             decoration: InputDecoration(
-                              labelText: 'Priority',
+                              labelText: AppLocale.reminderPriority.getString(context),
                               labelStyle: const TextStyle(color: Color(0xFF1565C0)),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -2563,11 +2742,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                               filled: true,
                               fillColor: Colors.grey.shade50,
                             ),
-                            items: const [
-                              DropdownMenuItem(value: 'low', child: Text('Low')),
-                              DropdownMenuItem(value: 'medium', child: Text('Medium')),
-                              DropdownMenuItem(value: 'high', child: Text('High')),
-                              DropdownMenuItem(value: 'urgent', child: Text('Urgent')),
+                            items: [
+                              DropdownMenuItem(value: 'low', child: Text(AppLocale.low.getString(context))),
+                              DropdownMenuItem(value: 'medium', child: Text(AppLocale.medium.getString(context))),
+                              DropdownMenuItem(value: 'high', child: Text(AppLocale.high.getString(context))),
+                              DropdownMenuItem(value: 'urgent', child: Text(AppLocale.urgent.getString(context))),
                             ],
                             onChanged: (value) {
                               if (value != null) {
@@ -2590,9 +2769,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  child: const Text(
-                                    'Cancel',
-                                    style: TextStyle(
+                                  child: Text(
+                                    AppLocale.cancel.getString(context),
+                                    style: const TextStyle(
                                       color: Color(0xFF1565C0),
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -2606,7 +2785,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                   onPressed: () async {
                                     if (titleController.text.isEmpty) {
                                       ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(content: Text('Please enter a title')),
+                                        SnackBar(content: Text(AppLocale.pleaseEnterTitle.getString(context))),
                                       );
                                       return;
                                     }
@@ -2636,9 +2815,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                       
                                       if (result['success']) {
                                         ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Reminder created successfully!'),
-                                            backgroundColor: Color(0xFF1565C0),
+                                          SnackBar(
+                                            content: Text(AppLocale.reminderCreatedSuccess.getString(context)),
+                                            backgroundColor: const Color(0xFF1565C0),
                                           ),
                                         );
                                         await _loadReminders();
@@ -2661,9 +2840,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                     ),
                                     elevation: 4,
                                   ),
-                                  child: const Text(
-                                    'Create',
-                                    style: TextStyle(
+                                  child: Text(
+                                    AppLocale.create.getString(context),
+                                    style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                     ),
