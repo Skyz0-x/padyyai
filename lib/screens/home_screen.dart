@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import '../l10n/app_locale.dart';
 import '../config/supabase_config.dart';
+import '../config/paddy_schedule_config.dart';
 import '../utils/constants.dart';
 import '../services/weather_service.dart';
 import '../services/paddy_monitoring_service.dart';
@@ -61,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   
   // Paddy varieties with their harvest days
   final Map<String, Map<String, int>> paddyVarieties = {
-    'MR 297': {'min': 110, 'max': 120},
+    'MR 297': {'min': 110, 'max': 115},
     'MR 220': {'min': 104, 'max': 109},
     'MR 219': {'min': 105, 'max': 111},
     'MR 263': {'min': 97, 'max': 104},
@@ -220,6 +221,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       );
       
       if (result['success']) {
+        // Generate schedule reminders based on paddy variety
+        await _generateScheduleReminders();
+        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -240,6 +244,77 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       }
     } catch (e) {
       print('❌ Error saving paddy monitoring: $e');
+    }
+  }
+  
+  Future<void> _generateScheduleReminders() async {
+    if (selectedVariety == null || plantingDate == null) return;
+    
+    try {
+      // Get current user ID
+      final userId = SupabaseConfig.client.auth.currentUser?.id;
+      if (userId == null) {
+        print('❌ No user logged in');
+        return;
+      }
+      
+      // Delete existing schedule-based reminders (fertilization and pest_control)
+      print('🗑️ Deleting existing schedule reminders...');
+      final existingReminders = await _remindersService.getAllReminders(includeCompleted: false);
+      for (final reminder in existingReminders) {
+        final type = reminder['reminder_type'];
+        if (type == 'fertilization' || type == 'pest_control') {
+          await _remindersService.deleteReminder(reminder['id']);
+        }
+      }
+      
+      // Get current locale
+      final flutterLocalization = FlutterLocalization.instance;
+      final locale = flutterLocalization.currentLocale?.languageCode ?? 'en';
+      
+      print('🌍 Current locale: $locale');
+      print('🌍 Full locale: ${flutterLocalization.currentLocale}');
+      
+      // Calculate schedule dates
+      final scheduledReminders = PaddyScheduleConfig.calculateScheduleDates(
+        variety: selectedVariety!,
+        plantingDate: plantingDate!,
+      );
+      
+      print('📅 Generating ${scheduledReminders.length} schedule reminders for $selectedVariety');
+      
+      // Create reminders in database
+      int successCount = 0;
+      for (final reminder in scheduledReminders) {
+        final reminderData = reminder.toReminderData(userId, locale: locale);
+        print('📝 Creating reminder: ${reminderData['title']} (locale: $locale)');
+        final result = await _remindersService.createReminder(reminderData);
+        
+        if (result['success']) {
+          successCount++;
+        }
+      }
+      
+      print('✅ Created $successCount/${scheduledReminders.length} schedule reminders');
+      
+      // Reload reminders to show on calendar
+      await _loadReminders();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              locale.startsWith('ms')
+                  ? '$successCount jadual baja & racun ditambah ke kalendar'
+                  : '$successCount fertilization & pest control schedules added to calendar',
+            ),
+            backgroundColor: const Color(0xFF2E7D32),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      print('❌ Error generating schedule reminders: $e');
     }
   }
   
@@ -273,6 +348,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       final reminders = await _remindersService.getUpcomingReminders(days: 7);
       final notificationCount = await _remindersService.getPendingNotificationsCount();
       
+      // Load reminders for the selected month (for calendar)
+      await _loadMonthReminders();
+      
       if (mounted) {
         setState(() {
           _upcomingReminders = reminders;
@@ -290,18 +368,59 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
   }
   
+  Future<void> _loadMonthReminders() async {
+    try {
+      final firstDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month, 1);
+      final lastDayOfMonth = DateTime(_selectedMonth.year, _selectedMonth.month + 1, 0);
+      
+      // Get all reminders for the month
+      final allReminders = await _remindersService.getAllReminders(includeCompleted: false);
+      
+      // Group reminders by date
+      final Map<DateTime, List<Map<String, dynamic>>> grouped = {};
+      
+      for (final reminder in allReminders) {
+        final scheduledDate = DateTime.parse(reminder['scheduled_date']);
+        final dateOnly = DateTime(scheduledDate.year, scheduledDate.month, scheduledDate.day);
+        
+        // Only include reminders in the current month
+        if (dateOnly.isAfter(firstDayOfMonth.subtract(const Duration(days: 1))) &&
+            dateOnly.isBefore(lastDayOfMonth.add(const Duration(days: 1)))) {
+          if (!grouped.containsKey(dateOnly)) {
+            grouped[dateOnly] = [];
+          }
+          grouped[dateOnly]!.add(reminder);
+        }
+      }
+      
+      if (mounted) {
+        setState(() {
+          _monthReminders = grouped;
+        });
+      }
+    } catch (e) {
+      print('❌ Error loading month reminders: $e');
+    }
+  }
+  
   Future<void> _loadWeatherData() async {
     try {
       final position = await _weatherService.getCurrentLocation();
       if (position != null) {
-        final weatherData = await _weatherService.getWeatherData(
-          position.latitude,
-          position.longitude,
-        );
-        final locationName = await _weatherService.getLocationName(
-          position.latitude,
-          position.longitude,
-        );
+        // Fetch weather data and location name in parallel
+        final results = await Future.wait([
+          _weatherService.getWeatherData(
+            position.latitude,
+            position.longitude,
+          ),
+          _weatherService.getLocationName(
+            position.latitude,
+            position.longitude,
+          ),
+        ]);
+        
+        final weatherData = results[0] as Map<String, dynamic>?;
+        final locationName = results[1] as String;
         
         if (mounted) {
           setState(() {
@@ -1593,9 +1712,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ),
               ),
               IconButton(
-                onPressed: () => _showAddReminderDialog(),
-                icon: const Icon(Icons.add_circle_outline, color: Colors.white),
-                tooltip: AppLocale.addReminder.getString(context),
+                onPressed: _showCalendarGuide,
+                icon: const Icon(Icons.info_outline, color: Colors.white),
+                tooltip: AppLocale.calendarGuide.getString(context),
               ),
             ],
           ),
@@ -1659,6 +1778,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             )
           else
             _buildCalendarGrid(),
+          
+          const SizedBox(height: 16),
+          
+          // Add Reminder Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _showAddReminderDialog(),
+              icon: const Icon(Icons.add_circle_outline, size: 20),
+              label: Text(
+                AppLocale.addReminder.getString(context),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                foregroundColor: const Color(0xFF1565C0),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+              ),
+            ),
+          ),
         ],
       ),
       ),
@@ -1716,6 +1862,227 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     }
     
     return _getReminderTypeColor(reminders.first['reminder_type'] ?? 'custom');
+  }
+
+  String? _getDominantReminderType(List<Map<String, dynamic>> reminders) {
+    if (reminders.isEmpty) return null;
+    
+    // Priority order for types
+    final typeOrder = [
+      'weather_alert',
+      'pest_control',
+      'harvest',
+      'planting',
+      'fertilization',
+      'irrigation',
+      'field_inspection',
+      'custom',
+    ];
+    
+    for (final type in typeOrder) {
+      if (reminders.any((r) => r['reminder_type'] == type)) {
+        return type;
+      }
+    }
+    
+    return reminders.first['reminder_type'] ?? 'custom';
+  }
+
+  void _showCalendarGuide() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1565C0).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.info,
+                      color: Color(0xFF1565C0),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      AppLocale.calendarGuide.getString(context),
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1565C0),
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              
+              // Legend title
+              Text(
+                AppLocale.calendarSymbols.getString(context),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Fertilization
+              _buildLegendItem(
+                Icons.spa,
+                const Color(0xFF4CAF50),
+                AppLocale.fertilizationLabel.getString(context),
+                AppLocale.fertilizationDesc.getString(context),
+              ),
+              const SizedBox(height: 12),
+              
+              // Pest Control
+              _buildLegendItem(
+                Icons.bug_report,
+                const Color(0xFFFF5722),
+                AppLocale.pestControlLabel.getString(context),
+                AppLocale.pestControlDesc.getString(context),
+              ),
+              const SizedBox(height: 12),
+              
+              // Planting
+              _buildLegendItem(
+                Icons.agriculture,
+                const Color(0xFF8BC34A),
+                AppLocale.plantingDateLabel.getString(context),
+                AppLocale.plantingDateDesc.getString(context),
+              ),
+              const SizedBox(height: 12),
+              
+              // Harvest
+              _buildLegendItem(
+                Icons.grass,
+                const Color(0xFFFFC107),
+                AppLocale.harvestDateLabel.getString(context),
+                AppLocale.harvestDateDesc.getString(context),
+              ),
+              const SizedBox(height: 20),
+              
+              // Instructions
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.blue.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.lightbulb_outline, color: Colors.blue.shade700, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          AppLocale.calendarTip.getString(context),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade700,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      AppLocale.calendarTipMessage.getString(context),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.blue.shade900,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              
+              // Close button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1565C0),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: Text(
+                    AppLocale.gotIt.getString(context),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegendItem(IconData icon, Color color, String title, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                description,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 
   Widget _buildCalendarGrid() {
@@ -1782,10 +2149,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                                      date.month == plantingDate!.add(Duration(days: estimatedHarvestDaysMax!)).month &&
                                      date.day == plantingDate!.add(Duration(days: estimatedHarvestDaysMax!)).day;
                 
-                // Get dominant reminder color if has reminders
+                // Get dominant reminder color and type if has reminders
                 final reminderColor = hasReminders 
                     ? _getDominantReminderColor(_monthReminders[date]!)
                     : Colors.amber;
+                final dominantType = hasReminders
+                    ? _getDominantReminderType(_monthReminders[date]!)
+                    : null;
                 
                 return Expanded(
                   child: GestureDetector(
@@ -1842,21 +2212,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                           ),
                           if (hasReminders)
                             Positioned(
-                              top: 2,
-                              right: 2,
+                              top: 1,
+                              right: 1,
                               child: Container(
-                                width: 6,
-                                height: 6,
+                                padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
-                                  color: reminderColor,
+                                  color: isSelected ? reminderColor : Colors.white.withOpacity(0.9),
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: reminderColor.withOpacity(0.5),
+                                      color: Colors.black.withOpacity(0.2),
                                       blurRadius: 2,
-                                      spreadRadius: 1,
+                                      spreadRadius: 0.5,
                                     ),
                                   ],
+                                ),
+                                child: Icon(
+                                  dominantType == 'fertilization'
+                                      ? Icons.spa
+                                      : dominantType == 'pest_control'
+                                          ? Icons.bug_report
+                                          : Icons.event_note,
+                                  size: 10,
+                                  color: isSelected ? Colors.white : reminderColor,
                                 ),
                               ),
                             ),

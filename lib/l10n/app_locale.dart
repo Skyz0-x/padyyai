@@ -385,6 +385,20 @@ class AppLocale {
   static const String reminderDeleted = 'reminderDeleted';
   static const String undo = 'undo';
   
+  // Calendar Guide
+  static const String calendarGuide = 'calendarGuide';
+  static const String calendarSymbols = 'calendarSymbols';
+  static const String fertilizationLabel = 'fertilizationLabel';
+  static const String fertilizationDesc = 'fertilizationDesc';
+  static const String pestControlLabel = 'pestControlLabel';
+  static const String pestControlDesc = 'pestControlDesc';
+  static const String plantingDateLabel = 'plantingDateLabel';
+  static const String plantingDateDesc = 'plantingDateDesc';
+  static const String harvestDateLabel = 'harvestDateLabel';
+  static const String harvestDateDesc = 'harvestDateDesc';
+  static const String calendarTip = 'calendarTip';
+  static const String calendarTipMessage = 'calendarTipMessage';
+  
   // Disease Names
   static const String brownPlanthopper = 'brownPlanthopper';
   static const String brownSpot = 'brownSpot';
@@ -876,6 +890,20 @@ mixin LocaleData {
     'reminderDeleted': 'Reminder deleted',
     'undo': 'Undo',
     
+    // Calendar Guide
+    'calendarGuide': 'Calendar Guide',
+    'calendarSymbols': 'Calendar Symbols:',
+    'fertilizationLabel': 'Fertilization',
+    'fertilizationDesc': 'NPK, Urea, or compound fertilizer application',
+    'pestControlLabel': 'Pest Control',
+    'pestControlDesc': 'Weed, fungus, or insect control',
+    'plantingDateLabel': 'Planting Date',
+    'plantingDateDesc': 'Rice planting date',
+    'harvestDateLabel': 'Harvest Date',
+    'harvestDateDesc': 'Estimated harvest date',
+    'calendarTip': 'Tip:',
+    'calendarTipMessage': 'When you select a paddy variety and planting date in Paddy Growth Monitor, fertilization and pest control schedules will be automatically added to the calendar.',
+    
     // Disease Names
     'brownPlanthopper': 'Brown Planthopper',
     'brownSpot': 'Brown Spot',
@@ -1356,6 +1384,20 @@ mixin LocaleData {
     'undo': 'Batal',
     'taskCompleted': 'Tugasan selesai!',
     'noNotifications': 'Tiada pemberitahuan baharu',
+    
+    // Calendar Guide
+    'calendarGuide': 'Panduan Kalendar',
+    'calendarSymbols': 'Simbol Kalendar:',
+    'fertilizationLabel': 'Pembajaan',
+    'fertilizationDesc': 'Aplikasi baja NPK, Urea, atau campuran',
+    'pestControlLabel': 'Kawalan Perosak',
+    'pestControlDesc': 'Racun rumpai, kulat, atau serangga',
+    'plantingDateLabel': 'Tarikh Penanaman',
+    'plantingDateDesc': 'Tarikh menanam padi',
+    'harvestDateLabel': 'Tarikh Menuai',
+    'harvestDateDesc': 'Anggaran tarikh menuai',
+    'calendarTip': 'Tip:',
+    'calendarTipMessage': 'Apabila anda memilih jenis padi dan tarikh penanaman di Paddy Growth Monitor, jadual pembajaan dan kawalan perosak akan ditambah secara automatik ke kalendar.',
     
     // Disease Names
     'brownPlanthopper': 'Bena Perang',

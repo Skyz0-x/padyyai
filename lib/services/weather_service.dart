@@ -1,13 +1,27 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+import 'dart:async';
 
 class WeatherService {
   // Using Open-Meteo API (free, no API key required)
   static const String _baseUrl = 'https://api.open-meteo.com/v1';
   
+  // Cache for weather data and location
+  static Map<String, dynamic>? _cachedWeatherData;
+  static String? _cachedLocationName;
+  static DateTime? _lastFetchTime;
+  static const Duration _cacheDuration = Duration(minutes: 10);
+  static const Duration _apiTimeout = Duration(seconds: 10);
+  
   // Get location name from coordinates using reverse geocoding
   Future<String> getLocationName(double latitude, double longitude) async {
+    // Check cache first
+    if (_cachedLocationName != null && _isCacheValid()) {
+      print('✅ Using cached location name: $_cachedLocationName');
+      return _cachedLocationName!;
+    }
+    
     try {
       final url = Uri.parse(
         'https://nominatim.openstreetmap.org/reverse?'
@@ -17,7 +31,7 @@ class WeatherService {
       final response = await http.get(
         url,
         headers: {'User-Agent': 'PaddyAI/1.0'},
-      );
+      ).timeout(_apiTimeout);
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -49,10 +63,16 @@ class WeatherService {
         }
         
         print('✅ Location name: $locationName');
-        return locationName.isNotEmpty ? locationName : 'Unknown Location';
+        _cachedLocationName = locationName.isNotEmpty ? locationName : 'Unknown Location';
+        return _cachedLocationName!;
       }
     } catch (e) {
       print('❌ Error getting location name: $e');
+      // Return cached value if available, otherwise default
+      if (_cachedLocationName != null) {
+        print('⚠️ Using stale cached location name');
+        return _cachedLocationName!;
+      }
     }
     return 'Unknown Location';
   }
@@ -97,6 +117,12 @@ class WeatherService {
 
   // Get weather data
   Future<Map<String, dynamic>?> getWeatherData(double latitude, double longitude) async {
+    // Check cache first
+    if (_cachedWeatherData != null && _isCacheValid()) {
+      print('✅ Using cached weather data');
+      return _cachedWeatherData;
+    }
+    
     try {
       final url = Uri.parse(
         '$_baseUrl/forecast?latitude=$latitude&longitude=$longitude'
@@ -109,11 +135,13 @@ class WeatherService {
 
       print('🌤️ Fetching weather data from: $url');
       
-      final response = await http.get(url);
+      final response = await http.get(url).timeout(_apiTimeout);
       
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print('✅ Weather data received');
+        _cachedWeatherData = data;
+        _lastFetchTime = DateTime.now();
         return data;
       } else {
         print('❌ Failed to fetch weather data: ${response.statusCode}');
@@ -121,6 +149,11 @@ class WeatherService {
       }
     } catch (e) {
       print('❌ Error fetching weather data: $e');
+      // Return cached data if available
+      if (_cachedWeatherData != null) {
+        print('⚠️ Using stale cached weather data');
+        return _cachedWeatherData;
+      }
       return null;
     }
   }
@@ -287,5 +320,20 @@ class WeatherService {
       default:
         return '🌤️';
     }
+  }
+  
+  // Check if cache is still valid
+  bool _isCacheValid() {
+    if (_lastFetchTime == null) return false;
+    final difference = DateTime.now().difference(_lastFetchTime!);
+    return difference < _cacheDuration;
+  }
+  
+  // Clear cache manually if needed
+  void clearCache() {
+    _cachedWeatherData = null;
+    _cachedLocationName = null;
+    _lastFetchTime = null;
+    print('🗑️ Weather cache cleared');
   }
 }

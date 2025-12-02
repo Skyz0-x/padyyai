@@ -46,11 +46,20 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
         return;
       }
 
-      // Get weather data
-      final weatherData = await _weatherService.getWeatherData(
-        position.latitude,
-        position.longitude,
-      );
+      // Fetch weather data and location name in parallel
+      final results = await Future.wait([
+        _weatherService.getWeatherData(
+          position.latitude,
+          position.longitude,
+        ),
+        _weatherService.getLocationName(
+          position.latitude,
+          position.longitude,
+        ),
+      ]);
+
+      final weatherData = results[0] as Map<String, dynamic>?;
+      final locationName = results[1] as String;
 
       if (weatherData == null) {
         setState(() {
@@ -59,12 +68,6 @@ class _WeatherAlertScreenState extends State<WeatherAlertScreen> {
         });
         return;
       }
-
-      // Get location name
-      final locationName = await _weatherService.getLocationName(
-        position.latitude,
-        position.longitude,
-      );
 
       // Get alerts
       final alerts = _weatherService.getWeatherAlerts(weatherData);
