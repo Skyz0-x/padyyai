@@ -1812,9 +1812,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   String _getMonthName(int month) {
-    const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+    final months = [
+      AppLocale.january.getString(context),
+      AppLocale.february.getString(context),
+      AppLocale.march.getString(context),
+      AppLocale.april.getString(context),
+      AppLocale.may.getString(context),
+      AppLocale.june.getString(context),
+      AppLocale.july.getString(context),
+      AppLocale.august.getString(context),
+      AppLocale.september.getString(context),
+      AppLocale.october.getString(context),
+      AppLocale.november.getString(context),
+      AppLocale.december.getString(context),
     ];
     return months[month - 1];
   }

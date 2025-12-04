@@ -121,6 +121,18 @@ class AppLocale {
   static const String recentActivity = 'recentActivity';
   static const String noActivity = 'noActivity';
   static const String viewAll = 'viewAll';
+  static const String january = 'january';
+  static const String february = 'february';
+  static const String march = 'march';
+  static const String april = 'april';
+  static const String may = 'may';
+  static const String june = 'june';
+  static const String july = 'july';
+  static const String august = 'august';
+  static const String september = 'september';
+  static const String october = 'october';
+  static const String november = 'november';
+  static const String december = 'december';
   static const String readyToTakeCare = 'readyToTakeCare';
   static const String scanCrops = 'scan_crops';
   static const String findSupplies = 'find_supplies';
@@ -627,6 +639,18 @@ mixin LocaleData {
     'recentActivity': 'Recent Activity',
     'noActivity': 'No recent activity',
     'viewAll': 'View All',
+    'january': 'January',
+    'february': 'February',
+    'march': 'March',
+    'april': 'April',
+    'may': 'May',
+    'june': 'June',
+    'july': 'July',
+    'august': 'August',
+    'september': 'September',
+    'october': 'October',
+    'november': 'November',
+    'december': 'December',
     'readyToTakeCare': 'Ready to take care of your crops today?',
     'scan_crops': 'Scan your crops',
     'find_supplies': 'Find supplies',
@@ -1122,6 +1146,18 @@ mixin LocaleData {
     'recentActivity': 'Aktiviti Terkini',
     'noActivity': 'Tiada aktiviti terkini',
     'viewAll': 'Lihat Semua',
+    'january': 'Januari',
+    'february': 'Februari',
+    'march': 'Mac',
+    'april': 'April',
+    'may': 'Mei',
+    'june': 'Jun',
+    'july': 'Julai',
+    'august': 'Ogos',
+    'september': 'September',
+    'october': 'Oktober',
+    'november': 'November',
+    'december': 'Disember',
     'readyToTakeCare': 'Bersedia untuk menjaga tanaman anda hari ini?',
     'scan_crops': 'Imbas tanaman anda',
     'find_supplies': 'Cari bekalan',

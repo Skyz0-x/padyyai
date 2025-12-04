@@ -361,4 +361,40 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get viewAll => 'Lihat Semua';
+
+  @override
+  String get january => 'Januari';
+
+  @override
+  String get february => 'Februari';
+
+  @override
+  String get march => 'Mac';
+
+  @override
+  String get april => 'April';
+
+  @override
+  String get may => 'Mei';
+
+  @override
+  String get june => 'Jun';
+
+  @override
+  String get july => 'Julai';
+
+  @override
+  String get august => 'Ogos';
+
+  @override
+  String get september => 'September';
+
+  @override
+  String get october => 'Oktober';
+
+  @override
+  String get november => 'November';
+
+  @override
+  String get december => 'Disember';
 }
