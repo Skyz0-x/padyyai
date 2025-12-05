@@ -543,7 +543,7 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                       ],
                     ),
                   );
-                }).toList(),
+                }),
                 
                 if (orderItems.length > 3) ...[
                   Container(

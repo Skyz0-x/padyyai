@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/supplier_orders_service.dart';
 import '../config/supabase_config.dart';
+import '../utils/constants.dart';
 
 class SupplierOrdersScreen extends StatefulWidget {
   const SupplierOrdersScreen({super.key});
@@ -19,6 +20,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
   String? _error;
   
   Map<String, int> _statusCounts = {
+    'to_pay': 0,
     'to_ship': 0,
     'to_receive': 0,
     'completed': 0,
@@ -27,7 +29,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _loadOrders();
   }
 
@@ -56,6 +58,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
       
       // Calculate status counts
       _statusCounts = {
+        'to_pay': orders.where((o) => o['status'] == 'to_pay').length,
         'to_ship': orders.where((o) => o['status'] == 'to_ship').length,
         'to_receive': orders.where((o) => o['status'] == 'to_receive').length,
         'completed': orders.where((o) => o['status'] == 'completed').length,
@@ -87,25 +90,41 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.green.shade600,
-              Colors.green.shade50,
+              primaryColor,
+              backgroundColor,
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              _buildHeader(),
-              _buildTabBar(),
+              _buildCustomHeader(),
               Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildOrdersList(null),
-                    _buildOrdersList('to_ship'),
-                    _buildOrdersList('to_receive'),
-                    _buildOrdersList('completed'),
-                  ],
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(30),
+                      topRight: Radius.circular(30),
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      _buildTabBar(),
+                      Expanded(
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _buildOrdersList(null),
+                            _buildOrdersList('to_pay'),
+                            _buildOrdersList('to_ship'),
+                            _buildOrdersList('to_receive'),
+                            _buildOrdersList('completed'),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
@@ -115,54 +134,39 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildCustomHeader() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+      child: Row(
         children: [
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 22),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Supplier Orders',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.green,
-                    size: 24,
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Order Management',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    Text(
-                      'View and manage farmer orders',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
+                const Text(
+                  'Manage and track your customer orders',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.white70,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),
@@ -201,11 +205,13 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
           ),
           TabBar(
             controller: _tabController,
-            labelColor: const Color(0xFF2E7D32),
+            labelColor: primaryColor,
             unselectedLabelColor: Colors.grey[600],
-            indicatorColor: const Color(0xFF4CAF50),
+            indicatorColor: primaryColor,
             indicatorWeight: 4,
             indicatorSize: TabBarIndicatorSize.tab,
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
             labelStyle: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.bold,
@@ -215,10 +221,11 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
               fontWeight: FontWeight.w500,
             ),
             tabs: [
-              _buildTab('All', _allOrders.length),
-              _buildTab('To Ship', _statusCounts['to_ship'] ?? 0),
-              _buildTab('Shipped', _statusCounts['to_receive'] ?? 0),
-              _buildTab('Done', _statusCounts['completed'] ?? 0),
+              _buildTab('All', null),
+              _buildTab('To Pay', _statusCounts['to_pay']),
+              _buildTab('To Ship', _statusCounts['to_ship']),
+              _buildTab('Shipped', _statusCounts['to_receive']),
+              _buildTab('Completed', _statusCounts['completed']),
             ],
           ),
         ],
@@ -226,7 +233,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
     );
   }
 
-  Widget _buildTab(String label, int count) {
+  Widget _buildTab(String label, int? count) {
     return Tab(
       height: 50,
       child: Row(
@@ -240,7 +247,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
               maxLines: 1,
             ),
           ),
-          if (count > 0) ...[
+          if (count != null && count > 0) ...[
             const SizedBox(width: 4),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -606,6 +613,234 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                     ],
                   ),
                   const SizedBox(height: 16),
+                  
+                  // Show customer details for to_ship orders
+                  if (status == 'to_ship' || status == 'to_receive') ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.blue[200]!, width: 1),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Icons.local_shipping, size: 18, color: Colors.blue[700]),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Delivery Information',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                  color: Colors.blue[900],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          
+                          // Customer contact
+                          if (profiles != null && profiles is Map<String, dynamic> && profiles['phone_number'] != null) ...[
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Icon(Icons.phone, size: 16, color: Colors.blue[700]),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Contact Number',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.blue[800],
+                                        ),
+                                      ),
+                                      Text(
+                                        profiles['phone_number'],
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                          color: Colors.blue[900],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Contact: ${profiles['phone_number']}'),
+                                        backgroundColor: Colors.blue[700],
+                                        behavior: SnackBarBehavior.floating,
+                                        action: SnackBarAction(
+                                          label: 'OK',
+                                          textColor: Colors.white,
+                                          onPressed: () {},
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  icon: Icon(Icons.copy, size: 18, color: Colors.blue[700]),
+                                  tooltip: 'Copy number',
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                          ],
+                          
+                          // Delivery information
+                          if (order['shipping_address'] != null || order['shipping_name'] != null) ...[
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Shipping Name
+                                if (order['shipping_name'] != null) ...[
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(Icons.person, size: 16, color: Colors.blue[700]),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Recipient',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.blue[800],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              order['shipping_name'],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 13,
+                                                color: Colors.blue[900],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                // Shipping Phone
+                                if (order['shipping_phone'] != null) ...[
+                                  Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(Icons.phone, size: 16, color: Colors.blue[700]),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          order['shipping_phone'],
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 13,
+                                            color: Colors.blue[900],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                ],
+                                // Shipping Address
+                                if (order['shipping_address'] != null)
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Icon(Icons.location_on, size: 16, color: Colors.blue[700]),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'Delivery Address',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.blue[800],
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              order['shipping_address'],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 13,
+                                                color: Colors.blue[900],
+                                                height: 1.4,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
+                          ] else
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.info_outline, size: 16, color: Colors.orange[700]),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'No delivery information provided',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.orange[800],
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  
                   _buildActionButtons(order),
                 ],
               ),
@@ -1080,31 +1315,404 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
   }
 
   void _showOrderDetails(Map<String, dynamic> order) {
+    // Extract customer information
+    final profiles = order['profiles'];
+    String customerName = 'Unknown Customer';
+    String? customerPhone;
+    
+    if (profiles != null) {
+      if (profiles is Map<String, dynamic>) {
+        customerName = profiles['full_name'] ?? 'Unknown Customer';
+        customerPhone = profiles['phone_number'];
+      } else if (profiles is List && profiles.isNotEmpty) {
+        customerName = profiles[0]['full_name'] ?? 'Unknown Customer';
+        customerPhone = profiles[0]['phone_number'];
+      }
+    }
+
+    final orderItems = order['order_items'] as List<dynamic>? ?? [];
+    final createdAt = DateTime.parse(order['created_at'] ?? DateTime.now().toString());
+
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Order #${order['order_number']}'),
-        content: SingleChildScrollView(
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 500),
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow('Status', order['status']),
-              _buildDetailRow('Total', 'RM ${order['total_amount']}'),
-              _buildDetailRow('Payment', order['payment_method']),
-              if (order['tracking_number'] != null)
-                _buildDetailRow('Tracking', order['tracking_number']),
-              if (order['delivery_address'] != null)
-                _buildDetailRow('Address', order['delivery_address']),
+              // Header
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF2E7D32), Color(0xFF4CAF50)],
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.receipt_long, color: Colors.white, size: 28),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Order Details',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '#${order['order_number']}',
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.9),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close, color: Colors.white),
+                    ),
+                  ],
+                ),
+              ),
+              
+              // Content
+              Flexible(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Customer Information Section
+                      const Text(
+                        'Customer Information',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E7D32),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.green[50],
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.green[200]!),
+                        ),
+                        child: Column(
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Icon(
+                                    Icons.person,
+                                    color: Color(0xFF2E7D32),
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Name',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black54,
+                                        ),
+                                      ),
+                                      Text(
+                                        customerName,
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (customerPhone != null) ...[
+                              const SizedBox(height: 12),
+                              const Divider(),
+                              const SizedBox(height: 12),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Icon(
+                                      Icons.phone,
+                                      color: Color(0xFF2E7D32),
+                                      size: 24,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Phone Number',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black54,
+                                          ),
+                                        ),
+                                        Text(
+                                          customerPhone,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    onPressed: () {
+                                      // Copy to clipboard or open dialer
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text('Phone: $customerPhone'),
+                                          action: SnackBarAction(
+                                            label: 'OK',
+                                            onPressed: () {},
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    icon: const Icon(Icons.copy, size: 20),
+                                    tooltip: 'Copy phone number',
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Order Information Section
+                      const Text(
+                        'Order Information',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E7D32),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _buildDetailRow('Order Date', _formatDate(createdAt)),
+                      _buildDetailRow('Status', order['status'] ?? 'N/A'),
+                      _buildDetailRow('Payment Method', order['payment_method'] ?? 'N/A'),
+                      _buildDetailRow('Total Amount', 'RM ${order['total_amount']}'),
+                      if (order['tracking_number'] != null)
+                        _buildDetailRow('Tracking Number', order['tracking_number']),
+                      
+                      const SizedBox(height: 20),
+                      
+                      // Delivery Address Section
+                      if (order['shipping_address'] != null) ...[
+                        const Text(
+                          'Delivery Information',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2E7D32),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.blue[200]!),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Shipping Name
+                              if (order['shipping_name'] != null) ...[
+                                Row(
+                                  children: [
+                                    const Icon(Icons.person, color: Colors.blue, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      order['shipping_name'],
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                              ],
+                              // Shipping Phone
+                              if (order['shipping_phone'] != null) ...[
+                                Row(
+                                  children: [
+                                    const Icon(Icons.phone, color: Colors.blue, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      order['shipping_phone'],
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                              ],
+                              // Shipping Address
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Icon(Icons.location_on, color: Colors.blue, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      order['shipping_address'],
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                      
+                      // Order Items Section
+                      const Text(
+                        'Order Items',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2E7D32),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ...orderItems.map((item) => Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item['product_name'] ?? 'Product',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'RM ${item['price']} × ${item['quantity']}',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              'RM ${((item['price'] ?? 0) * (item['quantity'] ?? 0)).toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: Color(0xFF2E7D32),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )).toList(),
+                    ],
+                  ),
+                ),
+              ),
+              
+              // Footer with Close button
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF2E7D32),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      'Close',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }

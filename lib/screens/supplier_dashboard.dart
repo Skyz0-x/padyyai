@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/products_service.dart';
+import '../services/supplier_orders_service.dart';
 import '../widgets/loading_screen.dart';
 import 'manage_products_screen.dart';
 
@@ -14,9 +15,13 @@ class SupplierDashboard extends StatefulWidget {
 class _SupplierDashboardState extends State<SupplierDashboard> {
   final AuthService _authService = AuthService();
   final ProductsService _productsService = ProductsService();
+  final SupplierOrdersService _ordersService = SupplierOrdersService();
   Map<String, dynamic>? userProfile;
   List<Map<String, dynamic>> _products = [];
   int _productCount = 0;
+  int _activeOrders = 0;
+  double _monthlySales = 0.0;
+  int _customersCount = 0;
   bool isLoading = true;
   String userStatus = 'pending';
 
@@ -38,9 +43,10 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           isLoading = false;
         });
         
-        // Load products if supplier is approved
+        // Load products and stats if supplier is approved
         if (userStatus == 'approved') {
           _loadProducts();
+          _loadDashboardStats();
         }
       }
     } catch (e) {
@@ -63,6 +69,19 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
       }
     } catch (e) {
       print('Error loading products: $e');
+    }
+  }
+
+  Future<void> _loadDashboardStats() async {
+    try {
+      final stats = await _ordersService.getDashboardStats();
+      setState(() {
+        _activeOrders = stats['activeOrders'] ?? 0;
+        _monthlySales = (stats['monthlySales'] ?? 0.0).toDouble();
+        _customersCount = stats['customers'] ?? 0;
+      });
+    } catch (e) {
+      print('Error loading dashboard stats: $e');
     }
   }
 
@@ -298,7 +317,15 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildStatCard('Active Orders', '0', Icons.shopping_cart, Colors.blue),
+                child: _buildStatCard(
+                  'Active Orders', 
+                  '$_activeOrders', 
+                  Icons.shopping_cart, 
+                  Colors.blue,
+                  onTap: () {
+                    Navigator.pushNamed(context, '/supplier-orders');
+                  },
+                ),
               ),
             ],
           ),
@@ -308,11 +335,21 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           Row(
             children: [
               Expanded(
-                child: _buildStatCard('Monthly Sales', 'RM0', Icons.trending_up, Colors.orange),
+                child: _buildStatCard(
+                  'Monthly Sales', 
+                  'RM${_monthlySales.toStringAsFixed(2)}', 
+                  Icons.trending_up, 
+                  Colors.orange,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
-                child: _buildStatCard('Customers', '0', Icons.people, Colors.purple),
+                child: _buildStatCard(
+                  'Customers', 
+                  '$_customersCount', 
+                  Icons.people, 
+                  Colors.purple,
+                ),
               ),
             ],
           ),
@@ -553,7 +590,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
   }
 
   Widget _buildActionButton(String title, String subtitle, IconData icon, VoidCallback onTap) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       child: Card(
         elevation: 4,

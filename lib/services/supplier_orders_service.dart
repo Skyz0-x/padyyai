@@ -12,8 +12,68 @@ class SupplierOrdersService {
       }
 
       print('🔍 DEBUG: Fetching orders for supplier: $supplierId');
-      print('🔍 DEBUG: Supplier ID type: ${supplierId.runtimeType}');
 
+      // First, try to get orders from order_items by supplier_id
+      final supplierOrderIds = <String>{};
+      try {
+        final orderItemsResponse = await supabase
+            .from('order_items')
+            .select('order_id')
+            .eq('supplier_id', supplierId);
+
+        print('🔍 DEBUG: Raw response: $orderItemsResponse');
+        for (var item in orderItemsResponse) {
+          supplierOrderIds.add(item['order_id']);
+        }
+
+        print('🔍 DEBUG: Found ${supplierOrderIds.length} orders from order_items.supplier_id');
+        print('🔍 DEBUG: Order IDs: $supplierOrderIds');
+      } catch (e) {
+        print('🔍 DEBUG: Error querying order_items.supplier_id: $e');
+      }
+
+      // If no orders found, try fallback: get from products -> order_items
+      if (supplierOrderIds.isEmpty) {
+        print('🔍 DEBUG: No supplier_id in order_items, trying products approach...');
+        
+        // Get all products from this supplier
+        final productsResponse = await supabase
+            .from('products')
+            .select('id')
+            .eq('supplier_id', supplierId);
+
+        final supplierProductIds = <String>{};
+        for (var product in productsResponse) {
+          supplierProductIds.add(product['id'].toString());
+        }
+
+        if (supplierProductIds.isNotEmpty) {
+          print('🔍 DEBUG: Found ${supplierProductIds.length} products from this supplier');
+          
+          // Get all order_items with these products
+          final itemsResponse = await supabase
+              .from('order_items')
+              .select('order_id')
+              .inFilter('product_id', supplierProductIds.toList());
+
+          for (var item in itemsResponse) {
+            supplierOrderIds.add(item['order_id']);
+          }
+
+          print('🔍 DEBUG: Found ${supplierOrderIds.length} orders with supplier products');
+        }
+      }
+
+      if (supplierOrderIds.isEmpty) {
+        print('🔍 DEBUG: No orders found for supplier');
+        return [];
+      }
+
+      final orderIdsList = supplierOrderIds.toList();
+      print('🔍 DEBUG: Fetching full order details for ${orderIdsList.length} orders');
+      print('🔍 DEBUG: Order IDs to fetch: $orderIdsList');
+
+      // Now fetch the full order details
       dynamic query = supabase
           .from('orders')
           .select('''
@@ -22,10 +82,9 @@ class SupplierOrdersService {
               *
             )
           ''')
-          .eq('supplier_id', supplierId);
+          .inFilter('id', orderIdsList);
       
-      print('🔍 DEBUG: Query built, adding status filter: $status');
-
+      print('🔍 DEBUG: Status filter: $status');
       if (status != null) {
         query = query.eq('status', status);
       }
@@ -34,25 +93,28 @@ class SupplierOrdersService {
 
       print('🔍 DEBUG: Executing query...');
       final response = await query;
-      print('🔍 DEBUG: Query response type: ${response.runtimeType}');
       print('🔍 DEBUG: Found ${response.length} orders');
       if (response.isNotEmpty) {
-        print('🔍 DEBUG: First order: ${response[0]}');
+        print('🔍 DEBUG: First order: ${response[0]['order_number']} - Status: ${response[0]['status']}');
       }
       
       // Fetch farmer details separately for each order
       final ordersWithProfiles = await Future.wait(
         response.map<Future<Map<String, dynamic>>>((order) async {
           try {
-            final profileResponse = await supabase
-                .from('profiles')
-                .select('full_name, phone_number')
+            // Try to get from public.users table
+            final userResponse = await supabase
+                .from('users')
+                .select('*')
                 .eq('id', order['user_id'])
                 .single();
             
-            order['profiles'] = profileResponse;
+            order['profiles'] = {
+              'full_name': userResponse['full_name'] ?? 'Unknown',
+              'phone_number': userResponse['phone_number']
+            };
           } catch (e) {
-            print('Error fetching profile for order ${order['id']}: $e');
+            print('Error fetching user for order ${order['id']}: $e');
             order['profiles'] = {'full_name': 'Unknown', 'phone_number': null};
           }
           return order as Map<String, dynamic>;
@@ -74,6 +136,9 @@ class SupplierOrdersService {
   // Approve order and mark as ready to ship
   Future<void> approveOrder(String orderId, {String? trackingNumber}) async {
     try {
+      print('🔍 APPROVE: Starting approval for order: $orderId');
+      print('🔍 APPROVE: Current supplier ID: ${supabase.auth.currentUser?.id}');
+      
       final updates = <String, dynamic>{
         'status': 'to_ship',
         'approved_at': DateTime.now().toIso8601String(),
@@ -86,10 +151,15 @@ class SupplierOrdersService {
         updates['shipped_at'] = DateTime.now().toIso8601String();
       }
 
-      await supabase
+      print('🔍 APPROVE: Updates to apply: $updates');
+
+      final response = await supabase
           .from('orders')
           .update(updates)
-          .eq('id', orderId);
+          .eq('id', orderId)
+          .select();
+
+      print('🔍 APPROVE: Update response: $response');
 
       // Record status change in history
       await _recordStatusChange(
@@ -97,8 +167,10 @@ class SupplierOrdersService {
         trackingNumber != null ? 'to_receive' : 'to_ship',
         'Order approved by supplier${trackingNumber != null ? ' and shipped with tracking: $trackingNumber' : ''}',
       );
+      
+      print('🔍 APPROVE: Order approved successfully');
     } catch (e) {
-      print('Error approving order: $e');
+      print('❌ APPROVE ERROR: $e');
       rethrow;
     }
   }
@@ -219,6 +291,69 @@ class SupplierOrdersService {
     } catch (e) {
       print('Error fetching order history: $e');
       rethrow;
+    }
+  }
+
+  // Get dashboard statistics
+  Future<Map<String, dynamic>> getDashboardStats() async {
+    try {
+      final supplierId = supabase.auth.currentUser?.id;
+      if (supplierId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get active orders (to_pay, to_ship, to_receive)
+      final activeOrdersResponse = await supabase
+          .from('orders')
+          .select('id')
+          .eq('supplier_id', supplierId)
+          .inFilter('status', ['to_pay', 'to_ship', 'to_receive']);
+      
+      final activeOrdersCount = activeOrdersResponse.length;
+
+      // Get monthly sales (current month)
+      final now = DateTime.now();
+      final firstDayOfMonth = DateTime(now.year, now.month, 1);
+      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59);
+
+      final monthlySalesResponse = await supabase
+          .from('orders')
+          .select('total_amount')
+          .eq('supplier_id', supplierId)
+          .gte('created_at', firstDayOfMonth.toIso8601String())
+          .lte('created_at', lastDayOfMonth.toIso8601String())
+          .inFilter('status', ['to_ship', 'to_receive', 'completed']); // Exclude cancelled and unpaid
+
+      double monthlySales = 0;
+      for (var order in monthlySalesResponse) {
+        monthlySales += (order['total_amount'] as num?)?.toDouble() ?? 0;
+      }
+
+      // Get unique customers count (all time)
+      final customersResponse = await supabase
+          .from('orders')
+          .select('user_id')
+          .eq('supplier_id', supplierId);
+      
+      final uniqueCustomers = <String>{};
+      for (var order in customersResponse) {
+        if (order['user_id'] != null) {
+          uniqueCustomers.add(order['user_id'].toString());
+        }
+      }
+
+      return {
+        'activeOrders': activeOrdersCount,
+        'monthlySales': monthlySales,
+        'customers': uniqueCustomers.length,
+      };
+    } catch (e) {
+      print('Error fetching dashboard stats: $e');
+      return {
+        'activeOrders': 0,
+        'monthlySales': 0.0,
+        'customers': 0,
+      };
     }
   }
 

@@ -237,6 +237,15 @@ class CartService {
         final price = (item['product_price'] as num).toDouble();
         final itemSubtotal = price * quantity;
 
+        // Get product to get supplier_id
+        final productResponse = await _client
+            .from('products')
+            .select('supplier_id')
+            .eq('id', item['product_id'])
+            .single();
+        
+        final supplierId = productResponse['supplier_id'] as String?;
+
         await _client.from('order_items').insert({
           'order_id': order['id'],
           'product_id': item['product_id'],
@@ -246,6 +255,7 @@ class CartService {
           'product_category': item['product_category'],
           'quantity': quantity,
           'subtotal': itemSubtotal,
+          'supplier_id': supplierId,
         });
       }
 

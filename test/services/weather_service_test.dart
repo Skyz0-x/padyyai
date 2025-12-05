@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../lib/services/weather_service.dart';
+import 'package:paddyai/services/weather_service.dart';
 
 /// Test suite for WeatherService
 /// 

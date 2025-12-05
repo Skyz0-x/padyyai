@@ -432,7 +432,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       } else {
         if (mounted) {
           setState(() {
-            _locationName = '${AppLocale.locationUnavailable.getString(context)}';
+            _locationName = AppLocale.locationUnavailable.getString(context);
             _loadingWeather = false;
           });
         }
@@ -441,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       print('Error loading weather: $e');
       if (mounted) {
         setState(() {
-          _locationName = '${AppLocale.weatherUnavailable1.getString(context)}';
+          _locationName = AppLocale.weatherUnavailable1.getString(context);
           _loadingWeather = false;
         });
       }
@@ -885,7 +885,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Expanded(
               child: _buildActionCard(
                 AppLocale.detectDisease.getString(context),
-                '${AppLocale.scanCrops.getString(context)}',
+                AppLocale.scanCrops.getString(context),
                 Icons.camera_alt,
                 accentGradient,
                 () => Navigator.push(
@@ -898,7 +898,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             Expanded(
               child: _buildActionCard(
                 AppLocale.marketplace.getString(context),
-                '${AppLocale.findSupplies.getString(context)}',
+                AppLocale.findSupplies.getString(context),
                 Icons.shopping_bag,
                 LinearGradient(
                   colors: [Colors.orange.shade300, Colors.orange.shade500],
@@ -918,8 +918,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             Expanded(
               child: _buildActionCard(
-                '${AppLocale.detectionHistory.getString(context)}',
-                '${AppLocale.viewScans.getString(context)}',
+                AppLocale.detectionHistory.getString(context),
+                AppLocale.viewScans.getString(context),
                 Icons.history,
                 LinearGradient(
                   colors: [Colors.blue.shade300, Colors.blue.shade500],
@@ -937,8 +937,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             const SizedBox(width: 12),
             Expanded(
               child: _buildActionCard(
-                '${AppLocale.weatherAlert.getString(context)}',
-                '${AppLocale.checkForecast.getString(context)}',
+                AppLocale.weatherAlert.getString(context),
+                AppLocale.checkForecast.getString(context),
                 Icons.cloud,
                 LinearGradient(
                   colors: [Colors.purple.shade300, Colors.purple.shade500],
@@ -1382,7 +1382,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   Widget _buildVarietySelector() {
-    return Container(
+    return SizedBox(
       height: 50,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
@@ -1479,7 +1479,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '${AppLocale.plantingDate1.getString(context)}',
+                      AppLocale.plantingDate1.getString(context),
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
@@ -1489,7 +1489,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     Text(
                       plantingDate != null
                           ? '${plantingDate!.day}/${plantingDate!.month}/${plantingDate!.year}'
-                          : '${AppLocale.tapToSelectDate1.getString(context)}',
+                          : AppLocale.tapToSelectDate1.getString(context),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 16,
@@ -1610,7 +1610,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                '${AppLocale.harvest.getString(context)} ${estimatedHarvestDaysMin}-${estimatedHarvestDaysMax} ${AppLocale.days.getString(context)}',
+                '${AppLocale.harvest.getString(context)} $estimatedHarvestDaysMin-$estimatedHarvestDaysMax ${AppLocale.days.getString(context)}',
                 style: const TextStyle(
                   color: Color(0xFF757575),
                   fontSize: 12,
@@ -2324,7 +2324,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ],
             ),
             const SizedBox(height: 16),
-            ...reminders.map((reminder) => _buildReminderCard(reminder)).toList(),
+            ...reminders.map((reminder) => _buildReminderCard(reminder)),
           ],
         ),
       ),
@@ -2796,7 +2796,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ],
         ),
         const SizedBox(height: 12),
-        ...reminders.map((reminder) => _buildReminderCard(reminder, enableSwipeToDelete: true)).toList(),
+        ...reminders.map((reminder) => _buildReminderCard(reminder, enableSwipeToDelete: true)),
       ],
     );
   }

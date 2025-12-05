@@ -1,5 +1,6 @@
 /// Paddy Fertilization and Pesticide Schedule Configuration
 /// Based on Malaysian rice cultivation best practices
+library;
 
 class PaddyScheduleConfig {
   // Schedule data structure

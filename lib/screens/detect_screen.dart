@@ -249,7 +249,7 @@ class _DetectScreenState extends State<DetectScreen> {
       final inputChannels = inputShape[3];
       final numClasses = outputShape.length > 1 ? outputShape[1] : outputShape[0];
       
-      print('📐 Model expects: ${inputWidth}x${inputHeight}x${inputChannels}');
+      print('📐 Model expects: ${inputWidth}x${inputHeight}x$inputChannels');
       print('📐 Model outputs: $numClasses classes');
       
       // Resize image to model input size
@@ -1375,7 +1375,7 @@ class _DetectScreenState extends State<DetectScreen> {
         ),
         const SizedBox(height: 10),
         
-        Container(
+        SizedBox(
           height: 190,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
