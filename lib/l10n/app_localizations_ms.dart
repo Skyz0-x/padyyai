@@ -397,4 +397,211 @@ class AppLocalizationsMs extends AppLocalizations {
 
   @override
   String get december => 'Disember';
+
+  @override
+  String get logout => 'Log Keluar';
+
+  @override
+  String get yourBusiness => 'Perniagaan Anda';
+
+  @override
+  String get businessDashboard => 'Papan Pemuka Perniagaan';
+
+  @override
+  String get totalProducts => 'Jumlah Produk';
+
+  @override
+  String get activeOrders => 'Pesanan Aktif';
+
+  @override
+  String get monthlySales => 'Jualan Bulanan';
+
+  @override
+  String get customers => 'Pelanggan';
+
+  @override
+  String get manageProducts => 'Urus Produk';
+
+  @override
+  String get addEditRemoveProducts => 'Tambah, edit, atau buang produk anda';
+
+  @override
+  String get viewOrders => 'Lihat Pesanan';
+
+  @override
+  String get checkManageCustomerOrders => 'Periksa dan urus pesanan pelanggan';
+
+  @override
+  String get businessProfile => 'Profil Perniagaan';
+
+  @override
+  String get updateBusinessInformation => 'Kemaskini maklumat perniagaan anda';
+
+  @override
+  String get approved => 'DILULUSKAN';
+
+  @override
+  String get accountActiveReady =>
+      'Akaun anda aktif dan sedia untuk perniagaan!';
+
+  @override
+  String get rejected => 'DITOLAK';
+
+  @override
+  String get applicationRejected =>
+      'Permohonan anda telah ditolak. Hubungi sokongan untuk butiran.';
+
+  @override
+  String get pendingApproval => 'MENUNGGU KELULUSAN';
+
+  @override
+  String get accountUnderReviewSupplier =>
+      'Akaun pembekal anda sedang disemak oleh pasukan kami. Proses ini biasanya mengambil 1-3 hari perniagaan.';
+
+  @override
+  String get refreshStatus => 'Segarkan Status';
+
+  @override
+  String get contactSupport => 'Hubungi Sokongan';
+
+  @override
+  String get updateProfile => 'Kemaskini Profil';
+
+  @override
+  String get accountUnderReviewTitle => 'Akaun Sedang Disemak';
+
+  @override
+  String get applicationRejectedTitle => 'Permohonan Ditolak';
+
+  @override
+  String get applicationNotApproved =>
+      'Malangnya, permohonan pembekal anda tidak diluluskan. Sila hubungi pasukan sokongan kami untuk maklumat lanjut atau untuk memohon semula.';
+
+  @override
+  String get businessInformation => 'Maklumat Perniagaan';
+
+  @override
+  String get businessName => 'Nama Perniagaan';
+
+  @override
+  String get businessType => 'Jenis Perniagaan';
+
+  @override
+  String get businessAddress => 'Alamat Perniagaan';
+
+  @override
+  String get phone => 'Nombor Telefon';
+
+  @override
+  String get businessDescription => 'Penerangan Perniagaan';
+
+  @override
+  String get productsOffered => 'Produk yang Ditawarkan';
+
+  @override
+  String get updateBusinessInfo => 'Kemaskini maklumat perniagaan anda';
+
+  @override
+  String get selectCertificate => 'Pilih Sijil';
+
+  @override
+  String get chooseUploadSSM => 'Pilih cara memuat naik sijil SSM anda';
+
+  @override
+  String get fromGallery => 'Dari Galeri';
+
+  @override
+  String get selectImageSource => 'Pilih Sumber Imej';
+
+  @override
+  String get camera => 'Kamera';
+
+  @override
+  String get gallery => 'Galeri';
+
+  @override
+  String get saving => 'Menyimpan...';
+
+  @override
+  String get ok => 'Ok';
+
+  @override
+  String get retry => 'Cuba Lagi';
+
+  @override
+  String get reject => 'Tolak';
+
+  @override
+  String get approveOrder => 'Luluskan Pesanan';
+
+  @override
+  String get shipOrder => 'Hantar Pesanan';
+
+  @override
+  String get viewDetails => 'Lihat Butiran';
+
+  @override
+  String get viewReceipt => 'Lihat Resit';
+
+  @override
+  String get approvingOrder => 'Meluluskan pesanan...';
+
+  @override
+  String get orderApprovedReady => 'Pesanan diluluskan! Sedia untuk dihantar.';
+
+  @override
+  String get errorApprovingOrder => 'Ralat meluluskan pesanan:';
+
+  @override
+  String get enterTrackingNumber =>
+      'Masukkan nombor pengesanan untuk penghantaran ini:';
+
+  @override
+  String get pleaseEnterTrackingNumber => 'Sila masukkan nombor pengesanan';
+
+  @override
+  String get orderShippedSuccessfully => 'Pesanan dihantar dengan berjaya!';
+
+  @override
+  String get areYouSureCancelOrder =>
+      'Adakah anda pasti mahu membatalkan pesanan ini?';
+
+  @override
+  String get orderCancelledSuccessfully =>
+      'Pesanan telah dibatalkan dengan berjaya';
+
+  @override
+  String get addProduct => 'Tambah Produk';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get delete => 'Padam';
+
+  @override
+  String get deleteProduct => 'Padam Produk';
+
+  @override
+  String get deleteProductConfirm =>
+      'Adakah anda pasti mahu memadamkan produk ini?';
+
+  @override
+  String get errorTakingPhoto => 'Ralat mengambil foto';
+
+  @override
+  String get pleaseUploadSSMCertificate => 'Sila muat naik sijil SSM anda';
+
+  @override
+  String get userNotFound => 'Pengguna tidak dijumpai. Sila log masuk semula.';
+
+  @override
+  String get supplierDetailsSavedSuccessfully =>
+      'Butiran pembekal disimpan dengan berjaya!';
+
+  @override
+  String get failedSaveDetails => 'Gagal menyimpan butiran. Sila cuba lagi.';
+
+  @override
+  String get out => 'Kehabisan Stok';
 }

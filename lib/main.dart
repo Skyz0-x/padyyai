@@ -21,6 +21,8 @@ import 'screens/payment_screen.dart';
 import 'screens/chat_bot_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/detect_history_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/supplier_settings_screen.dart';
 import 'services/auth_service.dart';
 import 'l10n/app_locale.dart';
 
@@ -126,6 +128,8 @@ class _PaddyAIAppState extends State<PaddyAIApp> {
         '/chat': (context) => const RoleGuard(allowedRoles: ['farmer'], child: ChatBotScreen()),
         '/orders': (context) => const RoleGuard(allowedRoles: ['farmer'], child: OrdersScreen()),
         '/detect-history': (context) => const RoleGuard(allowedRoles: ['farmer'], child: DetectHistoryScreen()),
+        '/settings': (context) => const SettingsScreen(),
+        '/supplier-settings': (context) => const RoleGuard(allowedRoles: ['supplier'], child: SupplierSettingsScreen()),
       },
       initialRoute: '/',
     );

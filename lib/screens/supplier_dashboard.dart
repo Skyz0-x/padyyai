@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import '../services/auth_service.dart';
 import '../services/products_service.dart';
 import '../services/supplier_orders_service.dart';
 import '../widgets/loading_screen.dart';
 import 'manage_products_screen.dart';
+import '../l10n/app_locale.dart';
 
 class SupplierDashboard extends StatefulWidget {
   const SupplierDashboard({super.key});
@@ -176,7 +178,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                 },
                 icon: const Icon(Icons.logout),
                 color: Colors.white,
-                tooltip: 'Logout',
+                tooltip: AppLocale.logout.getString(context),
               ),
             ],
           ),
@@ -200,14 +202,14 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
       case 'approved':
         statusColor = Colors.green;
         statusIcon = Icons.check_circle;
-        statusText = 'APPROVED';
-        statusDescription = 'Your account is active and ready for business!';
+        statusText = AppLocale.approved.getString(context);
+        statusDescription = AppLocale.accountActiveReady.getString(context);
         break;
       case 'rejected':
         statusColor = Colors.red;
         statusIcon = Icons.cancel;
-        statusText = 'REJECTED';
-        statusDescription = 'Your application was rejected. Contact support for details.';
+        statusText = AppLocale.rejected.getString(context);
+        statusDescription = AppLocale.applicationRejected.getString(context);
         break;
       case 'pending':
       default:
@@ -285,8 +287,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Business Dashboard',
+          Text(
+            AppLocale.businessDashboard.getString(context),
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -301,7 +303,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
             children: [
               Expanded(
                 child: _buildStatCard(
-                  'Total Products', 
+                  AppLocale.totalProducts.getString(context), 
                   '$_productCount', 
                   Icons.inventory, 
                   Colors.green,
@@ -318,7 +320,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               const SizedBox(width: 16),
               Expanded(
                 child: _buildStatCard(
-                  'Active Orders', 
+                  AppLocale.activeOrders.getString(context), 
                   '$_activeOrders', 
                   Icons.shopping_cart, 
                   Colors.blue,
@@ -336,7 +338,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
             children: [
               Expanded(
                 child: _buildStatCard(
-                  'Monthly Sales', 
+                  AppLocale.monthlySales.getString(context), 
                   'RM${_monthlySales.toStringAsFixed(2)}', 
                   Icons.trending_up, 
                   Colors.orange,
@@ -345,7 +347,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               const SizedBox(width: 16),
               Expanded(
                 child: _buildStatCard(
-                  'Customers', 
+                  AppLocale.customers.getString(context), 
                   '$_customersCount', 
                   Icons.people, 
                   Colors.purple,
@@ -357,8 +359,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           const SizedBox(height: 30),
           
           // Action buttons
-          const Text(
-            'Quick Actions',
+          Text(
+            AppLocale.quickActions.getString(context),
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -369,8 +371,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           const SizedBox(height: 16),
           
           _buildActionButton(
-            'Manage Products',
-            'Add, edit, or remove your products',
+            AppLocale.manageProducts.getString(context),
+            AppLocale.addEditRemoveProducts.getString(context),
             Icons.inventory_2,
             () {
               Navigator.push(
@@ -385,8 +387,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           const SizedBox(height: 12),
           
           _buildActionButton(
-            'View Orders',
-            'Check and manage customer orders',
+            AppLocale.viewOrders.getString(context),
+            AppLocale.checkManageCustomerOrders.getString(context),
             Icons.list_alt,
             () {
               Navigator.pushNamed(context, '/supplier-orders');
@@ -396,8 +398,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           const SizedBox(height: 12),
           
           _buildActionButton(
-            'Business Profile',
-            'Update your business information',
+            AppLocale.businessProfile.getString(context),
+            AppLocale.updateBusinessInformation.getString(context),
             Icons.business,
             () {
               Navigator.pushNamed(context, '/supplier-details');
@@ -407,14 +409,11 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           const SizedBox(height: 12),
           
           _buildActionButton(
-            'Analytics',
-            'View sales and performance metrics',
-            Icons.analytics,
+            AppLocale.settings.getString(context),
+            AppLocale.manageAppPreferences.getString(context),
+            Icons.settings,
             () {
-              // TODO: Navigate to analytics
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Analytics coming soon!')),
-              );
+              Navigator.pushNamed(context, '/supplier-settings');
             },
           ),
         ],
@@ -435,8 +434,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               color: Colors.white.withOpacity(0.8),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Account Under Review',
+            Text(
+              AppLocale.accountUnderReviewTitle.getString(context),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -446,7 +445,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Your supplier application is being reviewed by our team. This process typically takes 1-3 business days.',
+              AppLocale.accountUnderReviewSupplier.getString(context),
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.white.withOpacity(0.8),
@@ -458,7 +457,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
             ElevatedButton.icon(
               onPressed: _loadUserProfile,
               icon: const Icon(Icons.refresh),
-              label: const Text('Refresh Status'),
+              label: Text(AppLocale.refreshStatus.getString(context)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.blue.shade600,
@@ -484,8 +483,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               color: Colors.red.withOpacity(0.8),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'Application Rejected',
+            Text(
+              AppLocale.applicationRejectedTitle.getString(context),
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -495,7 +494,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Unfortunately, your supplier application was not approved. Please contact our support team for more information or to reapply.',
+              AppLocale.applicationNotApproved.getString(context),
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.white.withOpacity(0.8),
@@ -511,11 +510,11 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                   onPressed: () {
                     // TODO: Contact support
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Contact support: support@paddyai.com')),
+                      SnackBar(content: Text(AppLocale.contactSupport.getString(context))),
                     );
                   },
                   icon: const Icon(Icons.support_agent),
-                  label: const Text('Contact Support'),
+                  label: Text(AppLocale.contactSupport.getString(context)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     foregroundColor: Colors.blue.shade600,
@@ -527,7 +526,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                     Navigator.pushNamed(context, '/supplier-details');
                   },
                   icon: const Icon(Icons.edit),
-                  label: const Text('Update Profile'),
+                  label: Text(AppLocale.updateProfile.getString(context)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
                     foregroundColor: Colors.white,

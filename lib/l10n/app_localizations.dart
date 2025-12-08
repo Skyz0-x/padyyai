@@ -871,6 +871,402 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'December'**
   String get december;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Logout'**
+  String get logout;
+
+  /// No description provided for @yourBusiness.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Business'**
+  String get yourBusiness;
+
+  /// No description provided for @businessDashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Dashboard'**
+  String get businessDashboard;
+
+  /// No description provided for @totalProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Total Products'**
+  String get totalProducts;
+
+  /// No description provided for @activeOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Active Orders'**
+  String get activeOrders;
+
+  /// No description provided for @monthlySales.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly Sales'**
+  String get monthlySales;
+
+  /// No description provided for @customers.
+  ///
+  /// In en, this message translates to:
+  /// **'Customers'**
+  String get customers;
+
+  /// No description provided for @manageProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Products'**
+  String get manageProducts;
+
+  /// No description provided for @addEditRemoveProducts.
+  ///
+  /// In en, this message translates to:
+  /// **'Add, edit, or remove your products'**
+  String get addEditRemoveProducts;
+
+  /// No description provided for @viewOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'View Orders'**
+  String get viewOrders;
+
+  /// No description provided for @checkManageCustomerOrders.
+  ///
+  /// In en, this message translates to:
+  /// **'Check and manage customer orders'**
+  String get checkManageCustomerOrders;
+
+  /// No description provided for @businessProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Profile'**
+  String get businessProfile;
+
+  /// No description provided for @updateBusinessInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your business information'**
+  String get updateBusinessInformation;
+
+  /// No description provided for @approved.
+  ///
+  /// In en, this message translates to:
+  /// **'APPROVED'**
+  String get approved;
+
+  /// No description provided for @accountActiveReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account is active and ready for business!'**
+  String get accountActiveReady;
+
+  /// No description provided for @rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'REJECTED'**
+  String get rejected;
+
+  /// No description provided for @applicationRejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Your application was rejected. Contact support for details.'**
+  String get applicationRejected;
+
+  /// No description provided for @pendingApproval.
+  ///
+  /// In en, this message translates to:
+  /// **'PENDING APPROVAL'**
+  String get pendingApproval;
+
+  /// No description provided for @accountUnderReviewSupplier.
+  ///
+  /// In en, this message translates to:
+  /// **'Your supplier application is being reviewed by our team. This process typically takes 1-3 business days.'**
+  String get accountUnderReviewSupplier;
+
+  /// No description provided for @refreshStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh Status'**
+  String get refreshStatus;
+
+  /// No description provided for @contactSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact Support'**
+  String get contactSupport;
+
+  /// No description provided for @updateProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Profile'**
+  String get updateProfile;
+
+  /// No description provided for @accountUnderReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Under Review'**
+  String get accountUnderReviewTitle;
+
+  /// No description provided for @applicationRejectedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Rejected'**
+  String get applicationRejectedTitle;
+
+  /// No description provided for @applicationNotApproved.
+  ///
+  /// In en, this message translates to:
+  /// **'Unfortunately, your supplier application was not approved. Please contact our support team for more information or to reapply.'**
+  String get applicationNotApproved;
+
+  /// No description provided for @businessInformation.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Information'**
+  String get businessInformation;
+
+  /// No description provided for @businessName.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Name'**
+  String get businessName;
+
+  /// No description provided for @businessType.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Type'**
+  String get businessType;
+
+  /// No description provided for @businessAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Address'**
+  String get businessAddress;
+
+  /// No description provided for @phone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone Number'**
+  String get phone;
+
+  /// No description provided for @businessDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Business Description'**
+  String get businessDescription;
+
+  /// No description provided for @productsOffered.
+  ///
+  /// In en, this message translates to:
+  /// **'Products Offered'**
+  String get productsOffered;
+
+  /// No description provided for @updateBusinessInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Update your business information'**
+  String get updateBusinessInfo;
+
+  /// No description provided for @selectCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Certificate'**
+  String get selectCertificate;
+
+  /// No description provided for @chooseUploadSSM.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how to upload your SSM certificate'**
+  String get chooseUploadSSM;
+
+  /// No description provided for @fromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'From Gallery'**
+  String get fromGallery;
+
+  /// No description provided for @selectImageSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Select Image Source'**
+  String get selectImageSource;
+
+  /// No description provided for @camera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get camera;
+
+  /// No description provided for @gallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get gallery;
+
+  /// No description provided for @saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// No description provided for @ok.
+  ///
+  /// In en, this message translates to:
+  /// **'Ok'**
+  String get ok;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @reject.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get reject;
+
+  /// No description provided for @approveOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Approve Order'**
+  String get approveOrder;
+
+  /// No description provided for @shipOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Ship Order'**
+  String get shipOrder;
+
+  /// No description provided for @viewDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get viewDetails;
+
+  /// No description provided for @viewReceipt.
+  ///
+  /// In en, this message translates to:
+  /// **'View Receipt'**
+  String get viewReceipt;
+
+  /// No description provided for @approvingOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Approving order...'**
+  String get approvingOrder;
+
+  /// No description provided for @orderApprovedReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Order approved! Ready to ship.'**
+  String get orderApprovedReady;
+
+  /// No description provided for @errorApprovingOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Error approving order:'**
+  String get errorApprovingOrder;
+
+  /// No description provided for @enterTrackingNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter tracking number for this shipment:'**
+  String get enterTrackingNumber;
+
+  /// No description provided for @pleaseEnterTrackingNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter tracking number'**
+  String get pleaseEnterTrackingNumber;
+
+  /// No description provided for @orderShippedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Order shipped successfully!'**
+  String get orderShippedSuccessfully;
+
+  /// No description provided for @areYouSureCancelOrder.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to cancel this order?'**
+  String get areYouSureCancelOrder;
+
+  /// No description provided for @orderCancelledSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Order cancelled successfully'**
+  String get orderCancelledSuccessfully;
+
+  /// No description provided for @addProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Product'**
+  String get addProduct;
+
+  /// No description provided for @edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @deleteProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Product'**
+  String get deleteProduct;
+
+  /// No description provided for @deleteProductConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this product?'**
+  String get deleteProductConfirm;
+
+  /// No description provided for @errorTakingPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Error taking photo'**
+  String get errorTakingPhoto;
+
+  /// No description provided for @pleaseUploadSSMCertificate.
+  ///
+  /// In en, this message translates to:
+  /// **'Please upload your SSM certificate'**
+  String get pleaseUploadSSMCertificate;
+
+  /// No description provided for @userNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'User not found. Please login again.'**
+  String get userNotFound;
+
+  /// No description provided for @supplierDetailsSavedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Supplier details saved successfully!'**
+  String get supplierDetailsSavedSuccessfully;
+
+  /// No description provided for @failedSaveDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save details. Please try again.'**
+  String get failedSaveDetails;
+
+  /// No description provided for @out.
+  ///
+  /// In en, this message translates to:
+  /// **'Out of Stock'**
+  String get out;
 }
 
 class _AppLocalizationsDelegate

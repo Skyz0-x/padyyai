@@ -1,9 +1,11 @@
 ﻿import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:image_picker/image_picker.dart';
 import '../config/supabase_config.dart';
 import '../services/products_service.dart';
 import '../utils/constants.dart';
+import '../l10n/app_locale.dart';
 
 class ManageProductsScreen extends StatefulWidget {
   const ManageProductsScreen({super.key});
@@ -60,7 +62,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
       });
     } catch (e) {
       setState(() => _isLoading = false);
-      _showErrorSnackBar('Failed to load products');
+      _showErrorSnackBar(AppLocale.failedToLoadProducts.getString(context));
     }
   }
 
@@ -80,6 +82,27 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
         backgroundColor: Colors.green,
       ),
     );
+  }
+
+  String _getLocalizedCategory(String categoryKey) {
+    switch (categoryKey) {
+      case 'Fungicides':
+        return AppLocale.fungicides.getString(context);
+      case 'Herbicides':
+        return AppLocale.herbicides.getString(context);
+      case 'Pesticides':
+        return AppLocale.pesticides.getString(context);
+      case 'Fertilizers':
+        return AppLocale.fertilizers.getString(context);
+      case 'Seeds':
+        return AppLocale.seeds.getString(context);
+      case 'Tools':
+        return AppLocale.tools.getString(context);
+      case 'Organic':
+        return AppLocale.organic.getString(context);
+      default:
+        return categoryKey;
+    }
   }
 
   @override
@@ -139,9 +162,9 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
         onPressed: () => _showAddProductDialog(),
         backgroundColor: primaryColor,
         icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Add Product',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        label: Text(
+          AppLocale.addProduct.getString(context),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
     );
@@ -163,17 +186,17 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Manage Products',
-                  style: TextStyle(
+                Text(
+                  AppLocale.manageProducts.getString(context),
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const Text(
-                  'Add, edit, or remove your products',
-                  style: TextStyle(
+                Text(
+                  AppLocale.addEditRemoveProducts.getString(context),
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.white70,
                   ),
@@ -213,16 +236,16 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${_products.length} Products',
+                  '${_products.length} ${AppLocale.products.getString(context)}',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: primaryColor,
                   ),
                 ),
-                const Text(
-                  'Tap a product to edit or delete',
-                  style: TextStyle(
+                Text(
+                  AppLocale.tapProductToEdit.getString(context),
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.black54,
                   ),
@@ -275,9 +298,9 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
-              'No Products Yet',
-              style: TextStyle(
+            Text(
+              AppLocale.noProductsFound.getString(context),
+              style: const TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -285,7 +308,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Add your first product to get started',
+              AppLocale.addProductsToStart.getString(context),
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.white.withOpacity(0.8),
@@ -295,7 +318,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
             ElevatedButton.icon(
               onPressed: () => _showAddProductDialog(),
               icon: const Icon(Icons.add),
-              label: const Text('Add Product'),
+              label: Text(AppLocale.addProduct.getString(context)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: primaryColor,
@@ -352,7 +375,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    product['name'] ?? 'Unknown Product',
+                    product['name'] ?? AppLocale.unknownProduct.getString(context),
                     style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -378,7 +401,9 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      product['category'] ?? 'General',
+                      product['category'] != null 
+                          ? _getLocalizedCategory(product['category'])
+                          : AppLocale.all.getString(context),
                       style: TextStyle(
                         fontSize: 11,
                         color: primaryColor,
@@ -401,8 +426,8 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
                       const SizedBox(width: 4),
                       Text(
                         product['in_stock'] == true
-                            ? 'In Stock'
-                            : 'Out of Stock',
+                            ? AppLocale.inStock.getString(context)
+                            : AppLocale.outOfStock.getString(context),
                         style: TextStyle(
                           fontSize: 11,
                           color: product['in_stock'] == true
@@ -431,13 +456,13 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'edit',
                   child: Row(
                     children: [
                       Icon(Icons.edit, size: 18),
                       SizedBox(width: 8),
-                      Text('Edit'),
+                      Text(AppLocale.edit.getString(context)),
                     ],
                   ),
                 ),
@@ -453,19 +478,19 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
                       ),
                       const SizedBox(width: 8),
                       Text(product['in_stock'] == true
-                          ? 'Out of Stock'
-                          : 'In Stock'),
+                          ? AppLocale.outOfStock.getString(context)
+                          : AppLocale.inStock.getString(context)),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'delete',
                   child: Row(
                     children: [
                       Icon(Icons.delete, size: 18, color: Colors.red),
                       SizedBox(width: 8),
-                      Text('Delete',
-                          style: TextStyle(color: Colors.red)),
+                      Text(AppLocale.delete.getString(context),
+                          style: const TextStyle(color: Colors.red)),
                     ],
                   ),
                 ),
@@ -490,25 +515,23 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
       context: context,
       builder: (context) => ProductDialog(
         product: product,
-        onSaved: () {
-          _loadProducts();
-          Navigator.of(context).pop();
-        },
+        onSaved: _loadProducts,
       ),
     );
   }
 
   Future<void> _toggleProductStock(Map<String, dynamic> product) async {
-    final newStockStatus = !(product['in_stock'] ?? false);
+    final currentStock = product['in_stock'] ?? false;
     final result = await _productsService.updateProduct(
       productId: product['id'],
-      inStock: newStockStatus,
+      inStock: !currentStock,
     );
 
     if (result['success']) {
-      _showSuccessSnackBar(newStockStatus
-          ? 'Product marked as in stock'
-          : 'Product marked as out of stock');
+      _showSuccessSnackBar(
+          !currentStock
+              ? AppLocale.markAsInStock.getString(context)
+              : AppLocale.markAsOutOfStock.getString(context));
       _loadProducts();
     } else {
       _showErrorSnackBar('Failed to update product stock status');
@@ -519,13 +542,12 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Product'),
-        content: Text(
-            'Are you sure you want to delete "\\"? This action cannot be undone.'),
+        title: Text(AppLocale.deleteProduct.getString(context)),
+        content: Text(AppLocale.deleteProductConfirm.getString(context)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocale.cancel.getString(context)),
           ),
           TextButton(
             onPressed: () async {
@@ -533,7 +555,7 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
               await _deleteProduct(product);
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(AppLocale.delete.getString(context)),
           ),
         ],
       ),
@@ -544,10 +566,10 @@ class _ManageProductsScreenState extends State<ManageProductsScreen>
     final result = await _productsService.deleteProduct(product['id']);
 
     if (result['success']) {
-      _showSuccessSnackBar('Product deleted successfully');
+      _showSuccessSnackBar(AppLocale.productDeletedSuccessfully.getString(context));
       _loadProducts();
     } else {
-      _showErrorSnackBar('Failed to delete product');
+      _showErrorSnackBar(AppLocale.failedToDeleteProduct.getString(context));
     }
   }
 }
@@ -582,7 +604,7 @@ class _ProductDialogState extends State<ProductDialog> {
   String? _currentImageUrl;
   bool _isLoading = false;
 
-  final List<String> _categories = [
+  final List<String> _categoryKeys = [
     'Fungicides',
     'Herbicides',
     'Fertilizers',
@@ -590,10 +612,9 @@ class _ProductDialogState extends State<ProductDialog> {
     'Tools',
     'Organic',
     'Pesticides',
-    'Herbicides',
   ];
 
-  final List<String> _diseases = [
+  final List<String> _diseaseKeys = [
     'Brown Planthopper',
     'Brown Spot',
     'Leaf Blast',
@@ -603,6 +624,50 @@ class _ProductDialogState extends State<ProductDialog> {
     'Sheath Blight',
     'Other',
   ];
+
+  String _getLocalizedCategory(String categoryKey) {
+    switch (categoryKey) {
+      case 'Fungicides':
+        return AppLocale.fungicides.getString(context);
+      case 'Herbicides':
+        return AppLocale.herbicides.getString(context);
+      case 'Pesticides':
+        return AppLocale.pesticides.getString(context);
+      case 'Fertilizers':
+        return AppLocale.fertilizers.getString(context);
+      case 'Seeds':
+        return AppLocale.seeds.getString(context);
+      case 'Tools':
+        return AppLocale.tools.getString(context);
+      case 'Organic':
+        return AppLocale.organic.getString(context);
+      default:
+        return categoryKey;
+    }
+  }
+
+  String _getLocalizedDisease(String diseaseKey) {
+    switch (diseaseKey) {
+      case 'Brown Planthopper':
+        return AppLocale.brownPlanthopper.getString(context);
+      case 'Brown Spot':
+        return AppLocale.brownSpot.getString(context);
+      case 'Leaf Blast':
+        return AppLocale.leafBlast.getString(context);
+      case 'Leaf Scald':
+        return AppLocale.leafScald.getString(context);
+      case 'Rice Leafroller':
+        return AppLocale.riceLeafroller.getString(context);
+      case 'Rice Yellow Stem Borer':
+        return AppLocale.riceYellowStemBorer.getString(context);
+      case 'Sheath Blight':
+        return AppLocale.sheathBlight.getString(context);
+      case 'Other':
+        return AppLocale.other.getString(context);
+      default:
+        return diseaseKey;
+    }
+  }
 
   @override
   void initState() {
@@ -657,7 +722,7 @@ class _ProductDialogState extends State<ProductDialog> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.product == null ? 'Add Product' : 'Edit Product',
+                    widget.product == null ? AppLocale.addProduct.getString(context) : AppLocale.editProduct.getString(context),
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -669,10 +734,10 @@ class _ProductDialogState extends State<ProductDialog> {
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _nameController,
-                    label: 'Product Name',
+                    label: AppLocale.productName.getString(context),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter product name';
+                        return AppLocale.pleaseEnterProductName.getString(context);
                       }
                       return null;
                     },
@@ -680,11 +745,11 @@ class _ProductDialogState extends State<ProductDialog> {
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _descriptionController,
-                    label: 'Description',
+                    label: AppLocale.description.getString(context),
                     maxLines: 3,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter product description';
+                        return AppLocale.pleaseEnterProductDescription.getString(context);
                       }
                       return null;
                     },
@@ -692,14 +757,14 @@ class _ProductDialogState extends State<ProductDialog> {
                   const SizedBox(height: 16),
                   _buildTextField(
                     controller: _priceController,
-                    label: 'Price (RM)',
+                    label: AppLocale.priceRM.getString(context),
                     keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter price';
+                        return AppLocale.pleaseEnterPrice.getString(context);
                       }
                       if (double.tryParse(value) == null) {
-                        return 'Please enter a valid price';
+                        return AppLocale.pleaseEnterValidPrice.getString(context);
                       }
                       return null;
                     },
@@ -719,7 +784,7 @@ class _ProductDialogState extends State<ProductDialog> {
                           onPressed: _isLoading
                               ? null
                               : () => Navigator.of(context).pop(),
-                          child: const Text('Cancel'),
+                          child: Text(AppLocale.cancel.getString(context)),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -744,8 +809,8 @@ class _ProductDialogState extends State<ProductDialog> {
                                 )
                               : Text(
                                   widget.product == null
-                                      ? 'Add Product'
-                                      : 'Update',
+                                      ? AppLocale.addProduct.getString(context)
+                                      : AppLocale.update.getString(context),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                         ),
@@ -765,9 +830,9 @@ class _ProductDialogState extends State<ProductDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Product Image',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        Text(
+          AppLocale.productImage.getString(context),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         GestureDetector(
@@ -811,9 +876,9 @@ class _ProductDialogState extends State<ProductDialog> {
       children: [
         Icon(Icons.add_a_photo, size: 40, color: primaryColor),
         const SizedBox(height: 8),
-        const Text(
-          'Tap to add image',
-          style: TextStyle(color: Colors.grey),
+        Text(
+          AppLocale.tapToAddImage.getString(context),
+          style: const TextStyle(color: Colors.grey),
         ),
       ],
     );
@@ -859,9 +924,9 @@ class _ProductDialogState extends State<ProductDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Category',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        Text(
+          AppLocale.category.getString(context),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<String>(
@@ -871,10 +936,10 @@ class _ProductDialogState extends State<ProductDialog> {
             filled: true,
             fillColor: backgroundColor,
           ),
-          items: _categories.map((category) {
+          items: _categoryKeys.map((category) {
             return DropdownMenuItem(
               value: category,
-              child: Text(category),
+              child: Text(_getLocalizedCategory(category)),
             );
           }).toList(),
           onChanged: (value) {
@@ -891,19 +956,19 @@ class _ProductDialogState extends State<ProductDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Effective Against Diseases/Pests',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        Text(
+          AppLocale.effectiveAgainstDiseasesPests.getString(context),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: _diseases.map((disease) {
+          children: _diseaseKeys.map((disease) {
             final isSelected = _selectedDiseases.contains(disease);
             return FilterChip(
               label: Text(
-                disease,
+                _getLocalizedDisease(disease),
                 style: TextStyle(
                   color: isSelected ? Colors.white : primaryColor,
                   fontSize: 12,
@@ -933,9 +998,9 @@ class _ProductDialogState extends State<ProductDialog> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Key Benefits',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        Text(
+          AppLocale.keyBenefits.getString(context),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         
@@ -970,7 +1035,7 @@ class _ProductDialogState extends State<ProductDialog> {
               child: TextField(
                 controller: _benefitController,
                 decoration: InputDecoration(
-                  hintText: 'Add a benefit (e.g., Fast-acting formula)',
+                  hintText: AppLocale.addBenefitHint.getString(context),
                   border: const OutlineInputBorder(),
                   filled: true,
                   fillColor: backgroundColor,
@@ -984,13 +1049,13 @@ class _ProductDialogState extends State<ProductDialog> {
               onPressed: _addBenefit,
               icon: const Icon(Icons.add_circle),
               color: primaryColor,
-              tooltip: 'Add Benefit',
+              tooltip: AppLocale.addBenefit.getString(context),
             ),
           ],
         ),
         const SizedBox(height: 4),
         Text(
-          'Add key benefits or features of this product',
+          AppLocale.addKeyBenefitsDescription.getString(context),
           style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
         ),
       ],

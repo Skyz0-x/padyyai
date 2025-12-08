@@ -396,4 +396,209 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get december => 'December';
+
+  @override
+  String get logout => 'Logout';
+
+  @override
+  String get yourBusiness => 'Your Business';
+
+  @override
+  String get businessDashboard => 'Business Dashboard';
+
+  @override
+  String get totalProducts => 'Total Products';
+
+  @override
+  String get activeOrders => 'Active Orders';
+
+  @override
+  String get monthlySales => 'Monthly Sales';
+
+  @override
+  String get customers => 'Customers';
+
+  @override
+  String get manageProducts => 'Manage Products';
+
+  @override
+  String get addEditRemoveProducts => 'Add, edit, or remove your products';
+
+  @override
+  String get viewOrders => 'View Orders';
+
+  @override
+  String get checkManageCustomerOrders => 'Check and manage customer orders';
+
+  @override
+  String get businessProfile => 'Business Profile';
+
+  @override
+  String get updateBusinessInformation => 'Update your business information';
+
+  @override
+  String get approved => 'APPROVED';
+
+  @override
+  String get accountActiveReady =>
+      'Your account is active and ready for business!';
+
+  @override
+  String get rejected => 'REJECTED';
+
+  @override
+  String get applicationRejected =>
+      'Your application was rejected. Contact support for details.';
+
+  @override
+  String get pendingApproval => 'PENDING APPROVAL';
+
+  @override
+  String get accountUnderReviewSupplier =>
+      'Your supplier application is being reviewed by our team. This process typically takes 1-3 business days.';
+
+  @override
+  String get refreshStatus => 'Refresh Status';
+
+  @override
+  String get contactSupport => 'Contact Support';
+
+  @override
+  String get updateProfile => 'Update Profile';
+
+  @override
+  String get accountUnderReviewTitle => 'Account Under Review';
+
+  @override
+  String get applicationRejectedTitle => 'Application Rejected';
+
+  @override
+  String get applicationNotApproved =>
+      'Unfortunately, your supplier application was not approved. Please contact our support team for more information or to reapply.';
+
+  @override
+  String get businessInformation => 'Business Information';
+
+  @override
+  String get businessName => 'Business Name';
+
+  @override
+  String get businessType => 'Business Type';
+
+  @override
+  String get businessAddress => 'Business Address';
+
+  @override
+  String get phone => 'Phone Number';
+
+  @override
+  String get businessDescription => 'Business Description';
+
+  @override
+  String get productsOffered => 'Products Offered';
+
+  @override
+  String get updateBusinessInfo => 'Update your business information';
+
+  @override
+  String get selectCertificate => 'Select Certificate';
+
+  @override
+  String get chooseUploadSSM => 'Choose how to upload your SSM certificate';
+
+  @override
+  String get fromGallery => 'From Gallery';
+
+  @override
+  String get selectImageSource => 'Select Image Source';
+
+  @override
+  String get camera => 'Camera';
+
+  @override
+  String get gallery => 'Gallery';
+
+  @override
+  String get saving => 'Saving...';
+
+  @override
+  String get ok => 'Ok';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String get approveOrder => 'Approve Order';
+
+  @override
+  String get shipOrder => 'Ship Order';
+
+  @override
+  String get viewDetails => 'View Details';
+
+  @override
+  String get viewReceipt => 'View Receipt';
+
+  @override
+  String get approvingOrder => 'Approving order...';
+
+  @override
+  String get orderApprovedReady => 'Order approved! Ready to ship.';
+
+  @override
+  String get errorApprovingOrder => 'Error approving order:';
+
+  @override
+  String get enterTrackingNumber => 'Enter tracking number for this shipment:';
+
+  @override
+  String get pleaseEnterTrackingNumber => 'Please enter tracking number';
+
+  @override
+  String get orderShippedSuccessfully => 'Order shipped successfully!';
+
+  @override
+  String get areYouSureCancelOrder =>
+      'Are you sure you want to cancel this order?';
+
+  @override
+  String get orderCancelledSuccessfully => 'Order cancelled successfully';
+
+  @override
+  String get addProduct => 'Add Product';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get deleteProduct => 'Delete Product';
+
+  @override
+  String get deleteProductConfirm =>
+      'Are you sure you want to delete this product?';
+
+  @override
+  String get errorTakingPhoto => 'Error taking photo';
+
+  @override
+  String get pleaseUploadSSMCertificate => 'Please upload your SSM certificate';
+
+  @override
+  String get userNotFound => 'User not found. Please login again.';
+
+  @override
+  String get supplierDetailsSavedSuccessfully =>
+      'Supplier details saved successfully!';
+
+  @override
+  String get failedSaveDetails => 'Failed to save details. Please try again.';
+
+  @override
+  String get out => 'Out of Stock';
 }

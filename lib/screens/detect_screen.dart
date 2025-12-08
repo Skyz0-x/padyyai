@@ -1001,11 +1001,11 @@ class _DetectScreenState extends State<DetectScreen> {
         ),
         const SizedBox(width: 16),
         Expanded(
-          child: ElevatedButton.icon(
+          child: ElevatedButton(
             onPressed: _image != null && !_isAnalyzing && _isModelLoaded
                 ? _analyzeImage 
                 : null,
-            icon: _isAnalyzing 
+            child: _isAnalyzing 
                 ? const SizedBox(
                     width: 20,
                     height: 20,
@@ -1014,12 +1014,11 @@ class _DetectScreenState extends State<DetectScreen> {
                       valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                     ),
                   )
-                : const Icon(Icons.analytics),
-            label: Text(_isAnalyzing 
-                ? AppLocale.analyzing.getString(context)
-                : !_isModelLoaded 
-                    ? AppLocale.loadingAIModel.getString(context)
-                    : AppLocale.analyzeWithAI.getString(context)),
+                : Text(_isAnalyzing 
+                    ? AppLocale.analyzing.getString(context)
+                    : !_isModelLoaded 
+                        ? AppLocale.loadingAIModel.getString(context)
+                        : AppLocale.analyzeWithAI.getString(context)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade600,
               foregroundColor: Colors.white,
@@ -1253,7 +1252,7 @@ class _DetectScreenState extends State<DetectScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  Icons.analytics,
+                  Icons.science,
                   color: Colors.green.shade700,
                   size: 24,
                 ),

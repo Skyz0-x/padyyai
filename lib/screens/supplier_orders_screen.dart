@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import '../services/supplier_orders_service.dart';
 import '../config/supabase_config.dart';
 import '../utils/constants.dart';
+import '../l10n/app_locale.dart';
 
 class SupplierOrdersScreen extends StatefulWidget {
   const SupplierOrdersScreen({super.key});
@@ -150,17 +152,17 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Supplier Orders',
-                  style: TextStyle(
+                Text(
+                  AppLocale.viewOrders.getString(context),
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const Text(
-                  'Manage and track your customer orders',
-                  style: TextStyle(
+                Text(
+                  AppLocale.checkManageCustomerOrders.getString(context),
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.white70,
                   ),
@@ -221,11 +223,11 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
               fontWeight: FontWeight.w500,
             ),
             tabs: [
-              _buildTab('All', null),
-              _buildTab('To Pay', _statusCounts['to_pay']),
-              _buildTab('To Ship', _statusCounts['to_ship']),
-              _buildTab('Shipped', _statusCounts['to_receive']),
-              _buildTab('Completed', _statusCounts['completed']),
+              _buildTab(AppLocale.all.getString(context), null),
+              _buildTab(AppLocale.toPay.getString(context), _statusCounts['to_pay']),
+              _buildTab(AppLocale.toShip.getString(context), _statusCounts['to_ship']),
+              _buildTab(AppLocale.toReceive.getString(context), _statusCounts['to_receive']),
+              _buildTab(AppLocale.completed.getString(context), _statusCounts['completed']),
             ],
           ),
         ],
@@ -297,14 +299,14 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Please try again later',
+              AppLocale.pleaseTryAgainLater.getString(context),
               style: TextStyle(color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _loadOrders,
               icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              label: Text(AppLocale.retry.getString(context)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).primaryColor,
                 foregroundColor: Colors.white,
@@ -337,9 +339,9 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'No Orders Yet',
-                style: TextStyle(
+              Text(
+                AppLocale.noOrders.getString(context),
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -347,7 +349,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
               ),
               const SizedBox(height: 8),
               Text(
-                'Orders will appear here when farmers place them',
+                AppLocale.yourOrdersAppearHere.getString(context),
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.white.withOpacity(0.8),
@@ -528,7 +530,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                             const Icon(Icons.shopping_bag_rounded, size: 14, color: Color(0xFF2E7D32)),
                             const SizedBox(width: 4),
                             Text(
-                              '$totalItems item${totalItems > 1 ? 's' : ''}',
+                              '$totalItems ${AppLocale.items.getString(context)}',
                               style: const TextStyle(
                                 color: Color(0xFF2E7D32),
                                 fontWeight: FontWeight.bold,
@@ -562,7 +564,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                             const Icon(Icons.add_circle_outline, size: 16, color: Color(0xFF2E7D32)),
                             const SizedBox(width: 6),
                             Text(
-                              '${orderItems.length - 2} more item${orderItems.length - 2 > 1 ? 's' : ''}',
+                              '${orderItems.length - 2} ${AppLocale.moreItems.getString(context)}',
                               style: const TextStyle(
                                 color: Color(0xFF2E7D32),
                                 fontSize: 13,
@@ -577,9 +579,9 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Total Amount',
-                        style: TextStyle(
+                      Text(
+                        AppLocale.totalAmount.getString(context),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
@@ -631,7 +633,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                               Icon(Icons.local_shipping, size: 18, color: Colors.blue[700]),
                               const SizedBox(width: 8),
                               Text(
-                                'Delivery Information',
+                                AppLocale.shippingInformation.getString(context),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
@@ -660,7 +662,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Contact Number',
+                                        AppLocale.phone.getString(context),
                                         style: TextStyle(
                                           fontSize: 11,
                                           color: Colors.blue[800],
@@ -681,11 +683,11 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                   onPressed: () {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Contact: ${profiles['phone_number']}'),
+                                        content: Text('${AppLocale.phone.getString(context)}: ${profiles['phone_number']}'),
                                         backgroundColor: Colors.blue[700],
                                         behavior: SnackBarBehavior.floating,
                                         action: SnackBarAction(
-                                          label: 'OK',
+                                          label: AppLocale.ok.getString(context),
                                           textColor: Colors.white,
                                           onPressed: () {},
                                         ),
@@ -693,7 +695,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                     );
                                   },
                                   icon: Icon(Icons.copy, size: 18, color: Colors.blue[700]),
-                                  tooltip: 'Copy number',
+                                  tooltip: AppLocale.copyPhoneNumber.getString(context),
                                   visualDensity: VisualDensity.compact,
                                 ),
                               ],
@@ -724,7 +726,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Recipient',
+                                              AppLocale.recipient.getString(context),
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 color: Colors.blue[800],
@@ -792,7 +794,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              'Delivery Address',
+                                              AppLocale.deliveryAddress.getString(context),
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 color: Colors.blue[800],
@@ -824,7 +826,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      'No delivery information provided',
+                                      AppLocale.noDeliveryInformationProvided.getString(context),
                                       style: TextStyle(
                                         fontSize: 12,
                                         color: Colors.orange[800],
@@ -853,7 +855,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
 
   Widget _buildOrderItem(dynamic item) {
     // Product data is stored directly in order_items (denormalized)
-    final productName = item['product_name'] ?? 'Unknown Product';
+    final productName = item['product_name'] ?? AppLocale.unknownProduct.getString(context);
     final quantity = item['quantity'] ?? 0;
     final price = item['product_price']?.toString() ?? '0.00';
     final imageUrl = item['product_image'];
@@ -925,7 +927,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                     border: Border.all(color: Colors.orange[200]!, width: 1),
                   ),
                   child: Text(
-                    'Qty: $quantity × RM $price',
+                    '${AppLocale.qty.getString(context)}: $quantity × RM $price',
                     style: TextStyle(
                       fontSize: 13,
                       color: Colors.orange[800],
@@ -949,32 +951,32 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
     switch (status) {
       case 'to_pay':
         color = Colors.orange;
-        label = 'Cash on Delivery';
+        label = AppLocale.toPay.getString(context);
         icon = Icons.payments_outlined;
         break;
       case 'pending':
         color = Colors.amber;
-        label = 'Pending';
+        label = AppLocale.pending.getString(context);
         icon = Icons.pending_outlined;
         break;
       case 'to_ship':
         color = Colors.blue;
-        label = 'To Ship';
+        label = AppLocale.toShip.getString(context);
         icon = Icons.local_shipping_outlined;
         break;
       case 'to_receive':
         color = Colors.blue;
-        label = 'Shipped';
+        label = AppLocale.toReceive.getString(context);
         icon = Icons.flight_takeoff;
         break;
       case 'completed':
         color = Colors.green;
-        label = 'Completed';
+        label = AppLocale.completed.getString(context);
         icon = Icons.check_circle_outline;
         break;
       case 'cancelled':
         color = Colors.red;
-        label = 'Cancelled';
+        label = AppLocale.cancelled.getString(context);
         icon = Icons.cancel_outlined;
         break;
       default:
@@ -1026,7 +1028,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
             child: OutlinedButton.icon(
               onPressed: () => _showCancelDialog(orderId),
               icon: const Icon(Icons.cancel_outlined, size: 18),
-              label: const Text('Reject'),
+              label: Text(AppLocale.rejectOrder.getString(context)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.red[700],
                 side: BorderSide(color: Colors.red[300]!, width: 1.5),
@@ -1043,7 +1045,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
             child: ElevatedButton.icon(
               onPressed: () => _handleApproveOrder(orderId),
               icon: const Icon(Icons.check_circle_rounded, size: 20),
-              label: const Text('Approve Order'),
+              label: Text(AppLocale.approveOrder.getString(context)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50),
                 foregroundColor: Colors.white,
@@ -1068,7 +1070,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
             child: OutlinedButton.icon(
               onPressed: () => _showCancelDialog(orderId),
               icon: const Icon(Icons.cancel_outlined, size: 18),
-              label: const Text('Cancel'),
+              label: Text(AppLocale.cancel.getString(context)),
               style: OutlinedButton.styleFrom(
                 foregroundColor: Colors.red[700],
                 side: BorderSide(color: Colors.red[300]!, width: 1.5),
@@ -1085,7 +1087,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
             child: ElevatedButton.icon(
               onPressed: () => _showShipDialog(orderId),
               icon: const Icon(Icons.local_shipping_rounded, size: 20),
-              label: const Text('Ship Order'),
+              label: Text(AppLocale.shipOrder.getString(context)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF2E7D32),
                 foregroundColor: Colors.white,
@@ -1104,7 +1106,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
       return ElevatedButton.icon(
         onPressed: () => _showOrderDetails(order),
         icon: const Icon(Icons.visibility_rounded, size: 20),
-        label: const Text('View Details'),
+        label: Text(AppLocale.viewDetails.getString(context)),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue[600],
           foregroundColor: Colors.white,
@@ -1121,7 +1123,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
       return OutlinedButton.icon(
         onPressed: () => _showOrderDetails(order),
         icon: const Icon(Icons.receipt_long_rounded, size: 20),
-        label: const Text('View Receipt'),
+        label: Text(AppLocale.viewReceipt.getString(context)),
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
           minimumSize: const Size(double.infinity, 0),
@@ -1142,10 +1144,10 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
       // Show loading
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
@@ -1153,11 +1155,11 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
-                SizedBox(width: 16),
-                Text('Approving order...'),
+                const SizedBox(width: 16),
+                Text(AppLocale.approvingOrder.getString(context)),
               ],
             ),
-            duration: Duration(seconds: 2),
+            duration: const Duration(seconds: 2),
           ),
         );
       }
@@ -1167,16 +1169,16 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
+          SnackBar(
             content: Row(
               children: [
-                Icon(Icons.check_circle, color: Colors.white),
-                SizedBox(width: 12),
-                Text('Order approved! Ready to ship.'),
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Text(AppLocale.orderApprovedReady.getString(context)),
               ],
             ),
-            backgroundColor: Color(0xFF4CAF50),
-            duration: Duration(seconds: 3),
+            backgroundColor: const Color(0xFF4CAF50),
+            duration: const Duration(seconds: 3),
           ),
         );
         _loadOrders();
@@ -1189,7 +1191,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
               children: [
                 const Icon(Icons.error_outline, color: Colors.white),
                 const SizedBox(width: 12),
-                Expanded(child: Text('Error approving order: $e')),
+                Expanded(child: Text('${AppLocale.errorApprovingOrder.getString(context)} $e')),
               ],
             ),
             backgroundColor: Colors.red,
@@ -1205,18 +1207,18 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ship Order'),
+        title: Text(AppLocale.shipOrder.getString(context)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Enter tracking number for this shipment:'),
+            Text(AppLocale.enterTrackingNumber.getString(context)),
             const SizedBox(height: 16),
             TextField(
               controller: trackingController,
-              decoration: const InputDecoration(
-                labelText: 'Tracking Number',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.qr_code),
+              decoration: InputDecoration(
+                labelText: AppLocale.trackingNumber.getString(context),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.qr_code),
               ),
               textCapitalization: TextCapitalization.characters,
             ),
@@ -1225,13 +1227,13 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocale.cancel.getString(context)),
           ),
           ElevatedButton(
             onPressed: () async {
               if (trackingController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter tracking number')),
+                  SnackBar(content: Text(AppLocale.pleaseEnterTrackingNumber.getString(context))),
                 );
                 return;
               }
@@ -1239,7 +1241,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
               Navigator.pop(context);
               await _shipOrder(orderId, trackingController.text);
             },
-            child: const Text('Ship'),
+            child: Text(AppLocale.shipOrder.getString(context)),
           ),
         ],
       ),
@@ -1250,12 +1252,12 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
     try {
       await _ordersService.shipOrder(orderId, trackingNumber);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Order shipped successfully!')),
+        SnackBar(content: Text(AppLocale.orderShippedSuccessfully.getString(context))),
       );
       _loadOrders();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text('${AppLocale.error.getString(context)}: ${e.toString()}')),
       );
     }
   }
@@ -1266,17 +1268,17 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Cancel Order'),
+        title: Text(AppLocale.cancelOrder.getString(context)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Are you sure you want to cancel this order?'),
+            Text(AppLocale.areYouSureCancelOrder.getString(context)),
             const SizedBox(height: 16),
             TextField(
               controller: reasonController,
-              decoration: const InputDecoration(
-                labelText: 'Reason (optional)',
-                border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                labelText: AppLocale.reason.getString(context),
+                border: const OutlineInputBorder(),
               ),
               maxLines: 3,
             ),
@@ -1285,7 +1287,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('No'),
+            child: Text(AppLocale.no.getString(context)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -1293,7 +1295,7 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
               await _cancelOrder(orderId, reasonController.text);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Yes, Cancel'),
+            child: Text(AppLocale.cancelOrder.getString(context)),
           ),
         ],
       ),
@@ -1304,12 +1306,12 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
     try {
       await _ordersService.cancelOrder(orderId, reason);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Order cancelled successfully')),
+        SnackBar(content: Text(AppLocale.orderCancelledSuccessfully.getString(context))),
       );
       _loadOrders();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${e.toString()}')),
+        SnackBar(content: Text('${AppLocale.error.getString(context)}: ${e.toString()}')),
       );
     }
   }
@@ -1364,9 +1366,9 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Order Details',
-                            style: TextStyle(
+                          Text(
+                            AppLocale.orderDetails.getString(context),
+                            style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -1398,9 +1400,9 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Customer Information Section
-                      const Text(
-                        'Customer Information',
-                        style: TextStyle(
+                      Text(
+                        AppLocale.customerInformation.getString(context),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2E7D32),
@@ -1435,9 +1437,9 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      const Text(
-                                        'Name',
-                                        style: TextStyle(
+                                      Text(
+                                        AppLocale.fullName.getString(context),
+                                        style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.black54,
                                         ),
@@ -1478,9 +1480,9 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
-                                        const Text(
-                                          'Phone Number',
-                                          style: TextStyle(
+                                        Text(
+                                          AppLocale.phone.getString(context),
+                                          style: const TextStyle(
                                             fontSize: 12,
                                             color: Colors.black54,
                                           ),
@@ -1501,16 +1503,16 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                                       // Copy to clipboard or open dialer
                                       ScaffoldMessenger.of(context).showSnackBar(
                                         SnackBar(
-                                          content: Text('Phone: $customerPhone'),
+                                          content: Text('${AppLocale.phone.getString(context)}: $customerPhone'),
                                           action: SnackBarAction(
-                                            label: 'OK',
+                                            label: AppLocale.ok.getString(context),
                                             onPressed: () {},
                                           ),
                                         ),
                                       );
                                     },
                                     icon: const Icon(Icons.copy, size: 20),
-                                    tooltip: 'Copy phone number',
+                                    tooltip: AppLocale.copyPhoneNumber.getString(context),
                                   ),
                                 ],
                               ),
@@ -1522,29 +1524,29 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                       const SizedBox(height: 20),
                       
                       // Order Information Section
-                      const Text(
-                        'Order Information',
-                        style: TextStyle(
+                      Text(
+                        AppLocale.orderInformation.getString(context),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2E7D32),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      _buildDetailRow('Order Date', _formatDate(createdAt)),
-                      _buildDetailRow('Status', order['status'] ?? 'N/A'),
-                      _buildDetailRow('Payment Method', order['payment_method'] ?? 'N/A'),
-                      _buildDetailRow('Total Amount', 'RM ${order['total_amount']}'),
+                      _buildDetailRow(AppLocale.orderDate.getString(context), _formatDate(createdAt)),
+                      _buildDetailRow(AppLocale.status.getString(context), order['status'] ?? 'N/A'),
+                      _buildDetailRow(AppLocale.paymentMethod.getString(context), order['payment_method'] ?? 'N/A'),
+                      _buildDetailRow(AppLocale.totalAmount.getString(context), 'RM ${order['total_amount']}'),
                       if (order['tracking_number'] != null)
-                        _buildDetailRow('Tracking Number', order['tracking_number']),
+                        _buildDetailRow(AppLocale.trackingNumber.getString(context), order['tracking_number']),
                       
                       const SizedBox(height: 20),
                       
                       // Delivery Address Section
                       if (order['shipping_address'] != null) ...[
-                        const Text(
-                          'Delivery Information',
-                          style: TextStyle(
+                        Text(
+                          AppLocale.shippingInformation.getString(context),
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2E7D32),
@@ -1621,58 +1623,64 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                       ],
                       
                       // Order Items Section
-                      const Text(
-                        'Order Items',
-                        style: TextStyle(
+                      Text(
+                        AppLocale.orderItems.getString(context),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2E7D32),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ...orderItems.map((item) => Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item['product_name'] ?? 'Product',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                      ...orderItems.map((item) {
+                        final price = double.tryParse(item['product_price']?.toString() ?? '0') ?? 0.0;
+                        final quantity = int.tryParse(item['quantity']?.toString() ?? '0') ?? 0;
+                        final subtotal = price * quantity;
+                        
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.grey[300]!),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      item['product_name'] ?? AppLocale.unknownProduct.getString(context),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'RM ${item['price']} × ${item['quantity']}',
-                                    style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontSize: 13,
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'RM ${price.toStringAsFixed(2)} × $quantity',
+                                      style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontSize: 13,
+                                      ),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                            Text(
-                              'RM ${((item['price'] ?? 0) * (item['quantity'] ?? 0)).toStringAsFixed(2)}',
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                                color: Color(0xFF2E7D32),
+                              Text(
+                                'RM ${subtotal.toStringAsFixed(2)}',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: Color(0xFF2E7D32),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                      )).toList(),
+                            ],
+                          ),
+                        );
+                      }).toList(),
                     ],
                   ),
                 ),
@@ -1700,9 +1708,9 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
-                      'Close',
-                      style: TextStyle(
+                    child: Text(
+                      AppLocale.close.getString(context),
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),

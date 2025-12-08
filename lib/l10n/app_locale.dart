@@ -420,6 +420,7 @@ class AppLocale {
   static const String riceLeafroller = 'riceLeafroller';
   static const String riceYellowStemBorer = 'riceYellowStemBorer';
   static const String sheathBlight = 'sheathBlight';
+  static const String other = 'other';
   
   // Disease Descriptions
   static const String brownPlanthopperDesc = 'brownPlanthopperDesc';
@@ -504,6 +505,97 @@ class AppLocale {
   static const String thunderstorm = 'thunderstorm';
   static const String thunderstormHail = 'thunderstormHail';
   static const String unknown = 'unknown';
+
+  // Supplier Screens
+  static const String logout = 'logout';
+  static const String yourBusiness = 'yourBusiness';
+  static const String businessDashboard = 'businessDashboard';
+  static const String totalProducts = 'totalProducts';
+  static const String activeOrders = 'activeOrders';
+  static const String monthlySales = 'monthlySales';
+  static const String customers = 'customers';
+  static const String manageProducts = 'manageProducts';
+  static const String addEditRemoveProducts = 'addEditRemoveProducts';
+  static const String viewOrders = 'viewOrders';
+  static const String checkManageCustomerOrders = 'checkManageCustomerOrders';
+  static const String businessProfile = 'businessProfile';
+  static const String updateBusinessInformation = 'updateBusinessInformation';
+  static const String approved = 'approved';
+  static const String accountActiveReady = 'accountActiveReady';
+  static const String rejected = 'rejected';
+  static const String applicationRejected = 'applicationRejected';
+  static const String pendingApproval = 'pendingApproval';
+  static const String accountUnderReviewSupplier = 'accountUnderReviewSupplier';
+  static const String refreshStatus = 'refreshStatus';
+  static const String contactSupport = 'contactSupport';
+  static const String updateProfile = 'updateProfile';
+  static const String accountUnderReviewTitle = 'accountUnderReviewTitle';
+  static const String applicationRejectedTitle = 'applicationRejectedTitle';
+  static const String applicationNotApproved = 'applicationNotApproved';
+  static const String businessInformation = 'businessInformation';
+  static const String businessName = 'businessName';
+  static const String businessType = 'businessType';
+  static const String businessAddress = 'businessAddress';
+  static const String phone = 'phone';
+  static const String businessDescription = 'businessDescription';
+  static const String productsOffered = 'productsOffered';
+  static const String updateBusinessInfo = 'updateBusinessInfo';
+  static const String reason = 'reason';
+  static const String customerInformation = 'customerInformation';
+  static const String orderInformation = 'orderInformation';
+  static const String orderDate = 'orderDate';
+  static const String recipient = 'recipient';
+  static const String copyPhoneNumber = 'copyPhoneNumber';
+  static const String noDeliveryInformationProvided = 'noDeliveryInformationProvided';
+  static const String selectCertificate = 'selectCertificate';
+  static const String chooseUploadSSM = 'chooseUploadSSM';
+  static const String fromGallery = 'fromGallery';
+  static const String approveOrder = 'approveOrder';
+  static const String rejectOrder = 'rejectOrder';
+  static const String shipOrder = 'shipOrder';
+  static const String viewDetails = 'viewDetails';
+  static const String viewReceipt = 'viewReceipt';
+  static const String approvingOrder = 'approvingOrder';
+  static const String orderApprovedReady = 'orderApprovedReady';
+  static const String errorApprovingOrder = 'errorApprovingOrder';
+  static const String enterTrackingNumber = 'enterTrackingNumber';
+  static const String pleaseEnterTrackingNumber = 'pleaseEnterTrackingNumber';
+  static const String orderShippedSuccessfully = 'orderShippedSuccessfully';
+  static const String areYouSureCancelOrder = 'areYouSureCancelOrder';
+  static const String orderCancelledSuccessfully = 'orderCancelledSuccessfully';
+  static const String addProduct = 'addProduct';
+  static const String edit = 'edit';
+  static const String markAsInStock = 'markAsInStock';
+  static const String markAsOutOfStock = 'markAsOutOfStock';
+  static const String deleteProduct = 'deleteProduct';
+  static const String deleteProductConfirm = 'deleteProductConfirm';
+  static const String products = 'products';
+  static const String tapProductToEdit = 'tapProductToEdit';
+  static const String failedToLoadProducts = 'failedToLoadProducts';
+  static const String productDeletedSuccessfully = 'productDeletedSuccessfully';
+  static const String failedToDeleteProduct = 'failedToDeleteProduct';
+  static const String editProduct = 'editProduct';
+  static const String productName = 'productName';
+  static const String pleaseEnterProductName = 'pleaseEnterProductName';
+  static const String pleaseEnterProductDescription = 'pleaseEnterProductDescription';
+  static const String priceRM = 'priceRM';
+  static const String pleaseEnterPrice = 'pleaseEnterPrice';
+  static const String pleaseEnterValidPrice = 'pleaseEnterValidPrice';
+  static const String category = 'category';
+  static const String effectiveAgainstDiseasesPests = 'effectiveAgainstDiseasesPests';
+  static const String addBenefitHint = 'addBenefitHint';
+  static const String addBenefit = 'addBenefit';
+  static const String addKeyBenefitsDescription = 'addKeyBenefitsDescription';
+  static const String update = 'update';
+  static const String productImage = 'productImage';
+  static const String tapToAddImage = 'tapToAddImage';
+  static const String errorTakingPhoto = 'errorTakingPhoto';
+  static const String pleaseUploadSSMCertificate = 'pleaseUploadSSMCertificate';
+  static const String userNotFound = 'userNotFound';
+  static const String supplierDetailsSavedSuccessfully = 'supplierDetailsSavedSuccessfully';
+  static const String failedSaveDetails = 'failedSaveDetails';
+
+
 
   static final List<MapLocale> LOCALES = [
     MapLocale(
@@ -937,6 +1029,7 @@ mixin LocaleData {
     'riceLeafroller': 'Rice Leafroller',
     'riceYellowStemBorer': 'Rice Yellow Stem Borer',
     'sheathBlight': 'Sheath Blight',
+    'other': 'Other',
     
     // Disease Descriptions
     'brownPlanthopperDesc': 'Serious insect pest that feeds on rice plants by sucking plant juices, causing yellowing and stunting.',
@@ -1021,6 +1114,95 @@ mixin LocaleData {
     'thunderstorm': 'Thunderstorm',
     'thunderstormHail': 'Thunderstorm with hail',
     'unknown': 'Unknown',
+    
+    // Supplier Screens
+    'logout': 'Logout',
+    'yourBusiness': 'Your Business',
+    'businessDashboard': 'Business Dashboard',
+    'totalProducts': 'Total Products',
+    'activeOrders': 'Active Orders',
+    'monthlySales': 'Monthly Sales',
+    'customers': 'Customers',
+    'manageProducts': 'Manage Products',
+    'addEditRemoveProducts': 'Add, edit, or remove your products',
+    'viewOrders': 'View Orders',
+    'checkManageCustomerOrders': 'Check and manage customer orders',
+    'businessProfile': 'Business Profile',
+    'updateBusinessInformation': 'Update your business information',
+    'approved': 'APPROVED',
+    'accountActiveReady': 'Your account is active and ready for business!',
+    'rejected': 'REJECTED',
+    'applicationRejected': 'Your application was rejected. Contact support for details.',
+    'pendingApproval': 'PENDING APPROVAL',
+    'accountUnderReviewSupplier': 'Your supplier application is being reviewed by our team. This process typically takes 1-3 business days.',
+    'refreshStatus': 'Refresh Status',
+    'contactSupport': 'Contact Support',
+    'updateProfile': 'Update Profile',
+    'accountUnderReviewTitle': 'Account Under Review',
+    'applicationRejectedTitle': 'Application Rejected',
+    'applicationNotApproved': 'Unfortunately, your supplier application was not approved. Please contact our support team for more information or to reapply.',
+    'businessInformation': 'Business Information',
+    'businessName': 'Business Name',
+    'businessType': 'Business Type',
+    'businessAddress': 'Business Address',
+    'phone': 'Phone Number',
+    'businessDescription': 'Business Description',
+    'productsOffered': 'Products Offered',
+    'updateBusinessInfo': 'Update your business information',
+    'reason': 'Reason (optional)',
+    'customerInformation': 'Customer Information',
+    'orderInformation': 'Order Information',
+    'orderDate': 'Order Date',
+    'recipient': 'Recipient',
+    'copyPhoneNumber': 'Copy phone number',
+    'noDeliveryInformationProvided': 'No delivery information provided',
+    'selectCertificate': 'Select Certificate',
+    'chooseUploadSSM': 'Choose how to upload your SSM certificate',
+    'fromGallery': 'From Gallery',
+    'approveOrder': 'Approve Order',
+    'rejectOrder': 'Reject Order',
+    'shipOrder': 'Ship Order',
+    'viewDetails': 'View Details',
+    'viewReceipt': 'View Receipt',
+    'approvingOrder': 'Approving order...',
+    'orderApprovedReady': 'Order approved! Ready to ship.',
+    'errorApprovingOrder': 'Error approving order:',
+    'enterTrackingNumber': 'Enter tracking number for this shipment:',
+    'pleaseEnterTrackingNumber': 'Please enter tracking number',
+    'orderShippedSuccessfully': 'Order shipped successfully!',
+    'areYouSureCancelOrder': 'Are you sure you want to cancel this order?',
+    'orderCancelledSuccessfully': 'Order cancelled successfully',
+    'addProduct': 'Add Product',
+    'edit': 'Edit',
+    'markAsInStock': 'Mark as In Stock',
+    'markAsOutOfStock': 'Mark as Out of Stock',
+    'deleteProduct': 'Delete Product',
+    'deleteProductConfirm': 'Are you sure you want to delete this product?',
+    'products': 'Products',
+    'tapProductToEdit': 'Tap a product to edit or delete',
+    'failedToLoadProducts': 'Failed to load products',
+    'productDeletedSuccessfully': 'Product deleted successfully',
+    'failedToDeleteProduct': 'Failed to delete product',
+    'editProduct': 'Edit Product',
+    'productName': 'Product Name',
+    'pleaseEnterProductName': 'Please enter product name',
+    'pleaseEnterProductDescription': 'Please enter product description',
+    'priceRM': 'Price (RM)',
+    'pleaseEnterPrice': 'Please enter price',
+    'pleaseEnterValidPrice': 'Please enter a valid price',
+    'category': 'Category',
+    'effectiveAgainstDiseasesPests': 'Effective Against Diseases/Pests',
+    'addBenefitHint': 'Add a benefit (e.g., Fast-acting formula)',
+    'addBenefit': 'Add Benefit',
+    'addKeyBenefitsDescription': 'Add key benefits or features of this product',
+    'update': 'Update',
+    'productImage': 'Product Image',
+    'tapToAddImage': 'Tap to add image',
+    'errorTakingPhoto': 'Error taking photo',
+    'pleaseUploadSSMCertificate': 'Please upload your SSM certificate',
+    'userNotFound': 'User not found. Please login again.',
+    'supplierDetailsSavedSuccessfully': 'Supplier details saved successfully!',
+    'failedSaveDetails': 'Failed to save details. Please try again.',
   };
 
 
@@ -1340,7 +1522,7 @@ mixin LocaleData {
     'noOrders': 'Tiada Pesanan',
     'yourOrdersAppearHere': 'Pesanan anda akan muncul di sini',
     'browseMarketplace': 'Layari Pasaran',
-    'qty': 'Kuantiit',
+    'qty': 'Kuantiti',
     'moreItems': 'item lagi',
     'totalAmount': 'Jumlah Keseluruhan',
     'payNow': 'Bayar',
@@ -1444,6 +1626,7 @@ mixin LocaleData {
     'riceLeafroller': 'Ulat Penggulung Daun',
     'riceYellowStemBorer': 'Ulat Batang Kuning',
     'sheathBlight': 'Hawar Seludang',
+    'other': 'Lain-lain',
     
     // Disease Descriptions
     'brownPlanthopperDesc': 'Perosak serangga serius yang memakan pokok padi dengan menghisap jus tumbuhan, menyebabkan penguningan dan terbantut.',
@@ -1528,5 +1711,95 @@ mixin LocaleData {
     'thunderstorm': 'Ribut petir',
     'thunderstormHail': 'Ribut petir dengan hujan batu',
     'unknown': 'Tidak diketahui',
+    
+    // Supplier Screens
+    'logout': 'Log Keluar',
+    'yourBusiness': 'Perniagaan Anda',
+    'businessDashboard': 'Papan Pemuka Perniagaan',
+    'totalProducts': 'Jumlah Produk',
+    'activeOrders': 'Pesanan Aktif',
+    'monthlySales': 'Jualan Bulanan',
+    'customers': 'Pelanggan',
+    'manageProducts': 'Urus Produk',
+    'addEditRemoveProducts': 'Tambah, edit, atau buang produk anda',
+    'viewOrders': 'Lihat Pesanan',
+    'checkManageCustomerOrders': 'Periksa dan urus pesanan pelanggan',
+    'businessProfile': 'Profil Perniagaan',
+    'updateBusinessInformation': 'Kemaskini maklumat perniagaan anda',
+    'approved': 'DILULUSKAN',
+    'accountActiveReady': 'Akaun anda aktif dan sedia untuk perniagaan!',
+    'rejected': 'DITOLAK',
+    'applicationRejected': 'Permohonan anda telah ditolak. Hubungi sokongan untuk butiran.',
+    'pendingApproval': 'MENUNGGU KELULUSAN',
+    'accountUnderReviewSupplier': 'Akaun pembekal anda sedang disemak oleh pasukan kami. Proses ini biasanya mengambil 1-3 hari perniagaan.',
+    'refreshStatus': 'Segarkan Status',
+    'contactSupport': 'Hubungi Sokongan',
+    'updateProfile': 'Kemaskini Profil',
+    'accountUnderReviewTitle': 'Akaun Sedang Disemak',
+    'applicationRejectedTitle': 'Permohonan Ditolak',
+    'applicationNotApproved': 'Malangnya, permohonan pembekal anda tidak diluluskan. Sila hubungi pasukan sokongan kami untuk maklumat lanjut atau untuk memohon semula.',
+    'businessInformation': 'Maklumat Perniagaan',
+    'businessName': 'Nama Perniagaan',
+    'businessType': 'Jenis Perniagaan',
+    'businessAddress': 'Alamat Perniagaan',
+    'phone': 'Nombor Telefon',
+    'businessDescription': 'Penerangan Perniagaan',
+    'productsOffered': 'Produk yang Ditawarkan',
+    'updateBusinessInfo': 'Kemaskini maklumat perniagaan anda',
+    'reason': 'Sebab (pilihan)',
+    'customerInformation': 'Maklumat Pelanggan',
+    'orderInformation': 'Maklumat Pesanan',
+    'orderDate': 'Tarikh Pesanan',
+    'recipient': 'Penerima',
+    'copyPhoneNumber': 'Salin nombor telefon',
+    'noDeliveryInformationProvided': 'Tiada maklumat penghantaran diberikan',
+    'selectCertificate': 'Pilih Sijil',
+    'chooseUploadSSM': 'Pilih cara memuat naik sijil SSM anda',
+    'fromGallery': 'Dari Galeri',
+    'approveOrder': 'Luluskan Pesanan',
+    'rejectOrder': 'Tolak Pesanan',
+    'shipOrder': 'Hantar Pesanan',
+    'viewDetails': 'Lihat Butiran',
+    'viewReceipt': 'Lihat Resit',
+    'approvingOrder': 'Meluluskan pesanan...',
+    'orderApprovedReady': 'Pesanan diluluskan! Sedia untuk dihantar.',
+    'errorApprovingOrder': 'Ralat meluluskan pesanan:',
+    'enterTrackingNumber': 'Masukkan nombor pengesanan untuk penghantaran ini:',
+    'pleaseEnterTrackingNumber': 'Sila masukkan nombor pengesanan',
+    'orderShippedSuccessfully': 'Pesanan dihantar dengan berjaya!',
+    'areYouSureCancelOrder': 'Adakah anda pasti mahu membatalkan pesanan ini?',
+    'orderCancelledSuccessfully': 'Pesanan telah dibatalkan dengan berjaya',
+    'addProduct': 'Tambah Produk',
+    'edit': 'Edit',
+    'markAsInStock': 'Tandakan Sebagai Dalam Stok',
+    'markAsOutOfStock': 'Tandakan Sebagai Kehabisan Stok',
+    'deleteProduct': 'Padam Produk',
+    'deleteProductConfirm': 'Adakah anda pasti mahu memadamkan produk ini?',
+    'products': 'Produk',
+    'tapProductToEdit': 'Ketik produk untuk edit atau padam',
+    'failedToLoadProducts': 'Gagal memuatkan produk',
+    'productDeletedSuccessfully': 'Produk berjaya dipadamkan',
+    'failedToDeleteProduct': 'Gagal memadamkan produk',
+    'editProduct': 'Edit Produk',
+    'productName': 'Nama Produk',
+    'pleaseEnterProductName': 'Sila masukkan nama produk',
+    'pleaseEnterProductDescription': 'Sila masukkan penerangan produk',
+    'priceRM': 'Harga (RM)',
+    'pleaseEnterPrice': 'Sila masukkan harga',
+    'pleaseEnterValidPrice': 'Sila masukkan harga yang sah',
+    'category': 'Kategori',
+    'effectiveAgainstDiseasesPests': 'Berkesan Terhadap Penyakit/Perosak',
+    'addBenefitHint': 'Tambah faedah (cth: Formula bertindak pantas)',
+    'addBenefit': 'Tambah Faedah',
+    'addKeyBenefitsDescription': 'Tambah faedah atau ciri utama produk ini',
+    'update': 'Kemaskini',
+    'productImage': 'Gambar Produk',
+    'tapToAddImage': 'Ketik untuk tambah gambar',
+    'errorTakingPhoto': 'Ralat mengambil foto',
+    'pleaseUploadSSMCertificate': 'Sila muat naik sijil SSM anda',
+    'userNotFound': 'Pengguna tidak dijumpai. Sila log masuk semula.',
+    'supplierDetailsSavedSuccessfully': 'Butiran pembekal disimpan dengan berjaya!',
+    'failedSaveDetails': 'Gagal menyimpan butiran. Sila cuba lagi.',
   };
 }
+
