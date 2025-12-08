@@ -19,7 +19,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   final ProductsService _productsService = ProductsService();
   final CartService _cartService = CartService();
   late AnimationController _animationController;
-  late Animation<double> _fadeAnimation;
   
   int _selectedCategory = 0;
   final TextEditingController _searchController = TextEditingController();
@@ -78,14 +77,6 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
 
     _animationController.forward();
   }

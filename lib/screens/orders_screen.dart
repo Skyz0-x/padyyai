@@ -22,8 +22,6 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
     'to_receive': 0,
     'to_review': 0,
   };
-  
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -48,11 +46,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
           'to_receive': counts['to_receive'] ?? 0,
           'to_review': counts['to_review'] ?? 0,
         };
-        _isLoading = false;
       });
     } catch (e) {
       print('Error loading order counts: $e');
-      setState(() => _isLoading = false);
     }
   }
 

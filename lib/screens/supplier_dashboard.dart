@@ -6,6 +6,7 @@ import '../services/supplier_orders_service.dart';
 import '../widgets/loading_screen.dart';
 import 'manage_products_screen.dart';
 import '../l10n/app_locale.dart';
+import '../utils/constants.dart';
 
 class SupplierDashboard extends StatefulWidget {
   const SupplierDashboard({super.key});
@@ -19,7 +20,6 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
   final ProductsService _productsService = ProductsService();
   final SupplierOrdersService _ordersService = SupplierOrdersService();
   Map<String, dynamic>? userProfile;
-  List<Map<String, dynamic>> _products = [];
   int _productCount = 0;
   int _activeOrders = 0;
   double _monthlySales = 0.0;
@@ -65,7 +65,6 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
       if (userId != null) {
         final products = await _productsService.getProductsBySupplier(userId);
         setState(() {
-          _products = products;
           _productCount = products.length;
         });
       }
@@ -140,7 +139,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                 child: Icon(
                   Icons.business,
                   size: 32,
-                  color: Colors.blue.shade600,
+                  color: accentColor,
                 ),
               ),
               const SizedBox(width: 16),
@@ -460,7 +459,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               label: Text(AppLocale.refreshStatus.getString(context)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
-                foregroundColor: Colors.blue.shade600,
+                foregroundColor: primaryColor,
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
@@ -517,7 +516,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                   label: Text(AppLocale.contactSupport.getString(context)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
-                    foregroundColor: Colors.blue.shade600,
+                    foregroundColor: primaryColor,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -606,12 +605,12 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
+                    color: accentColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     icon,
-                    color: Colors.blue.shade600,
+                    color: accentColor,
                     size: 24,
                   ),
                 ),

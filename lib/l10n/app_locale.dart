@@ -594,6 +594,26 @@ class AppLocale {
   static const String userNotFound = 'userNotFound';
   static const String supplierDetailsSavedSuccessfully = 'supplierDetailsSavedSuccessfully';
   static const String failedSaveDetails = 'failedSaveDetails';
+  static const String pleaseEnterBusinessName = 'pleaseEnterBusinessName';
+  static const String businessTypeHint = 'businessTypeHint';
+  static const String pleaseEnterBusinessType = 'pleaseEnterBusinessType';
+  static const String pleaseEnterBusinessAddress = 'pleaseEnterBusinessAddress';
+  static const String pleaseEnterPhoneNumber = 'pleaseEnterPhoneNumber';
+  static const String pleaseEnterBusinessDescription = 'pleaseEnterBusinessDescription';
+  static const String productsServicesHint = 'productsServicesHint';
+  static const String pleaseEnterProductsServices = 'pleaseEnterProductsServices';
+  static const String ssmCertificateUpload = 'ssmCertificateUpload';
+  static const String ssmCertificateDesc = 'ssmCertificateDesc';
+  static const String certificateUploaded = 'certificateUploaded';
+  static const String uploadCertificate = 'uploadCertificate';
+  static const String changeCertificate = 'changeCertificate';
+  static const String completeProfile = 'completeProfile';
+  static const String saving = 'saving';
+  static const String errorSelectingImage = 'errorSelectingImage';
+  static const String errorPickingFile = 'errorPickingFile';
+  static const String thanksForRegistering = 'thanksForRegistering';
+  static const String emailNotificationOnApproval = 'emailNotificationOnApproval';
+  static const String changeLanguage = 'changeLanguage';
 
 
 
@@ -1203,6 +1223,26 @@ mixin LocaleData {
     'userNotFound': 'User not found. Please login again.',
     'supplierDetailsSavedSuccessfully': 'Supplier details saved successfully!',
     'failedSaveDetails': 'Failed to save details. Please try again.',
+    'pleaseEnterBusinessName': 'Please enter your business name',
+    'businessTypeHint': 'Business Type (e.g., Pesticide Supplier, Fertilizer Distributor)',
+    'pleaseEnterBusinessType': 'Please enter your business type',
+    'pleaseEnterBusinessAddress': 'Please enter your business address',
+    'pleaseEnterPhoneNumber': 'Please enter your phone number',
+    'pleaseEnterBusinessDescription': 'Please enter a business description',
+    'productsServicesHint': 'Products/Services (e.g., Organic pesticides, Bio-fertilizers)',
+    'pleaseEnterProductsServices': 'Please enter your products or services',
+    'ssmCertificateUpload': 'SSM Certificate Upload *',
+    'ssmCertificateDesc': 'Please upload your Companies Commission of Malaysia (SSM) registration certificate.',
+    'certificateUploaded': 'Certificate uploaded',
+    'uploadCertificate': 'Upload Certificate',
+    'changeCertificate': 'Change Certificate',
+    'completeProfile': 'Complete Profile',
+    'saving': 'Saving...',
+    'errorSelectingImage': 'Error selecting image',
+    'errorPickingFile': 'Error picking file',
+    'thanksForRegistering': 'Thank you for registering as a supplier! Your account is currently being reviewed by our admin team.',
+    'emailNotificationOnApproval': 'You will receive an email notification once your account is approved.',
+    'changeLanguage': 'Change Language',
   };
 
 
@@ -1800,6 +1840,27 @@ mixin LocaleData {
     'userNotFound': 'Pengguna tidak dijumpai. Sila log masuk semula.',
     'supplierDetailsSavedSuccessfully': 'Butiran pembekal disimpan dengan berjaya!',
     'failedSaveDetails': 'Gagal menyimpan butiran. Sila cuba lagi.',
+    'pleaseEnterBusinessName': 'Sila masukkan nama perniagaan anda',
+    'businessTypeHint': 'Jenis Perniagaan (cth: Pembekal Racun Perosak, Pengedar Baja)',
+    'pleaseEnterBusinessType': 'Sila masukkan jenis perniagaan anda',
+    'pleaseEnterBusinessAddress': 'Sila masukkan alamat perniagaan anda',
+    'pleaseEnterPhoneNumber': 'Sila masukkan nombor telefon anda',
+    'pleaseEnterBusinessDescription': 'Sila masukkan penerangan perniagaan',
+    'productsServicesHint': 'Produk/Perkhidmatan (cth: Racun perosak organik, Bio-baja)',
+    'pleaseEnterProductsServices': 'Sila masukkan produk atau perkhidmatan anda',
+    'ssmCertificateUpload': 'Muat Naik Sijil SSM *',
+    'ssmCertificateDesc': 'Sila muat naik sijil pendaftaran Suruhanjaya Syarikat Malaysia (SSM) anda.',
+    'certificateUploaded': 'Sijil dimuat naik',
+    'uploadCertificate': 'Muat Naik Sijil',
+    'changeCertificate': 'Tukar Sijil',
+    'completeProfile': 'Lengkapkan Profil',
+    'saving': 'Menyimpan...',
+    'errorSelectingImage': 'Ralat memilih gambar',
+    'errorPickingFile': 'Ralat memilih fail',
+    'thanksForRegistering': 'Terima kasih kerana mendaftar sebagai pembekal! Akaun anda sedang disemak oleh pasukan pentadbir kami.',
+    'emailNotificationOnApproval': 'Anda akan menerima pemberitahuan e-mel sebaik sahaja akaun anda diluluskan.',
+    'changeLanguage': 'Tukar Bahasa',
   };
 }
+
 

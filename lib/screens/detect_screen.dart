@@ -25,7 +25,6 @@ class _DetectScreenState extends State<DetectScreen> {
   final ProductsService _productsService = ProductsService();
   final DiseaseRecordsService _diseaseRecordsService = DiseaseRecordsService();
   bool _isAnalyzing = false;
-  bool _isSavingToHistory = false;
   bool _isModelLoaded = false;
   Map<String, dynamic>? _result;
   List<String> _diseaseClasses = [];
@@ -378,7 +377,6 @@ class _DetectScreenState extends State<DetectScreen> {
     if (_image == null) return;
     
     try {
-      setState(() => _isSavingToHistory = true);
       print('💾 Saving detection to history...');
       
       // Upload image to Supabase Storage
@@ -438,11 +436,8 @@ class _DetectScreenState extends State<DetectScreen> {
       } else {
         print('❌ Failed to save detection: ${result['message']}');
       }
-      
-      setState(() => _isSavingToHistory = false);
     } catch (e) {
       print('❌ Error saving detection to history: $e');
-      setState(() => _isSavingToHistory = false);
     }
   }
 
@@ -526,6 +521,19 @@ class _DetectScreenState extends State<DetectScreen> {
     return names[diseaseName] ?? diseaseName;
   }
 
+  String _getLocalizedCategory(String? category) {
+    if (category == null) return 'Product';
+    final categories = {
+      'Fungicides': AppLocale.fungicides.getString(context),
+      'Pesticides': AppLocale.pesticides.getString(context),
+      'Fertilizers': AppLocale.fertilizers.getString(context),
+      'Organic': AppLocale.organic.getString(context),
+      'Seeds': AppLocale.seeds.getString(context),
+      'Tools': AppLocale.tools.getString(context),
+    };
+    return categories[category] ?? category;
+  }
+
   void _showProductDetails(Map<String, dynamic> product) {
     // Determine product icon based on category
     String getProductIcon(String? category) {
@@ -554,7 +562,7 @@ class _DetectScreenState extends State<DetectScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  product['name'] ?? 'Unknown Product',
+                  product['name'] ?? AppLocale.unknownProduct.getString(context),
                   style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -596,7 +604,7 @@ class _DetectScreenState extends State<DetectScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    product['category'] ?? 'Product',
+                    _getLocalizedCategory(product['category']),
                     style: TextStyle(
                       color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
                           ? Colors.green.shade700 
@@ -610,16 +618,16 @@ class _DetectScreenState extends State<DetectScreen> {
                 
                 // Description
                 Text(
-                  product['description'] ?? 'No description available',
+                  product['description'] ?? AppLocale.noDescriptionAvailable.getString(context),
                   style: const TextStyle(fontSize: 14, height: 1.4),
                 ),
                 const SizedBox(height: 12),
                 
                 // Effective Against Diseases
                 if (product['diseases'] != null && (product['diseases'] as List).isNotEmpty) ...[
-                  const Text(
-                    'Effective Against:',
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                  Text(
+                    AppLocale.effectiveAgainst.getString(context),
+                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Wrap(
@@ -627,7 +635,7 @@ class _DetectScreenState extends State<DetectScreen> {
                     runSpacing: 4,
                     children: (product['diseases'] as List).map((disease) => Chip(
                       label: Text(
-                        disease.toString(),
+                        _getLocalizedDiseaseName(disease.toString()),
                         style: const TextStyle(fontSize: 10),
                       ),
                       backgroundColor: Colors.orange.shade100,
@@ -644,7 +652,7 @@ class _DetectScreenState extends State<DetectScreen> {
                     Icon(Icons.sell, size: 16, color: Colors.grey),
                     const SizedBox(width: 4),
                     Text(
-                      'Price:',
+                      AppLocale.price.getString(context),
                       style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
                     ),
                     const Spacer(),
@@ -668,7 +676,7 @@ class _DetectScreenState extends State<DetectScreen> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      (product['in_stock'] ?? false) ? 'In Stock' : 'Out of Stock',
+                      (product['in_stock'] ?? false) ? AppLocale.inStock.getString(context) : AppLocale.outOfStock.getString(context),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
@@ -695,7 +703,7 @@ class _DetectScreenState extends State<DetectScreen> {
                   backgroundColor: Colors.green,
                   foregroundColor: Colors.white,
                 ),
-                child: const Text('Add to Cart'),
+                child: Text(AppLocale.addToCart.getString(context)),
               ),
           ],
         );
@@ -1361,7 +1369,7 @@ class _DetectScreenState extends State<DetectScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                _result!['isHealthy'] ? 'Recommended Products' : 'Treatment Products',
+                _result!['isHealthy'] ? AppLocale.recommendedProducts.getString(context) : AppLocale.treatmentProducts.getString(context),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -1496,7 +1504,7 @@ class _DetectScreenState extends State<DetectScreen> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  product['category'] ?? 'Product',
+                  _getLocalizedCategory(product['category']),
                   style: TextStyle(
                     color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
                         ? Colors.green.shade700 

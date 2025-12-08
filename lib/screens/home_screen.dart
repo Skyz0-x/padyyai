@@ -40,11 +40,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   Map<String, dynamic> _farmingStats = {};
   bool _loadingStats = true;
   
-  // Supabase client
-  final _supabase = SupabaseConfig.client;
-  
   // Reminders
-  List<Map<String, dynamic>> _upcomingReminders = [];
   int _pendingNotificationsCount = 0;
   bool _loadingReminders = true;
   
@@ -345,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   
   Future<void> _loadReminders() async {
     try {
-      final reminders = await _remindersService.getUpcomingReminders(days: 7);
+      await _remindersService.getUpcomingReminders(days: 7);
       final notificationCount = await _remindersService.getPendingNotificationsCount();
       
       // Load reminders for the selected month (for calendar)
@@ -353,7 +349,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       
       if (mounted) {
         setState(() {
-          _upcomingReminders = reminders;
           _pendingNotificationsCount = notificationCount;
           _loadingReminders = false;
         });

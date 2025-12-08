@@ -237,35 +237,4 @@ void main() {
       expect(merged, {'a': 1, 'b': 2, 'c': 3, 'd': 4});
     });
   });
-
-  group('Boolean Logic Tests', () {
-    test('Logical AND should work correctly', () {
-      expect(true && true, true);
-      expect(true && false, false);
-      expect(false && true, false);
-      expect(false && false, false);
-    });
-
-    test('Logical OR should work correctly', () {
-      expect(true || true, true);
-      expect(true || false, true);
-      expect(false || true, true);
-      expect(false || false, false);
-    });
-
-    test('Logical NOT should work correctly', () {
-      expect(!true, false);
-      expect(!false, true);
-    });
-
-    test('Null check should work correctly', () {
-      String? nullableString;
-      String nonNullString = 'test';
-      
-      expect(nullableString == null, true);
-      expect(nonNullString == null, false);
-      expect(nullableString ?? 'default', 'default');
-      expect(nonNullString ?? 'default', 'test');
-    });
-  });
 }

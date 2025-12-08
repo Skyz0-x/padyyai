@@ -3,6 +3,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/auth_service.dart';
 import '../utils/constants.dart';
+import '../l10n/app_locale.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 
 class SupplierDetailsScreen extends StatefulWidget {
   const SupplierDetailsScreen({super.key});
@@ -44,29 +46,29 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('Select Certificate'),
-          content: const Text('Choose how to upload your SSM certificate'),
+          title: Text(AppLocale.selectCertificate.getString(context)),
+          content: Text(AppLocale.chooseUploadSSM.getString(context)),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 _pickFromGallery();
               },
-              child: const Text('From Gallery'),
+              child: Text(AppLocale.fromGallery.getString(context)),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
                 _pickFromCamera();
               },
-              child: const Text('Take Photo'),
+              child: Text(AppLocale.takePhoto.getString(context)),
             ),
           ],
         ),
       );
     } catch (e) {
       if (mounted) {
-        _authService.showToast(context, 'Error picking file', isError: true);
+        _authService.showToast(context, AppLocale.errorPickingFile.getString(context), isError: true);
       }
     }
   }
@@ -86,7 +88,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _authService.showToast(context, 'Error selecting image', isError: true);
+        _authService.showToast(context, AppLocale.errorSelectingImage.getString(context), isError: true);
       }
     }
   }
@@ -106,7 +108,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _authService.showToast(context, 'Error taking photo', isError: true);
+        _authService.showToast(context, AppLocale.errorTakingPhoto.getString(context), isError: true);
       }
     }
   }
@@ -118,7 +120,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
 
     // Check if certificate is uploaded
     if (_certificateFile == null) {
-      _authService.showToast(context, 'Please upload your SSM certificate', isError: true);
+      _authService.showToast(context, AppLocale.pleaseUploadSSMCertificate.getString(context), isError: true);
       return;
     }
 
@@ -131,7 +133,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       final currentUser = _authService.currentUser;
       if (currentUser == null) {
         if (mounted) {
-          _authService.showToast(context, 'User not found. Please login again.', isError: true);
+          _authService.showToast(context, AppLocale.userNotFound.getString(context), isError: true);
         }
         return;
       }
@@ -153,7 +155,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
 
       if (result['success']) {
         if (mounted) {
-          _authService.showToast(context, 'Supplier details saved successfully!');
+          _authService.showToast(context, AppLocale.supplierDetailsSavedSuccessfully.getString(context));
           // Navigate to supplier pending screen since they need admin approval
           Navigator.pushNamedAndRemoveUntil(
             context, 
@@ -168,7 +170,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        _authService.showToast(context, 'Failed to save details. Please try again.', isError: true);
+        _authService.showToast(context, AppLocale.failedSaveDetails.getString(context), isError: true);
       }
     } finally {
       if (mounted) {
@@ -239,17 +241,17 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Business Profile',
-                  style: TextStyle(
+                Text(
+                  AppLocale.businessProfile.getString(context),
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
                 ),
-                const Text(
-                  'Update your business information',
-                  style: TextStyle(
+                Text(
+                  AppLocale.updateBusinessInfo.getString(context),
+                  style: const TextStyle(
                     fontSize: 12,
                     color: Colors.white70,
                   ),
@@ -281,9 +283,9 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text(
-              'Business Information',
-              style: TextStyle(
+            Text(
+              AppLocale.businessInformation.getString(context),
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
@@ -295,11 +297,11 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             // Business Name
             _buildTextField(
               controller: _businessNameController,
-              label: 'Business Name',
+              label: AppLocale.businessName.getString(context),
               icon: Icons.business,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your business name';
+                  return AppLocale.pleaseEnterBusinessName.getString(context);
                 }
                 return null;
               },
@@ -310,11 +312,11 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             // Business Type
             _buildTextField(
               controller: _businessTypeController,
-              label: 'Business Type (e.g., Pesticide Supplier, Fertilizer Distributor)',
+              label: AppLocale.businessTypeHint.getString(context),
               icon: Icons.category,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your business type';
+                  return AppLocale.pleaseEnterBusinessType.getString(context);
                 }
                 return null;
               },
@@ -325,12 +327,12 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             // Address
             _buildTextField(
               controller: _addressController,
-              label: 'Business Address',
+              label: AppLocale.businessAddress.getString(context),
               icon: Icons.location_on,
               maxLines: 2,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your business address';
+                  return AppLocale.pleaseEnterBusinessAddress.getString(context);
                 }
                 return null;
               },
@@ -341,12 +343,12 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             // Phone
             _buildTextField(
               controller: _phoneController,
-              label: 'Phone Number',
+              label: AppLocale.phone.getString(context),
               icon: Icons.phone,
               keyboardType: TextInputType.phone,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your phone number';
+                  return AppLocale.pleaseEnterPhoneNumber.getString(context);
                 }
                 return null;
               },
@@ -357,12 +359,12 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             // Description
             _buildTextField(
               controller: _descriptionController,
-              label: 'Business Description',
+              label: AppLocale.businessDescription.getString(context),
               icon: Icons.description,
               maxLines: 3,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter a business description';
+                  return AppLocale.pleaseEnterBusinessDescription.getString(context);
                 }
                 return null;
               },
@@ -373,12 +375,12 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             // Products
             _buildTextField(
               controller: _productsController,
-              label: 'Products/Services (e.g., Organic pesticides, Bio-fertilizers)',
+              label: AppLocale.productsServicesHint.getString(context),
               icon: Icons.inventory,
               maxLines: 2,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter your products or services';
+                  return AppLocale.pleaseEnterProductsServices.getString(context);
                 }
                 return null;
               },
@@ -421,7 +423,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.blue.shade500),
+          borderSide: BorderSide(color: primaryColor),
         ),
       ),
       validator: validator,
@@ -434,20 +436,20 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: accentColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
+        border: Border.all(color: accentColor.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.verified, color: Colors.blue.shade700),
+              Icon(Icons.verified, color: primaryColor),
               const SizedBox(width: 8),
-              const Text(
-                'SSM Certificate Upload *',
-                style: TextStyle(
+              Text(
+                AppLocale.ssmCertificateUpload.getString(context),
+                style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
@@ -456,9 +458,9 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Please upload your Companies Commission of Malaysia (SSM) registration certificate.',
-            style: TextStyle(
+          Text(
+            AppLocale.ssmCertificateDesc.getString(context),
+            style: const TextStyle(
               fontSize: 14,
               color: Colors.black54,
             ),
@@ -478,7 +480,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      _certificateFileName ?? 'Certificate uploaded',
+                      _certificateFileName ?? AppLocale.certificateUploaded.getString(context),
                       style: TextStyle(
                         fontSize: 14,
                         color: Colors.green.shade900,
@@ -503,9 +505,9 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
           ElevatedButton.icon(
             onPressed: _pickCertificate,
             icon: const Icon(Icons.upload_file),
-            label: Text(_certificateFile == null ? 'Upload Certificate' : 'Change Certificate'),
+            label: Text(_certificateFile == null ? AppLocale.uploadCertificate.getString(context) : AppLocale.changeCertificate.getString(context)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade600,
+              backgroundColor: primaryColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               shape: RoundedRectangleBorder(
@@ -522,7 +524,7 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
     return ElevatedButton(
       onPressed: _isLoading ? null : _saveSupplierDetails,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.blue.shade600,
+        backgroundColor: primaryColor,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
@@ -531,10 +533,10 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
         elevation: 2,
       ),
       child: _isLoading
-          ? const Row(
+          ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
@@ -542,13 +544,13 @@ class _SupplierDetailsScreenState extends State<SupplierDetailsScreen> {
                     valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                   ),
                 ),
-                SizedBox(width: 12),
-                Text('Saving...'),
+                const SizedBox(width: 12),
+                Text(AppLocale.saving.getString(context)),
               ],
             )
-          : const Text(
-              'Complete Profile',
-              style: TextStyle(
+          : Text(
+              AppLocale.completeProfile.getString(context),
+              style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
