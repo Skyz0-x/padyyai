@@ -31,8 +31,8 @@ class _DetectScreenState extends State<DetectScreen> {
   Interpreter? _interpreter;
   List<Map<String, dynamic>> _recommendedProducts = [];
 
-  // Model configuration
-  static const String _modelPath = 'assets/model/model_unquant.tflite';
+  // Model configuration - UPDATED TO NEW MODEL
+  static const String _modelPath = 'assets/model/model.tflite';
   static const String _labelsPath = 'assets/model/labels.txt';
 
   @override
