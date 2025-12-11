@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import '../services/products_service.dart';
+import '../services/model_manager_service.dart';
 import '../utils/constants.dart';
 
 class AdminDashboard extends StatefulWidget {
@@ -20,12 +21,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
   String _query = '';
   int _totalProducts = 0;
   int _inStock = 0;
+  String _selectedModel = 'assets/model/model.tflite';
 
   @override
   void initState() {
     super.initState();
     _loadPendingSuppliers();
     _loadProductStats();
+    _loadSelectedModel();
+  }
+  
+  Future<void> _loadSelectedModel() async {
+    try {
+      final model = await ModelManagerService.getSelectedModel();
+      setState(() => _selectedModel = model);
+    } catch (e) {
+      print('Error loading selected model: $e');
+    }
   }
 
   Future<void> _loadProductStats() async {
@@ -772,16 +784,42 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ],
                 ),
               ),
-              IconButton(
-                onPressed: () async {
-                  await _authService.signOut();
-                  if (context.mounted) {
-                    Navigator.of(context).pushReplacementNamed('/login');
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.settings, color: Colors.white),
+                tooltip: 'Admin Settings',
+                onSelected: (value) {
+                  if (value == 'logout') {
+                    _authService.signOut();
+                    if (context.mounted) {
+                      Navigator.of(context).pushReplacementNamed('/login');
+                    }
+                  } else if (value == 'ai_model') {
+                    _showAIModelDialog();
                   }
                 },
-                icon: const Icon(Icons.logout),
-                color: Colors.white,
-                tooltip: 'Logout',
+                itemBuilder: (BuildContext context) => [
+                  const PopupMenuItem(
+                    value: 'ai_model',
+                    child: Row(
+                      children: [
+                        Icon(Icons.smart_toy, color: Colors.blue, size: 20),
+                        SizedBox(width: 8),
+                        Text('AI Model Manager'),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuDivider(),
+                  const PopupMenuItem(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout, color: Colors.red, size: 20),
+                        SizedBox(width: 8),
+                        Text('Logout'),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -964,6 +1002,137 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 );
               },
             ),
+    );
+  }
+
+  Future<void> _showAIModelDialog() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.smart_toy, color: Colors.blue),
+            SizedBox(width: 8),
+            Text('AI Model Manager'),
+          ],
+        ),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Select the AI model for disease detection:',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              ...ModelManagerService.availableModels.map((model) {
+                final displayName = ModelManagerService.getModelDisplayName(model);
+                final isSelected = _selectedModel == model;
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: InkWell(
+                    onTap: () async {
+                      try {
+                        await ModelManagerService.setSelectedModel(model);
+                        setState(() => _selectedModel = model);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('AI model changed to: $displayName'),
+                              backgroundColor: Colors.green,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                        print('✅ AI model changed by admin to: $model');
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Error: $e')),
+                          );
+                        }
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isSelected ? Colors.blue : Colors.grey.shade300,
+                          width: isSelected ? 2 : 1,
+                        ),
+                        borderRadius: BorderRadius.circular(8),
+                        color: isSelected ? Colors.blue.shade50 : Colors.transparent,
+                      ),
+                      child: Row(
+                        children: [
+                          if (isSelected)
+                            const Icon(Icons.check_circle, color: Colors.blue)
+                          else
+                            Icon(Icons.radio_button_unchecked, color: Colors.grey.shade400),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  displayName,
+                                  style: TextStyle(
+                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                    color: isSelected ? Colors.blue : Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  model,
+                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ℹ️ Model Selection Impact:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      'This model will be used by all farmers for disease detection. Choose the model with the best accuracy for your region.',
+                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
     );
   }
 }

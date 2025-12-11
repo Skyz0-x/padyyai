@@ -8,6 +8,7 @@ import 'dart:math' as math;
 import 'package:flutter_localization/flutter_localization.dart';
 import '../services/products_service.dart';
 import '../services/disease_records_service.dart';
+import '../services/model_manager_service.dart';
 import '../config/supabase_config.dart';
 import 'marketplace_screen.dart';
 import '../l10n/app_locale.dart';
@@ -30,6 +31,8 @@ class _DetectScreenState extends State<DetectScreen> {
   List<String> _diseaseClasses = [];
   Interpreter? _interpreter;
   List<Map<String, dynamic>> _recommendedProducts = [];
+  String _normalizationMethod = 'method1';
+  String _selectedModel = 'assets/model/model.tflite';
 
   // Model configuration - UPDATED TO NEW MODEL
   static const String _modelPath = 'assets/model/model.tflite';
@@ -39,7 +42,22 @@ class _DetectScreenState extends State<DetectScreen> {
   void initState() {
     super.initState();
     print('🚀 Detect Screen initialized - Loading AI model...');
+    _loadSettings();
     _loadModel();
+  }
+  
+  Future<void> _loadSettings() async {
+    try {
+      final method = await ModelManagerService.getNormalizationMethod();
+      final model = await ModelManagerService.getSelectedModel();
+      setState(() {
+        _normalizationMethod = method;
+        _selectedModel = model;
+      });
+      print('✅ Loaded settings - Method: $method, Model: $model');
+    } catch (e) {
+      print('⚠️ Error loading settings: $e');
+    }
   }
 
   Future<void> _loadModel() async {
@@ -262,7 +280,8 @@ class _DetectScreenState extends State<DetectScreen> {
       print('🔧 Resized to: ${resizedImage.width}x${resizedImage.height}');
       
       // Convert image to input tensor format [1, h, w, 3]
-      final input = _imageToInputTensor(resizedImage, batchSize, inputHeight, inputWidth, inputChannels);
+      print('🔧 Using normalization method: $_normalizationMethod (${ModelManagerService.methodDescriptions[_normalizationMethod]})');
+      final input = _imageToInputTensor(resizedImage, batchSize, inputHeight, inputWidth, inputChannels, _normalizationMethod);
       
       // Create output tensor
       var output = List.filled(batchSize * numClasses, 0.0).reshape([batchSize, numClasses]);
@@ -447,19 +466,41 @@ class _DetectScreenState extends State<DetectScreen> {
     int batchSize, 
     int height, 
     int width, 
-    int channels
+    int channels,
+    [String normalizationMethod = 'method1']
   ) {
     return List.generate(batchSize, (batch) {
       return List.generate(height, (y) {
         return List.generate(width, (x) {
           final pixel = image.getPixel(x, y);
           if (channels == 3) {
-            // RGB format - normalize to [0, 1]
-            return [
-              pixel.r / 255.0,
-              pixel.g / 255.0,
-              pixel.b / 255.0,
-            ];
+            // Apply selected normalization method
+            switch (normalizationMethod) {
+              case 'method1': // [0, 1] normalization
+                return [
+                  pixel.r / 255.0,
+                  pixel.g / 255.0,
+                  pixel.b / 255.0,
+                ];
+              case 'method2': // [-1, 1] normalization
+                return [
+                  (pixel.r - 127.5) / 127.5,
+                  (pixel.g - 127.5) / 127.5,
+                  (pixel.b - 127.5) / 127.5,
+                ];
+              case 'method3': // ImageNet normalization
+                return [
+                  (pixel.r / 255.0 - 0.485) / 0.229,
+                  (pixel.g / 255.0 - 0.456) / 0.224,
+                  (pixel.b / 255.0 - 0.406) / 0.225,
+                ];
+              default:
+                return [
+                  pixel.r / 255.0,
+                  pixel.g / 255.0,
+                  pixel.b / 255.0,
+                ];
+            }
           } else if (channels == 1) {
             // Grayscale format
             final gray = (0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b) / 255.0;
@@ -864,6 +905,53 @@ class _DetectScreenState extends State<DetectScreen> {
                     ),
                   ],
                 ),
+              ),
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.tune, color: Colors.white),
+                tooltip: 'Normalization Method',
+                onSelected: (value) async {
+                  await ModelManagerService.setNormalizationMethod(value);
+                  setState(() => _normalizationMethod = value);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Method changed to: ${ModelManagerService.methodDescriptions[value]}'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                  print('✅ Normalization method changed to: $value');
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem(
+                    value: 'method1',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_normalizationMethod == 'method1' ? '✓ Method 1' : 'Method 1'),
+                        const Text('[0, 1] Div by 255', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'method2',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_normalizationMethod == 'method2' ? '✓ Method 2' : 'Method 2'),
+                        const Text('[-1, 1] (x-127.5)/127.5', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'method3',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_normalizationMethod == 'method3' ? '✓ Method 3' : 'Method 3'),
+                        const Text('ImageNet Norm', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
               IconButton(
                 icon: const Icon(Icons.info_outline, color: Colors.white),
