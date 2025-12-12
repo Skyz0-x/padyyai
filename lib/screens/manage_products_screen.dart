@@ -614,16 +614,39 @@ class _ProductDialogState extends State<ProductDialog> {
     'Pesticides',
   ];
 
-  final List<String> _diseaseKeys = [
-    'Brown Planthopper',
+  // Fungicide-specific diseases
+  final List<String> _fungicideDiseaseKeys = [
     'Brown Spot',
     'Leaf Blast',
+    'Sheath Blight',
     'Leaf Scald',
+    'Other Fungal Diseases',
+  ];
+
+  // Pesticide-specific pests
+  final List<String> _pesticidePestKeys = [
+    'Brown Planthopper',
     'Rice Leafroller',
     'Rice Yellow Stem Borer',
-    'Sheath Blight',
-    'Other',
+    'Stem Borer',
+    'Leafhoppers',
+    'Other Pests',
   ];
+
+  // Herbicide-specific weeds (English)
+  final Map<String, String> _herbicideWeedKeys = {
+    'Cockspur Grass': 'Rumput Padi Burung',
+    'Chinese Sprangletop': 'Rumput Ekor Tebu',
+    'Grasslike Fimbry': 'Rumput Tahi Kerbau',
+    'Variable Flatsedge': 'Rumput Air',
+    'Rice Flat Sedge': 'Rusiga Anak Emas',
+    'Oval-leafed Pondweed': 'Keladi Agas',
+    'Water Primrose': 'Inai Pasir',
+    'Greater club-rush': 'Rumput Menderong',
+    'Wrinkle duck-beak': 'Rumput Colok Cina',
+    'Water slobel': 'Keladi Air',
+    'Weedy Rice': 'Padi Angin',
+  };
 
   String _getLocalizedCategory(String categoryKey) {
     switch (categoryKey) {
@@ -647,6 +670,9 @@ class _ProductDialogState extends State<ProductDialog> {
   }
 
   String _getLocalizedDisease(String diseaseKey) {
+    // Detect language by checking what a known localized string returns
+    final isMalay = AppLocale.herbicides.getString(context) == 'Racun Rumpai';
+    
     switch (diseaseKey) {
       case 'Brown Planthopper':
         return AppLocale.brownPlanthopper.getString(context);
@@ -664,8 +690,36 @@ class _ProductDialogState extends State<ProductDialog> {
         return AppLocale.sheathBlight.getString(context);
       case 'Other':
         return AppLocale.other.getString(context);
+      // Additional options
+      case 'Other Fungal Diseases':
+        return isMalay ? 'Penyakit Kulat Lain' : 'Other Fungal Diseases';
+      case 'Stem Borer':
+        return isMalay ? 'Penggerek Batang' : 'Stem Borer';
+      case 'Leafhoppers':
+        return isMalay ? 'Wereng' : 'Leafhoppers';
+      case 'Other Pests':
+        return isMalay ? 'Perosak Lain' : 'Other Pests';
       default:
+        // For herbicide weeds, show English or Malay based on current language
+        if (_herbicideWeedKeys.containsKey(diseaseKey)) {
+          return isMalay ? _herbicideWeedKeys[diseaseKey]! : diseaseKey;
+        }
         return diseaseKey;
+    }
+  }
+
+  // Returns the appropriate list of "Effective Against" options based on category
+  List<String> _getEffectiveKeysForCategory(String category) {
+    switch (category) {
+      case 'Herbicides':
+        return _herbicideWeedKeys.keys.toList();
+      case 'Fungicides':
+        return _fungicideDiseaseKeys;
+      case 'Pesticides':
+        return _pesticidePestKeys;
+      default:
+        // For other categories like Fertilizers, Seeds, Tools, Organic - no effective against
+        return [];
     }
   }
 
@@ -945,6 +999,8 @@ class _ProductDialogState extends State<ProductDialog> {
           onChanged: (value) {
             setState(() {
               _selectedCategory = value!;
+              // Reset selected items if category changes to avoid mixing types
+              _selectedDiseases = [];
             });
           },
         ),
@@ -953,22 +1009,38 @@ class _ProductDialogState extends State<ProductDialog> {
   }
 
   Widget _buildDiseaseSelection() {
+    final effectiveKeys = _getEffectiveKeysForCategory(_selectedCategory);
+    // Detect language by checking what a known localized string returns
+    final isMalay = AppLocale.herbicides.getString(context) == 'Racun Rumpai';
+    
+    // Hide section if category doesn't have effective against options
+    if (effectiveKeys.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          AppLocale.effectiveAgainstDiseasesPests.getString(context),
+          // Dynamic label based on category and locale
+          _selectedCategory == 'Herbicides'
+              ? (isMalay ? 'Berkesan Terhadap (Rumpai)' : 'Effective Against (Weeds)')
+              : _selectedCategory == 'Fungicides'
+                  ? (isMalay ? 'Berkesan Terhadap (Penyakit)' : 'Effective Against (Diseases)')
+                  : _selectedCategory == 'Pesticides'
+                      ? (isMalay ? 'Berkesan Terhadap (Perosak)' : 'Effective Against (Pests)')
+                      : AppLocale.effectiveAgainstDiseasesPests.getString(context),
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: _diseaseKeys.map((disease) {
-            final isSelected = _selectedDiseases.contains(disease);
+          children: effectiveKeys.map((item) {
+            final isSelected = _selectedDiseases.contains(item);
             return FilterChip(
               label: Text(
-                _getLocalizedDisease(disease),
+                _getLocalizedDisease(item),
                 style: TextStyle(
                   color: isSelected ? Colors.white : primaryColor,
                   fontSize: 12,
@@ -981,9 +1053,9 @@ class _ProductDialogState extends State<ProductDialog> {
               onSelected: (selected) {
                 setState(() {
                   if (selected) {
-                    _selectedDiseases.add(disease);
+                    _selectedDiseases.add(item);
                   } else {
-                    _selectedDiseases.remove(disease);
+                    _selectedDiseases.remove(item);
                   }
                 });
               },
