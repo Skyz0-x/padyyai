@@ -1191,6 +1191,7 @@ class _ProductDialogState extends State<ProductDialog> {
       if (result['success']) {
         widget.onSaved();
         if (mounted) {
+          Navigator.of(context).pop();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(result['message']),

@@ -135,7 +135,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
             content: Text(result['message']),
             duration: const Duration(seconds: 2),
             action: SnackBarAction(
-              label: 'VIEW CART',
+              label: AppLocale.viewCart.getString(context),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -269,7 +269,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                       ).then((_) => _loadCartCount());
                     },
                     icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 22),
-                    tooltip: 'Cart',
+                    tooltip: AppLocale.cart.getString(context),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                   ),
@@ -551,7 +551,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                   children: [
                     // Product name
                     Text(
-                      product['name'] ?? 'Unknown Product',
+                      product['name'] ?? AppLocale.unknownProduct.getString(context),
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
@@ -633,6 +633,24 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
   }
 
   String _getLocalizedDiseaseName(String diseaseName) {
+    // Detect language (Malay vs English) using a known localized string
+    final isMalay = AppLocale.herbicides.getString(context) == 'Racun Rumpai';
+
+    // Herbicide-specific weeds mapping (English → Malay)
+    const Map<String, String> herbicideWeedKeys = {
+      'Cockspur Grass': 'Rumput Padi Burung',
+      'Chinese Sprangletop': 'Rumput Ekor Tebu',
+      'Grasslike Fimbry': 'Rumput Tahi Kerbau',
+      'Variable Flatsedge': 'Rumput Air',
+      'Rice Flat Sedge': 'Rusiga Anak Emas',
+      'Oval-leafed Pondweed': 'Keladi Agas',
+      'Water Primrose': 'Inai Pasir',
+      'Greater club-rush': 'Rumput Menderong',
+      'Wrinkle duck-beak': 'Rumput Colok Cina',
+      'Water slobel': 'Keladi Air',
+      'Weedy Rice': 'Padi Angin',
+    };
+
     // Convert disease name to match database format
     final normalizedName = diseaseName.toLowerCase().replaceAll(' ', '_');
     
@@ -662,6 +680,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
       case 'sheathblight':
         return AppLocale.sheathBlight.getString(context);
       default:
+        // If the item is a herbicide weed, return localized Malay or English
+        if (herbicideWeedKeys.containsKey(diseaseName)) {
+          return isMalay ? (herbicideWeedKeys[diseaseName]!) : diseaseName;
+        }
         // Fallback to formatted version if not found
         return diseaseName.replaceAll('_', ' ').toUpperCase();
     }
@@ -701,8 +723,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
     final price = product['price']?.toDouble() ?? 0.0;
     final imageUrl = product['image_url'];
     final inStock = product['in_stock'] ?? false;
-    final description = product['description'] ?? 'No description available';
+    final description = product['description'] ?? AppLocale.noDescriptionAvailable.getString(context);
     final category = product['category'] ?? 'General';
+    // Detect language (Malay vs English)
+    final isMalay = AppLocale.herbicides.getString(context) == 'Racun Rumpai';
     
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
@@ -769,7 +793,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                   
                   // Product name
                   Text(
-                    product['name'] ?? 'Unknown Product',
+                    product['name'] ?? AppLocale.unknownProduct.getString(context),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -892,7 +916,13 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
                   // Effective Against Diseases (if available)
                   if (product['diseases'] != null && (product['diseases'] as List).isNotEmpty) ...[
                     Text(
-                      AppLocale.effectiveAgainstLabel.getString(context),
+                      category == 'Herbicides'
+                          ? (isMalay ? 'Berkesan Terhadap (Rumpai)' : 'Effective Against (Weeds)')
+                          : category == 'Fungicides'
+                              ? (isMalay ? 'Berkesan Terhadap (Penyakit)' : 'Effective Against (Diseases)')
+                              : category == 'Pesticides'
+                                  ? (isMalay ? 'Berkesan Terhadap (Perosak)' : 'Effective Against (Pests)')
+                                  : AppLocale.effectiveAgainstLabel.getString(context),
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

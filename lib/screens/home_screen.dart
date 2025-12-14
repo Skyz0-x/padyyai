@@ -661,84 +661,110 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Image.asset(
-                    'assets/images/Logo1.png',
-                    height: 40,
-                    width: 40,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      print('Error loading Logo1.png: $error');
-                      return Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'P',
-                            style: TextStyle(
-                              color: primaryColor,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(width: 12),
-                  const Text(
-                    appName,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  Stack(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  // Compute collapse percentage: 1 when expanded, 0 when collapsed
+                  const double expandedHeight = 120.0;
+                  final double currentHeight = constraints.maxHeight;
+                  final double collapsedHeight = kToolbarHeight + MediaQuery.of(context).padding.top;
+                  final double percent = ((currentHeight - collapsedHeight) /
+                          (expandedHeight - collapsedHeight))
+                      .clamp(0.0, 1.0);
+
+                  // As user scrolls down (collapsing), move logo group toward center
+                  final double alignX = -1.0 + (1.0 - percent); // -1 (left) -> 0 (center)
+
+                  return Row(
                     children: [
-                      IconButton(
-                        onPressed: () {
-                          _showNotificationsSheet();
-                        },
-                        icon: const Icon(
-                          Icons.notifications_outlined,
-                          color: Colors.white,
+                      Expanded(
+                        child: AnimatedAlign(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeOut,
+                          alignment: Alignment(alignX, 0),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Image.asset(
+                                'assets/images/Logo1.png',
+                                height: 40,
+                                width: 40,
+                                fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  print('Error loading Logo1.png: $error');
+                                  return Container(
+                                    height: 40,
+                                    width: 40,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Center(
+                                      child: Text(
+                                        'P',
+                                        style: TextStyle(
+                                          color: primaryColor,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 12),
+                              const Text(
+                                appName,
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      if (_pendingNotificationsCount > 0)
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.red,
-                              shape: BoxShape.circle,
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 16,
-                              minHeight: 16,
-                            ),
-                            child: Text(
-                              _pendingNotificationsCount > 9 ? '9+' : '$_pendingNotificationsCount',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
+                      Stack(
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              _showNotificationsSheet();
+                            },
+                            icon: const Icon(
+                              Icons.notifications_outlined,
+                              color: Colors.white,
                             ),
                           ),
-                        ),
+                          if (_pendingNotificationsCount > 0)
+                            Positioned(
+                              right: 8,
+                              top: 8,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                                constraints: const BoxConstraints(
+                                  minWidth: 16,
+                                  minHeight: 16,
+                                ),
+                                child: Text(
+                                  _pendingNotificationsCount > 9 ? '9+' : '$_pendingNotificationsCount',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),
