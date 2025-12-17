@@ -104,7 +104,9 @@ flutter:
   assets:
     - assets/model/model.tflite
     - assets/model/model_unquant.tflite
+    - assets/model/modelV2.tflite
     - assets/model/labels.txt
+    - assets/model/labelsV2.txt
     - assets/images/
     - assets/video/
 

@@ -1013,7 +1013,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           children: [
             Icon(Icons.smart_toy, color: Colors.blue),
             SizedBox(width: 8),
-            Text('AI Model Manager'),
+            Text('AI Model Manager', style: TextStyle(fontSize: 20)),
           ],
         ),
         content: SizedBox(
@@ -1024,7 +1024,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             children: [
               const Text(
                 'Select the AI model for disease detection:',
-                style: TextStyle(fontSize: 14),
+                style: TextStyle(fontSize: 13),
               ),
               const SizedBox(height: 16),
               ...ModelManagerService.availableModels.map((model) {
@@ -1082,11 +1082,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                   style: TextStyle(
                                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                                     color: isSelected ? Colors.blue : Colors.black,
+                                    fontSize: 12,
                                   ),
                                 ),
                                 Text(
                                   model,
-                                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                                  style: const TextStyle(fontSize: 10, color: Colors.grey),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ],
@@ -1112,13 +1113,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       'ℹ️ Model Selection Impact:',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        fontSize: 11,
                       ),
                     ),
                     SizedBox(height: 4),
                     Text(
                       'This model will be used by all farmers for disease detection. Choose the model with the best accuracy for your region.',
-                      style: TextStyle(fontSize: 11, color: Colors.grey),
+                      style: TextStyle(fontSize: 10, color: Colors.grey),
                     ),
                   ],
                 ),

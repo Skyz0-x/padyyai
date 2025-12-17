@@ -207,6 +207,7 @@ class AppLocale {
   static const String tipClearPhotos = 'tipClearPhotos';
   static const String imageReady = 'imageReady';
   static const String aiAnalysisResults = 'aiAnalysisResults';
+  static const String invalidImageOrLowQuality = 'invalidImageOrLowQuality';
   static const String recommendedProducts = 'recommendedProducts';
   static const String treatmentProducts = 'treatmentProducts';
   static const String viewAllProducts = 'viewAllProducts';
@@ -836,6 +837,12 @@ mixin LocaleData {
     'tipClearPhotos': 'Tip: Use clear, well-lit photos for best results',
     'imageReady': 'Image Ready',
     'aiAnalysisResults': 'AI Analysis Results',
+    'invalidImageOrLowQuality': 'Invalid Image or Low Quality\n\n'
+      'Please scan a clear image of a rice plant leaf.\n\n'
+      'Tips:\n'
+      '• Use good lighting\n'
+      '• Focus on the affected leaf area\n'
+      '• Avoid blurry or unrelated objects',
     'recommendedProducts': 'Recommended Products',
     'treatmentProducts': 'Treatment Products',
     'viewAllProducts': 'View All Products',
@@ -1453,6 +1460,12 @@ mixin LocaleData {
     'tipClearPhotos': 'Petua: Gunakan foto yang jelas dan terang',
     'imageReady': 'Gambar Sedia',
     'aiAnalysisResults': 'Keputusan Analisis AI',
+    'invalidImageOrLowQuality': 'Imej Tidak Sah atau Berkualiti Rendah\n\n'
+      'Sila imbas imej daun padi yang jelas.\n\n'
+      'Petua:\n'
+      '• Pastikan pencahayaan yang baik\n'
+      '• Fokus pada kawasan daun yang terjejas\n'
+      '• Elakkan imej kabur atau objek tidak berkaitan',
     'recommendedProducts': 'Produk Disyorkan',
     'treatmentProducts': 'Produk Rawatan',
     'viewAllProducts': 'Lihat Semua Produk',

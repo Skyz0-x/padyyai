@@ -9,13 +9,14 @@ class ModelManagerService {
   static const List<String> availableModels = [
     'assets/model/model.tflite',
     'assets/model/model_unquant.tflite',
+    'assets/model/modelV2.tflite',
   ];
 
   // Normalization methods
   static const List<String> normalizationMethods = [
-    'method1',  // [0, 1] normalization
-    'method2',  // [-1, 1] normalization
-    'method3',  // ImageNet normalization
+    'method1', // [0, 1] normalization
+    'method2', // [-1, 1] normalization
+    'method3', // ImageNet normalization
   ];
 
   static const Map<String, String> methodDescriptions = {
@@ -56,11 +57,21 @@ class ModelManagerService {
 
   /// Get model display name from path
   static String getModelDisplayName(String modelPath) {
+    if (modelPath.contains('modelV2')) {
+      return 'Model v2';
+    }
     if (modelPath.contains('model.tflite')) {
-      return 'Model v3 (Latest)';
+      return 'Model v1';
     } else if (modelPath.contains('model_unquant.tflite')) {
-      return 'Model v2 (Unquantized)';
+      return 'Model Unquantized';
     }
     return 'Unknown Model';
+  }
+
+  /// Get labels path for a given model
+  static String getLabelsPathForModel(String modelPath) {
+    return modelPath.contains('modelV2')
+        ? 'assets/model/labelsV2.txt'
+        : 'assets/model/labels.txt';
   }
 }

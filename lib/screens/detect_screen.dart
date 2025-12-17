@@ -31,7 +31,7 @@ class _DetectScreenState extends State<DetectScreen> {
   List<String> _diseaseClasses = [];
   Interpreter? _interpreter;
   List<Map<String, dynamic>> _recommendedProducts = [];
-  String _normalizationMethod = 'method1';
+  String _normalizationMethod = 'method2';
   String _selectedModel = 'assets/model/model.tflite';
 
   // Model configuration - UPDATED TO NEW MODEL
@@ -45,16 +45,17 @@ class _DetectScreenState extends State<DetectScreen> {
     _loadSettings();
     _loadModel();
   }
-  
+
   Future<void> _loadSettings() async {
     try {
-      final method = await ModelManagerService.getNormalizationMethod();
+      // Always enforce normalization method 2
+      await ModelManagerService.setNormalizationMethod('method2');
       final model = await ModelManagerService.getSelectedModel();
       setState(() {
-        _normalizationMethod = method;
+        _normalizationMethod = 'method2';
         _selectedModel = model;
       });
-      print('✅ Loaded settings - Method: $method, Model: $model');
+      print('✅ Settings enforced - Method: method2, Model: $model');
     } catch (e) {
       print('⚠️ Error loading settings: $e');
     }
@@ -62,48 +63,57 @@ class _DetectScreenState extends State<DetectScreen> {
 
   Future<void> _loadModel() async {
     try {
-      print('� Loading AI model and labels...');
-      
-      // Load labels from assets
+      print('🧠 Loading AI model and labels...');
+
+      // Refresh selected model to avoid race with _loadSettings
+      final latestModel = await ModelManagerService.getSelectedModel();
+      if (_selectedModel != latestModel) {
+        setState(() => _selectedModel = latestModel);
+      }
+
+      // Load labels and model for the current selection
       await _loadLabels();
-      
-      // Load TensorFlow Lite model
       await _loadTFLiteModel();
-      
+
       setState(() {
         _isModelLoaded = true;
       });
-      
+
       print('✅ AI model loaded successfully!');
       _printModelInfo();
-      
     } catch (e) {
       print('❌ Error loading model: $e');
       setState(() {
         _isModelLoaded = false;
       });
-      
+
       _showErrorDialog(
         'Failed to load AI model.\n\n'
         'Please ensure:\n'
-        '• model_unquant.tflite is in assets/model/\n'
-        '• labels.txt is in assets/model/\n'
+        '• Selected model exists in assets/model/\n'
+        '• Correct labels file (labels.txt or labelsV2.txt) exists in assets/model/\n'
         '• Try restarting the app\n\n'
-        'Technical error: $e'
+        'Technical error: $e',
       );
     }
   }
 
   Future<void> _loadLabels() async {
     try {
-      print('📋 Loading labels from $_labelsPath...');
-      final labelsData = await rootBundle.loadString(_labelsPath);
-      _diseaseClasses = labelsData
-          .split('\n')
-          .where((line) => line.trim().isNotEmpty)
-          .map((line) => line.trim())
-          .toList();
-      print('✅ Loaded ${_diseaseClasses.length} disease classes: $_diseaseClasses');
+      final labelsPath = ModelManagerService.getLabelsPathForModel(
+        _selectedModel,
+      );
+      print('📋 Loading labels from $labelsPath (model: $_selectedModel)...');
+      final labelsData = await rootBundle.loadString(labelsPath);
+      _diseaseClasses =
+          labelsData
+              .split('\n')
+              .where((line) => line.trim().isNotEmpty)
+              .map((line) => line.trim())
+              .toList();
+      print(
+        '✅ Loaded ${_diseaseClasses.length} disease classes: $_diseaseClasses',
+      );
     } catch (e) {
       print('⚠️ Labels file not found, using default classes: $e');
       _diseaseClasses = [
@@ -121,33 +131,37 @@ class _DetectScreenState extends State<DetectScreen> {
 
   Future<void> _loadTFLiteModel() async {
     try {
-      print('🤖 Loading TensorFlow Lite model from $_modelPath...');
-      
+      final modelPath = _selectedModel;
+      print('🤖 Loading TensorFlow Lite model from $modelPath...');
+
       // Try multiple loading methods for better compatibility
       try {
         // Method 1: Standard asset loading
-        _interpreter = await Interpreter.fromAsset(_modelPath);
+        _interpreter = await Interpreter.fromAsset(modelPath);
         print('✅ Model loaded using standard asset loading');
       } catch (e1) {
         print('⚠️ Standard loading failed: $e1');
-        
+
         try {
           // Method 2: Loading with interpreter options
           final options = InterpreterOptions();
           options.threads = 1;
-          _interpreter = await Interpreter.fromAsset(_modelPath, options: options);
+          _interpreter = await Interpreter.fromAsset(
+            modelPath,
+            options: options,
+          );
           print('✅ Model loaded using interpreter options');
         } catch (e2) {
           print('⚠️ Options loading failed: $e2');
-          
+
           // Method 3: Loading from buffer
-          final modelData = await rootBundle.load(_modelPath);
+          final modelData = await rootBundle.load(modelPath);
           final modelBytes = modelData.buffer.asUint8List();
           _interpreter = Interpreter.fromBuffer(modelBytes);
           print('✅ Model loaded from buffer');
         }
       }
-      
+
       if (_interpreter == null) {
         throw Exception('Failed to initialize interpreter');
       }
@@ -159,21 +173,21 @@ class _DetectScreenState extends State<DetectScreen> {
 
   void _printModelInfo() {
     if (_interpreter == null) return;
-    
+
     try {
       final inputTensors = _interpreter!.getInputTensors();
       final outputTensors = _interpreter!.getOutputTensors();
-      
+
       print('📊 Model Information:');
       print('   Input tensors: ${inputTensors.length}');
       print('   Output tensors: ${outputTensors.length}');
-      
+
       if (inputTensors.isNotEmpty) {
         final inputTensor = inputTensors.first;
         print('   Input shape: ${inputTensor.shape}');
         print('   Input type: ${inputTensor.type}');
       }
-      
+
       if (outputTensors.isNotEmpty) {
         final outputTensor = outputTensors.first;
         print('   Output shape: ${outputTensor.shape}');
@@ -224,51 +238,54 @@ class _DetectScreenState extends State<DetectScreen> {
 
     try {
       print('🔍 Starting AI disease detection...');
-      
+
       // Validate interpreter
       if (_interpreter == null) {
         throw Exception('Interpreter is null');
       }
-      
+
       // Load and preprocess the image
       final imageBytes = await _image!.readAsBytes();
       final image = img.decodeImage(imageBytes);
-      
+
       if (image == null) {
         throw Exception('Failed to decode image');
       }
-      
+
       print('📸 Original image: ${image.width}x${image.height}');
-      
+
       // Get model input requirements
       final inputTensors = _interpreter!.getInputTensors();
       final outputTensors = _interpreter!.getOutputTensors();
-      
+
       if (inputTensors.isEmpty || outputTensors.isEmpty) {
         throw Exception('Model has no input or output tensors');
       }
-      
+
       final inputShape = inputTensors.first.shape;
       final outputShape = outputTensors.first.shape;
-      
+
       print('📐 Input shape: $inputShape');
       print('📐 Output shape: $outputShape');
-      
+
       // Validate input shape
       if (inputShape.length != 4) {
-        throw Exception('Expected 4D input tensor [batch, height, width, channels], got: $inputShape');
+        throw Exception(
+          'Expected 4D input tensor [batch, height, width, channels], got: $inputShape',
+        );
       }
-      
+
       // Extract dimensions [batch, height, width, channels]
       final batchSize = inputShape[0];
       final inputHeight = inputShape[1];
       final inputWidth = inputShape[2];
       final inputChannels = inputShape[3];
-      final numClasses = outputShape.length > 1 ? outputShape[1] : outputShape[0];
-      
+      final numClasses =
+          outputShape.length > 1 ? outputShape[1] : outputShape[0];
+
       print('📐 Model expects: ${inputWidth}x${inputHeight}x$inputChannels');
       print('📐 Model outputs: $numClasses classes');
-      
+
       // Resize image to model input size
       final resizedImage = img.copyResize(
         image,
@@ -276,61 +293,95 @@ class _DetectScreenState extends State<DetectScreen> {
         height: inputHeight,
         interpolation: img.Interpolation.linear,
       );
-      
+
       print('🔧 Resized to: ${resizedImage.width}x${resizedImage.height}');
-      
+
       // Convert image to input tensor format [1, h, w, 3]
-      print('🔧 Using normalization method: $_normalizationMethod (${ModelManagerService.methodDescriptions[_normalizationMethod]})');
-      final input = _imageToInputTensor(resizedImage, batchSize, inputHeight, inputWidth, inputChannels, _normalizationMethod);
-      
+      print(
+        '🔧 Using normalization method: $_normalizationMethod (${ModelManagerService.methodDescriptions[_normalizationMethod]})',
+      );
+      final input = _imageToInputTensor(
+        resizedImage,
+        batchSize,
+        inputHeight,
+        inputWidth,
+        inputChannels,
+        _normalizationMethod,
+      );
+
       // Create output tensor
-      var output = List.filled(batchSize * numClasses, 0.0).reshape([batchSize, numClasses]);
-      
+      var output = List.filled(
+        batchSize * numClasses,
+        0.0,
+      ).reshape([batchSize, numClasses]);
+
       print('🤖 Running inference...');
-      print('📊 Input shape: ${input.length}x${input[0].length}x${input[0][0].length}x${input[0][0][0].length}');
+      print(
+        '📊 Input shape: ${input.length}x${input[0].length}x${input[0][0].length}x${input[0][0][0].length}',
+      );
       print('📊 Output shape: ${output.length}x${output[0].length}');
-      
+
       // Run inference
       _interpreter!.run(input, output);
-      
+
       // Get predictions from the first batch
       final predictions = output[0] as List<double>;
       print('📊 Raw predictions: $predictions');
-      
+
       // Validate predictions
       if (predictions.isEmpty) {
         throw Exception('Model returned empty predictions');
       }
-      
+
       // Apply softmax to get probabilities
       final probabilities = _applySoftmax(predictions);
       print('📊 Probabilities: $probabilities');
-      
+
       // Find the class with highest probability
       double maxProb = 0.0;
       int maxIndex = 0;
-      
+
       for (int i = 0; i < probabilities.length; i++) {
         if (probabilities[i] > maxProb) {
           maxProb = probabilities[i];
           maxIndex = i;
         }
       }
-      
+
       // Get the predicted disease
-      String diseaseName = maxIndex < _diseaseClasses.length 
-          ? _diseaseClasses[maxIndex] 
-          : 'Unknown (Index: $maxIndex)';
-      
-      print('🎯 Detected: $diseaseName (${(maxProb * 100).toStringAsFixed(1)}% accuracy)');
-      
-      // Check if accuracy is too low (below 15%)
-      if (maxProb < 0.15) {
-        print('⚠️ Low accuracy detected: ${(maxProb * 100).toStringAsFixed(1)}%');
+      String diseaseName =
+          maxIndex < _diseaseClasses.length
+              ? _diseaseClasses[maxIndex]
+              : 'Unknown (Index: $maxIndex)';
+
+      print(
+        '🎯 Detected: $diseaseName (${(maxProb * 100).toStringAsFixed(1)}% accuracy)',
+      );
+
+      // Treat "Other" or unknown detections as invalid images to prompt re-scan
+      final diseaseLower = diseaseName.toLowerCase();
+      final isOther =
+          diseaseLower.contains('other') || diseaseLower.contains('unknown');
+      if (isOther) {
         setState(() {
           _isAnalyzing = false;
         });
-        
+
+        _showErrorDialog(
+          AppLocale.invalidImageOrLowQuality.getString(context),
+        );
+        return;
+      }
+
+      // Check if accuracy is too low (below 15%)
+      if (maxProb < 0.15) {
+        print(
+          '⚠️ Low accuracy detected: ${(maxProb * 100).toStringAsFixed(1)}%',
+        );
+        setState(() {
+          _isAnalyzing = false;
+        });
+
         _showErrorDialog(
           'Invalid Image or Low Quality\n\n'
           'The AI model cannot confidently analyze this image. '
@@ -341,11 +392,11 @@ class _DetectScreenState extends State<DetectScreen> {
           'Please try again with:\n'
           '• Better lighting conditions\n'
           '• Clear focus on the rice plant\n'
-          '• Close-up of affected leaves'
+          '• Close-up of affected leaves',
         );
         return;
       }
-      
+
       // Create comprehensive result
       final aiResult = {
         'disease': diseaseName,
@@ -354,29 +405,30 @@ class _DetectScreenState extends State<DetectScreen> {
         'isHealthy': diseaseName.toLowerCase().contains('healthy'),
         'timestamp': DateTime.now().toIso8601String(),
         'allProbabilities': Map.fromIterables(
-          _diseaseClasses.length == probabilities.length 
-              ? _diseaseClasses 
+          _diseaseClasses.length == probabilities.length
+              ? _diseaseClasses
               : List.generate(probabilities.length, (i) => 'Class_$i'),
-          probabilities
+          probabilities,
         ),
       };
 
       // Fetch recommended products from database
       print('🛒 Fetching recommended products for: $diseaseName');
-      final products = await _productsService.getProductsForDisease(diseaseName);
-      
+      final products = await _productsService.getProductsForDisease(
+        diseaseName,
+      );
+
       setState(() {
         _result = aiResult;
         _recommendedProducts = products;
         _isAnalyzing = false;
       });
-      
+
       print('✅ AI Analysis completed successfully');
-      
+
       // Save detection to history (non-blocking)
       _saveDetectionToHistory(diseaseName, maxProb);
       print('✅ Found ${products.length} recommended products');
-      
     } catch (e) {
       print('❌ Error during AI analysis: $e');
       setState(() {
@@ -392,43 +444,44 @@ class _DetectScreenState extends State<DetectScreen> {
   }
 
   // Save detection to history with image upload
-  Future<void> _saveDetectionToHistory(String diseaseName, double confidence) async {
+  Future<void> _saveDetectionToHistory(
+    String diseaseName,
+    double confidence,
+  ) async {
     if (_image == null) return;
-    
+
     try {
       print('💾 Saving detection to history...');
-      
+
       // Upload image to Supabase Storage
       String? imageUrl;
       try {
         final supabase = SupabaseConfig.client;
-        final fileName = 'detection_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final fileName =
+            'detection_${DateTime.now().millisecondsSinceEpoch}.jpg';
         final filePath = 'disease_detections/$fileName';
-        
+
         print('📤 Uploading image to storage: $filePath');
-        
+
         // Read image bytes
         final bytes = await _image!.readAsBytes();
-        
+
         // Upload the file
         await supabase.storage
             .from('disease-images')
-            .uploadBinary(
-              filePath,
-              bytes,
-            );
-        
+            .uploadBinary(filePath, bytes);
+
         // Get public URL
         imageUrl = supabase.storage
             .from('disease-images')
             .getPublicUrl(filePath);
-        
+
         print('✅ Image uploaded successfully: $imageUrl');
       } catch (e) {
         print('⚠️ Image upload failed (continuing without image): $e');
         // Continue saving detection even if image upload fails
       }
-      
+
       // Determine severity based on confidence and disease type
       String severity;
       if (diseaseName.toLowerCase().contains('healthy')) {
@@ -440,7 +493,7 @@ class _DetectScreenState extends State<DetectScreen> {
       } else {
         severity = 'low';
       }
-      
+
       // Save detection to database
       final result = await _diseaseRecordsService.addDetection(
         diseaseName: diseaseName,
@@ -449,7 +502,7 @@ class _DetectScreenState extends State<DetectScreen> {
         severity: severity,
         notes: 'Auto-detected using AI model',
       );
-      
+
       if (result['success']) {
         print('✅ Detection saved to history');
       } else {
@@ -462,13 +515,13 @@ class _DetectScreenState extends State<DetectScreen> {
 
   // Convert image to input tensor format
   List<List<List<List<double>>>> _imageToInputTensor(
-    img.Image image, 
-    int batchSize, 
-    int height, 
-    int width, 
-    int channels,
-    [String normalizationMethod = 'method1']
-  ) {
+    img.Image image,
+    int batchSize,
+    int height,
+    int width,
+    int channels, [
+    String normalizationMethod = 'method1',
+  ]) {
     return List.generate(batchSize, (batch) {
       return List.generate(height, (y) {
         return List.generate(width, (x) {
@@ -477,11 +530,7 @@ class _DetectScreenState extends State<DetectScreen> {
             // Apply selected normalization method
             switch (normalizationMethod) {
               case 'method1': // [0, 1] normalization
-                return [
-                  pixel.r / 255.0,
-                  pixel.g / 255.0,
-                  pixel.b / 255.0,
-                ];
+                return [pixel.r / 255.0, pixel.g / 255.0, pixel.b / 255.0];
               case 'method2': // [-1, 1] normalization
                 return [
                   (pixel.r - 127.5) / 127.5,
@@ -495,15 +544,12 @@ class _DetectScreenState extends State<DetectScreen> {
                   (pixel.b / 255.0 - 0.406) / 0.225,
                 ];
               default:
-                return [
-                  pixel.r / 255.0,
-                  pixel.g / 255.0,
-                  pixel.b / 255.0,
-                ];
+                return [pixel.r / 255.0, pixel.g / 255.0, pixel.b / 255.0];
             }
           } else if (channels == 1) {
             // Grayscale format
-            final gray = (0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b) / 255.0;
+            final gray =
+                (0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b) / 255.0;
             return [gray];
           } else {
             throw Exception('Unsupported number of channels: $channels');
@@ -517,17 +563,17 @@ class _DetectScreenState extends State<DetectScreen> {
   List<double> _applySoftmax(List<double> logits) {
     // Find max value for numerical stability
     final maxLogit = logits.reduce(math.max);
-    
+
     // Compute exponentials
     final expLogits = logits.map((x) => math.exp(x - maxLogit)).toList();
-    
+
     // Compute sum of exponentials
     final sumExp = expLogits.reduce((a, b) => a + b);
-    
+
     if (sumExp == 0) {
       throw Exception('Invalid model output - sum of exponentials is zero');
     }
-    
+
     // Normalize to get probabilities
     return expLogits.map((x) => x / sumExp).toList();
   }
@@ -540,11 +586,14 @@ class _DetectScreenState extends State<DetectScreen> {
       'Leaf Blast': AppLocale.leafBlastDesc.getString(context),
       'Leaf Scald': AppLocale.leafScaldDesc.getString(context),
       'Rice Leafroller': AppLocale.riceLeafrollerDesc.getString(context),
-      'Rice Yellow Stem Borer': AppLocale.riceYellowStemBorerDesc.getString(context),
+      'Rice Yellow Stem Borer': AppLocale.riceYellowStemBorerDesc.getString(
+        context,
+      ),
       'Sheath Blight': AppLocale.sheathBlightDesc.getString(context),
     };
-    
-    return descriptions[diseaseName] ?? 'AI has detected this condition in your rice plant.';
+
+    return descriptions[diseaseName] ??
+        'AI has detected this condition in your rice plant.';
   }
 
   String _getLocalizedDiseaseName(String diseaseName) {
@@ -555,10 +604,12 @@ class _DetectScreenState extends State<DetectScreen> {
       'Leaf Blast': AppLocale.leafBlast.getString(context),
       'Leaf Scald': AppLocale.leafScald.getString(context),
       'Rice Leafroller': AppLocale.riceLeafroller.getString(context),
-      'Rice Yellow Stem Borer': AppLocale.riceYellowStemBorer.getString(context),
+      'Rice Yellow Stem Borer': AppLocale.riceYellowStemBorer.getString(
+        context,
+      ),
       'Sheath Blight': AppLocale.sheathBlight.getString(context),
     };
-    
+
     return names[diseaseName] ?? diseaseName;
   }
 
@@ -578,14 +629,21 @@ class _DetectScreenState extends State<DetectScreen> {
   void _showProductDetails(Map<String, dynamic> product) {
     // Determine product icon based on category
     String getProductIcon(String? category) {
-      switch(category) {
-        case 'Fungicides': return '🍄';
-        case 'Pesticides': return '🧪';
-        case 'Fertilizers': return '🌱';
-        case 'Organic': return '🌿';
-        case 'Seeds': return '🌾';
-        case 'Tools': return '🔧';
-        default: return '📦';
+      switch (category) {
+        case 'Fungicides':
+          return '🍄';
+        case 'Pesticides':
+          return '🧪';
+        case 'Fertilizers':
+          return '🌱';
+        case 'Organic':
+          return '🌿';
+        case 'Seeds':
+          return '🌾';
+        case 'Tools':
+          return '🔧';
+        default:
+          return '📦';
       }
     }
 
@@ -593,7 +651,9 @@ class _DetectScreenState extends State<DetectScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               Text(
@@ -603,8 +663,12 @@ class _DetectScreenState extends State<DetectScreen> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  product['name'] ?? AppLocale.unknownProduct.getString(context),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  product['name'] ??
+                      AppLocale.unknownProduct.getString(context),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -623,70 +687,93 @@ class _DetectScreenState extends State<DetectScreen> {
                       height: 150,
                       width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        height: 150,
-                        color: Colors.grey.shade200,
-                        child: Center(
-                          child: Icon(Icons.image_not_supported, size: 48, color: Colors.grey),
-                        ),
-                      ),
+                      errorBuilder:
+                          (context, error, stackTrace) => Container(
+                            height: 150,
+                            color: Colors.grey.shade200,
+                            child: Center(
+                              child: Icon(
+                                Icons.image_not_supported,
+                                size: 48,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ),
                     ),
                   ),
                   const SizedBox(height: 12),
                 ],
-                
+
                 // Category Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
-                        ? Colors.green.shade100 
-                        : Colors.blue.shade100,
+                    color:
+                        product['category'] == 'Fertilizers' ||
+                                product['category'] == 'Organic'
+                            ? Colors.green.shade100
+                            : Colors.blue.shade100,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     _getLocalizedCategory(product['category']),
                     style: TextStyle(
-                      color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
-                          ? Colors.green.shade700 
-                          : Colors.blue.shade700,
+                      color:
+                          product['category'] == 'Fertilizers' ||
+                                  product['category'] == 'Organic'
+                              ? Colors.green.shade700
+                              : Colors.blue.shade700,
                       fontWeight: FontWeight.w600,
                       fontSize: 12,
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Description
                 Text(
-                  product['description'] ?? AppLocale.noDescriptionAvailable.getString(context),
+                  product['description'] ??
+                      AppLocale.noDescriptionAvailable.getString(context),
                   style: const TextStyle(fontSize: 14, height: 1.4),
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Effective Against Diseases
-                if (product['diseases'] != null && (product['diseases'] as List).isNotEmpty) ...[
+                if (product['diseases'] != null &&
+                    (product['diseases'] as List).isNotEmpty) ...[
                   Text(
                     AppLocale.effectiveAgainst.getString(context),
-                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Wrap(
                     spacing: 4,
                     runSpacing: 4,
-                    children: (product['diseases'] as List).map((disease) => Chip(
-                      label: Text(
-                        _getLocalizedDiseaseName(disease.toString()),
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                      backgroundColor: Colors.orange.shade100,
-                      padding: EdgeInsets.zero,
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    )).toList(),
+                    children:
+                        (product['diseases'] as List)
+                            .map(
+                              (disease) => Chip(
+                                label: Text(
+                                  _getLocalizedDiseaseName(disease.toString()),
+                                  style: const TextStyle(fontSize: 10),
+                                ),
+                                backgroundColor: Colors.orange.shade100,
+                                padding: EdgeInsets.zero,
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                            )
+                            .toList(),
                   ),
                   const SizedBox(height: 12),
                 ],
-                
+
                 // Price and Stock
                 Row(
                   children: [
@@ -694,7 +781,10 @@ class _DetectScreenState extends State<DetectScreen> {
                     const SizedBox(width: 4),
                     Text(
                       AppLocale.price.getString(context),
-                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const Spacer(),
                     Text(
@@ -711,17 +801,27 @@ class _DetectScreenState extends State<DetectScreen> {
                 Row(
                   children: [
                     Icon(
-                      (product['in_stock'] ?? false) ? Icons.check_circle : Icons.cancel,
+                      (product['in_stock'] ?? false)
+                          ? Icons.check_circle
+                          : Icons.cancel,
                       size: 16,
-                      color: (product['in_stock'] ?? false) ? Colors.green : Colors.red,
+                      color:
+                          (product['in_stock'] ?? false)
+                              ? Colors.green
+                              : Colors.red,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      (product['in_stock'] ?? false) ? AppLocale.inStock.getString(context) : AppLocale.outOfStock.getString(context),
+                      (product['in_stock'] ?? false)
+                          ? AppLocale.inStock.getString(context)
+                          : AppLocale.outOfStock.getString(context),
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
-                        color: (product['in_stock'] ?? false) ? Colors.green : Colors.red,
+                        color:
+                            (product['in_stock'] ?? false)
+                                ? Colors.green
+                                : Colors.red,
                       ),
                     ),
                   ],
@@ -761,7 +861,9 @@ class _DetectScreenState extends State<DetectScreen> {
             const Icon(Icons.check_circle, color: Colors.white),
             const SizedBox(width: 8),
             Expanded(
-              child: Text('${product['name']} ${AppLocale.addedToCart.getString(context)}'),
+              child: Text(
+                '${product['name']} ${AppLocale.addedToCart.getString(context)}',
+              ),
             ),
           ],
         ),
@@ -844,10 +946,7 @@ class _DetectScreenState extends State<DetectScreen> {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              Colors.green.shade700,
-              Colors.green.shade50,
-            ],
+            colors: [Colors.green.shade700, Colors.green.shade50],
           ),
         ),
         child: SafeArea(
@@ -897,7 +996,9 @@ class _DetectScreenState extends State<DetectScreen> {
                       ),
                     ),
                     Text(
-                      _isModelLoaded ? '🤖 ${AppLocale.aiReady.getString(context)}' : '⏳ ${AppLocale.loadingAIModel.getString(context)}',  
+                      _isModelLoaded
+                          ? '🤖 ${AppLocale.aiReady.getString(context)}'
+                          : '⏳ ${AppLocale.loadingAIModel.getString(context)}',
                       style: const TextStyle(
                         color: Colors.white70,
                         fontSize: 12,
@@ -906,53 +1007,7 @@ class _DetectScreenState extends State<DetectScreen> {
                   ],
                 ),
               ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.tune, color: Colors.white),
-                tooltip: 'Normalization Method',
-                onSelected: (value) async {
-                  await ModelManagerService.setNormalizationMethod(value);
-                  setState(() => _normalizationMethod = value);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Method changed to: ${ModelManagerService.methodDescriptions[value]}'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-                  print('✅ Normalization method changed to: $value');
-                },
-                itemBuilder: (BuildContext context) => [
-                  PopupMenuItem(
-                    value: 'method1',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_normalizationMethod == 'method1' ? '✓ Method 1' : 'Method 1'),
-                        const Text('[0, 1] Div by 255', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'method2',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_normalizationMethod == 'method2' ? '✓ Method 2' : 'Method 2'),
-                        const Text('[-1, 1] (x-127.5)/127.5', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value: 'method3',
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_normalizationMethod == 'method3' ? '✓ Method 3' : 'Method 3'),
-                        const Text('ImageNet Norm', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+              // Normalization method selection removed; using Method 2 by default
               IconButton(
                 icon: const Icon(Icons.info_outline, color: Colors.white),
                 onPressed: () => _showInfoDialog(),
@@ -972,22 +1027,22 @@ class _DetectScreenState extends State<DetectScreen> {
         children: [
           // Status Card
           _buildStatusCard(),
-          
+
           const SizedBox(height: 20),
-          
+
           // Image Display Section
           _buildImageSection(),
-          
+
           const SizedBox(height: 20),
-          
+
           // Action Buttons
           _buildActionButtons(),
-          
+
           const SizedBox(height: 20),
-          
+
           // Results Section
           if (_result != null) _buildResultsSection(),
-          
+
           const SizedBox(height: 20),
         ],
       ),
@@ -1013,12 +1068,18 @@ class _DetectScreenState extends State<DetectScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _isModelLoaded ? Colors.green.shade100 : Colors.orange.shade100,
+              color:
+                  _isModelLoaded
+                      ? Colors.green.shade100
+                      : Colors.orange.shade100,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               _isModelLoaded ? Icons.check_circle : Icons.hourglass_empty,
-              color: _isModelLoaded ? Colors.green.shade700 : Colors.orange.shade700,
+              color:
+                  _isModelLoaded
+                      ? Colors.green.shade700
+                      : Colors.orange.shade700,
               size: 24,
             ),
           ),
@@ -1028,7 +1089,9 @@ class _DetectScreenState extends State<DetectScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _isModelLoaded ? AppLocale.aiModelReady.getString(context) : AppLocale.loadingAIModel.getString(context),
+                  _isModelLoaded
+                      ? AppLocale.aiModelReady.getString(context)
+                      : AppLocale.loadingAIModel.getString(context),
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -1036,13 +1099,10 @@ class _DetectScreenState extends State<DetectScreen> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _isModelLoaded 
+                  _isModelLoaded
                       ? AppLocale.readyToAnalyze.getString(context)
                       : AppLocale.pleaseWaitAI.getString(context),
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -1098,23 +1158,27 @@ class _DetectScreenState extends State<DetectScreen> {
         const SizedBox(width: 16),
         Expanded(
           child: ElevatedButton(
-            onPressed: _image != null && !_isAnalyzing && _isModelLoaded
-                ? _analyzeImage 
-                : null,
-            child: _isAnalyzing 
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            onPressed:
+                _image != null && !_isAnalyzing && _isModelLoaded
+                    ? _analyzeImage
+                    : null,
+            child:
+                _isAnalyzing
+                    ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    )
+                    : Text(
+                      _isAnalyzing
+                          ? AppLocale.analyzing.getString(context)
+                          : !_isModelLoaded
+                          ? AppLocale.loadingAIModel.getString(context)
+                          : AppLocale.analyzeWithAI.getString(context),
                     ),
-                  )
-                : Text(_isAnalyzing 
-                    ? AppLocale.analyzing.getString(context)
-                    : !_isModelLoaded 
-                        ? AppLocale.loadingAIModel.getString(context)
-                        : AppLocale.analyzeWithAI.getString(context)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green.shade600,
               foregroundColor: Colors.white,
@@ -1135,14 +1199,14 @@ class _DetectScreenState extends State<DetectScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
           title: Row(
             children: [
               const Icon(Icons.info, color: Colors.blue),
               const SizedBox(width: 8),
-              Expanded(
-                child: Text(AppLocale.aboutPaddyAI.getString(context)),
-              ),
+              Expanded(child: Text(AppLocale.aboutPaddyAI.getString(context))),
             ],
           ),
           content: Column(
@@ -1187,10 +1251,7 @@ class _DetectScreenState extends State<DetectScreen> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.grey.shade100,
-            Colors.grey.shade50,
-          ],
+          colors: [Colors.grey.shade100, Colors.grey.shade50],
         ),
       ),
       child: Center(
@@ -1287,11 +1348,7 @@ class _DetectScreenState extends State<DetectScreen> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.check_circle,
-                  color: Colors.green,
-                  size: 16,
-                ),
+                const Icon(Icons.check_circle, color: Colors.green, size: 16),
                 const SizedBox(width: 4),
                 Text(
                   AppLocale.imageReady.getString(context),
@@ -1364,7 +1421,7 @@ class _DetectScreenState extends State<DetectScreen> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Disease Detection Card
           Container(
             width: double.infinity,
@@ -1372,15 +1429,22 @@ class _DetectScreenState extends State<DetectScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  _result!['isHealthy'] ? Colors.green.shade50 : Colors.orange.shade50,
-                  _result!['isHealthy'] ? Colors.green.shade100 : Colors.orange.shade100,
+                  _result!['isHealthy']
+                      ? Colors.green.shade50
+                      : Colors.orange.shade50,
+                  _result!['isHealthy']
+                      ? Colors.green.shade100
+                      : Colors.orange.shade100,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _result!['isHealthy'] ? Colors.green.shade200 : Colors.orange.shade200,
+                color:
+                    _result!['isHealthy']
+                        ? Colors.green.shade200
+                        : Colors.orange.shade200,
               ),
             ),
             child: Column(
@@ -1421,9 +1485,9 @@ class _DetectScreenState extends State<DetectScreen> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Recommendations Section
           _buildRecommendationsSection(),
         ],
@@ -1457,7 +1521,9 @@ class _DetectScreenState extends State<DetectScreen> {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                _result!['isHealthy'] ? AppLocale.recommendedProducts.getString(context) : AppLocale.treatmentProducts.getString(context),
+                _result!['isHealthy']
+                    ? AppLocale.recommendedProducts.getString(context)
+                    : AppLocale.treatmentProducts.getString(context),
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
@@ -1469,7 +1535,7 @@ class _DetectScreenState extends State<DetectScreen> {
           ],
         ),
         const SizedBox(height: 10),
-        
+
         SizedBox(
           height: 190,
           child: ListView.builder(
@@ -1485,15 +1551,18 @@ class _DetectScreenState extends State<DetectScreen> {
             },
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // View All Products Button
         Center(
           child: OutlinedButton.icon(
             onPressed: () => _showAllProducts(_recommendedProducts),
             icon: const Icon(Icons.store, size: 18),
-            label: Text(AppLocale.viewAllProducts.getString(context), style: const TextStyle(fontSize: 13)),
+            label: Text(
+              AppLocale.viewAllProducts.getString(context),
+              style: const TextStyle(fontSize: 13),
+            ),
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.green.shade700,
               side: BorderSide(color: Colors.green.shade300),
@@ -1508,14 +1577,21 @@ class _DetectScreenState extends State<DetectScreen> {
   Widget _buildProductCard(Map<String, dynamic> product) {
     // Determine product icon/emoji based on category
     String getProductIcon(String? category) {
-      switch(category) {
-        case 'Fungicides': return '🍄';
-        case 'Pesticides': return '🧪';
-        case 'Fertilizers': return '🌱';
-        case 'Organic': return '🌿';
-        case 'Seeds': return '🌾';
-        case 'Tools': return '🔧';
-        default: return '📦';
+      switch (category) {
+        case 'Fungicides':
+          return '🍄';
+        case 'Pesticides':
+          return '🧪';
+        case 'Fertilizers':
+          return '🌱';
+        case 'Organic':
+          return '🌿';
+        case 'Seeds':
+          return '🌾';
+        case 'Tools':
+          return '🔧';
+        default:
+          return '📦';
       }
     }
 
@@ -1539,21 +1615,22 @@ class _DetectScreenState extends State<DetectScreen> {
                     height: 70,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 70,
-                      color: Colors.grey.shade200,
-                      child: Center(
-                        child: Text(
-                          getProductIcon(product['category']),
-                          style: const TextStyle(fontSize: 28),
+                    errorBuilder:
+                        (context, error, stackTrace) => Container(
+                          height: 70,
+                          color: Colors.grey.shade200,
+                          child: Center(
+                            child: Text(
+                              getProductIcon(product['category']),
+                              style: const TextStyle(fontSize: 28),
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
               ],
-              
+
               // Product Name
               Row(
                 children: [
@@ -1566,7 +1643,8 @@ class _DetectScreenState extends State<DetectScreen> {
                   ],
                   Expanded(
                     child: Text(
-                      product['name'] ?? AppLocale.unknownProduct.getString(context),
+                      product['name'] ??
+                          AppLocale.unknownProduct.getString(context),
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
@@ -1577,16 +1655,18 @@ class _DetectScreenState extends State<DetectScreen> {
                   ),
                 ],
               ),
-              
+
               const SizedBox(height: 6),
-              
+
               // Product Category Badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                 decoration: BoxDecoration(
-                  color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
-                      ? Colors.green.shade100 
-                      : product['category'] == 'Fungicides'
+                  color:
+                      product['category'] == 'Fertilizers' ||
+                              product['category'] == 'Organic'
+                          ? Colors.green.shade100
+                          : product['category'] == 'Fungicides'
                           ? Colors.orange.shade100
                           : Colors.blue.shade100,
                   borderRadius: BorderRadius.circular(6),
@@ -1594,9 +1674,11 @@ class _DetectScreenState extends State<DetectScreen> {
                 child: Text(
                   _getLocalizedCategory(product['category']),
                   style: TextStyle(
-                    color: product['category'] == 'Fertilizers' || product['category'] == 'Organic'
-                        ? Colors.green.shade700 
-                        : product['category'] == 'Fungicides'
+                    color:
+                        product['category'] == 'Fertilizers' ||
+                                product['category'] == 'Organic'
+                            ? Colors.green.shade700
+                            : product['category'] == 'Fungicides'
                             ? Colors.orange.shade700
                             : Colors.blue.shade700,
                     fontWeight: FontWeight.w600,
@@ -1604,12 +1686,13 @@ class _DetectScreenState extends State<DetectScreen> {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 6),
-              
+
               // Description
               Text(
-                product['description'] ?? AppLocale.noDescriptionAvailable.getString(context),
+                product['description'] ??
+                    AppLocale.noDescriptionAvailable.getString(context),
                 style: const TextStyle(
                   fontSize: 11,
                   color: Colors.black54,
@@ -1618,9 +1701,9 @@ class _DetectScreenState extends State<DetectScreen> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              
+
               const Spacer(),
-              
+
               // Price and Stock Status
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1637,16 +1720,27 @@ class _DetectScreenState extends State<DetectScreen> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 5,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: (product['in_stock'] ?? false) ? Colors.green.shade100 : Colors.red.shade100,
+                      color:
+                          (product['in_stock'] ?? false)
+                              ? Colors.green.shade100
+                              : Colors.red.shade100,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      (product['in_stock'] ?? false) ? AppLocale.inStock.getString(context) : AppLocale.out.getString(context),
+                      (product['in_stock'] ?? false)
+                          ? AppLocale.inStock.getString(context)
+                          : AppLocale.out.getString(context),
                       style: TextStyle(
                         fontSize: 9,
-                        color: (product['in_stock'] ?? false) ? Colors.green.shade700 : Colors.red.shade700,
+                        color:
+                            (product['in_stock'] ?? false)
+                                ? Colors.green.shade700
+                                : Colors.red.shade700,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
