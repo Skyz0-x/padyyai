@@ -10,6 +10,7 @@ class ModelManagerService {
     'assets/model/model.tflite',
     'assets/model/model_unquant.tflite',
     'assets/model/modelV2.tflite',
+    'assets/model/modelV3.tflite',
   ];
 
   // Normalization methods
@@ -57,6 +58,9 @@ class ModelManagerService {
 
   /// Get model display name from path
   static String getModelDisplayName(String modelPath) {
+    if (modelPath.contains('modelV3')) {
+      return 'Model v3';
+    }
     if (modelPath.contains('modelV2')) {
       return 'Model v2';
     }
@@ -70,7 +74,7 @@ class ModelManagerService {
 
   /// Get labels path for a given model
   static String getLabelsPathForModel(String modelPath) {
-    return modelPath.contains('modelV2')
+    return (modelPath.contains('modelV2') || modelPath.contains('modelV3'))
         ? 'assets/model/labelsV2.txt'
         : 'assets/model/labels.txt';
   }
