@@ -320,7 +320,10 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> with TickerProvid
       child: TextField(
         controller: _searchController,
         onChanged: (value) => setState(() {}),
-        style: const TextStyle(color: Colors.white, fontSize: 14),
+        style: TextStyle(
+          color: _searchController.text.isNotEmpty ? Colors.green : Colors.white,
+          fontSize: 14,
+        ),
         decoration: InputDecoration(
           hintText: AppLocale.searchProducts.getString(context),
           hintStyle: const TextStyle(color: Colors.white70, fontSize: 14),

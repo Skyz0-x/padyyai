@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import '../services/orders_service.dart';
@@ -369,7 +370,11 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
   }
 
   Widget _buildOrderCard(Map<String, dynamic> order) {
-    final orderItems = order['order_items'] as List<dynamic>? ?? [];
+    // Safely parse order items; fallback to empty list if not present
+    final rawItems = order['order_items'];
+    final orderItems = rawItems is List
+      ? rawItems.map((e) => Map<String, dynamic>.from(e as Map)).toList()
+      : <Map<String, dynamic>>[];
     final status = order['status'] as String? ?? 'pending';
     final createdAt = DateTime.tryParse(order['created_at'] ?? '');
     final totalAmount = (order['total_amount'] as num?)?.toDouble() ?? 0.0;
@@ -456,12 +461,51 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      AppLocale.orderItems.getString(context),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '${orderItems.length} item(s)',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (orderItems.isEmpty)
+                  Text(
+                    AppLocale.noOrders.getString(context),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                if (orderItems.isEmpty && kDebugMode)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(
+                      'Debug: order_items missing for order ${order['id'] ?? ''}. Raw: $rawItems',
+                      style: TextStyle(fontSize: 11, color: Colors.red.shade300),
+                    ),
+                  ),
                 ...orderItems.take(3).map((item) {
                   // Product data is stored directly in order_items (denormalized)
                   final productName = item['product_name'] ?? AppLocale.unknownProduct.getString(context);
                   final quantity = item['quantity'] ?? 1;
                   final price = item['product_price']?.toDouble() ?? 0.0;
                   final imageUrl = item['product_image'];
+                  final productCategory = item['product_category'] as String?;
+                  final productId = item['product_id']?.toString();
+                  final lineTotal = (item['subtotal'] as num?)?.toDouble() ?? (price * (quantity as num).toDouble());
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
@@ -500,7 +544,9 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                 overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 6),
-                              Row(
+                              Wrap(
+                                spacing: 6,
+                                runSpacing: 6,
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.symmetric(
@@ -523,18 +569,52 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                                       ),
                                     ),
                                   ),
+                                  if (productCategory != null && productCategory.isNotEmpty)
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.shade50,
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: Colors.green.shade200),
+                                      ),
+                                      child: Text(
+                                        productCategory,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.green.shade700,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
                                 ],
                               ),
                             ],
                           ),
                         ),
-                        Text(
-                          'RM ${price.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: primaryColor,
-                          ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'RM ${price.toStringAsFixed(2)}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: primaryColor,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'RM ${lineTotal.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -558,6 +638,17 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
                             fontSize: 13,
                             color: Colors.blue.shade700,
                             fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        TextButton.icon(
+                          onPressed: () => _showAllOrderItems(orderItems),
+                          icon: const Icon(Icons.list_alt, size: 16),
+                          label: Text(AppLocale.viewAll.getString(context)),
+                          style: TextButton.styleFrom(
+                            foregroundColor: Colors.blue.shade700,
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            minimumSize: Size.zero,
                           ),
                         ),
                       ],
@@ -632,6 +723,180 @@ class _OrdersScreenState extends State<OrdersScreen> with SingleTickerProviderSt
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(Icons.shopping_bag, color: Colors.grey.shade400, size: 28),
+    );
+  }
+
+  void _showAllOrderItems(List<dynamic> items) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final parsedItems = items is List ? List<Map<String, dynamic>>.from(items) : <Map<String, dynamic>>[];
+
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.6,
+            minChildSize: 0.4,
+            maxChildSize: 0.9,
+            builder: (context, scrollController) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.list_alt, color: primaryColor),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            AppLocale.orderItems.getString(context),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.all(16),
+                      itemCount: parsedItems.length,
+                      itemBuilder: (context, index) {
+                        final item = parsedItems[index];
+                        final productName = item['product_name'] ?? AppLocale.unknownProduct.getString(context);
+                        final quantity = item['quantity'] ?? 1;
+                        final price = (item['product_price'] as num?)?.toDouble() ?? 0.0;
+                        final imageUrl = item['product_image'];
+                        final productCategory = item['product_category'] as String?;
+                        final productId = item['product_id']?.toString();
+                        final lineTotal = (item['subtotal'] as num?)?.toDouble() ?? (price * (quantity as num).toDouble());
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.grey.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(10),
+                                child: imageUrl != null
+                                    ? Image.network(
+                                        imageUrl,
+                                        width: 56,
+                                        height: 56,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
+                                      )
+                                    : _buildPlaceholderImage(),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      productName,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                      ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Wrap(
+                                      spacing: 6,
+                                      runSpacing: 6,
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius: BorderRadius.circular(6),
+                                            border: Border.all(color: Colors.grey.shade300),
+                                          ),
+                                          child: Text(
+                                            '${AppLocale.qty.getString(context)}: $quantity',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey.shade700,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ),
+                                        if (productCategory != null && productCategory.isNotEmpty)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.shade50,
+                                              borderRadius: BorderRadius.circular(6),
+                                              border: Border.all(color: Colors.green.shade200),
+                                            ),
+                                            child: Text(
+                                              productCategory,
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: Colors.green.shade700,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    'RM ${price.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                      color: primaryColor,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '${AppLocale.subtotal.getString(context)}: RM ${lineTotal.toStringAsFixed(2)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

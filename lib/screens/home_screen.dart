@@ -1974,12 +1974,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 16),
               
-              // Fertilization
+              // Planting
               _buildLegendItem(
-                Icons.spa,
-                const Color(0xFF4CAF50),
-                AppLocale.fertilizationLabel.getString(context),
-                AppLocale.fertilizationDesc.getString(context),
+                Icons.agriculture,
+                const Color(0xFF8BC34A),
+                AppLocale.plantingDateLabel.getString(context),
+                AppLocale.plantingDateDesc.getString(context),
               ),
               const SizedBox(height: 12),
               
@@ -1992,12 +1992,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 12),
               
-              // Planting
+              // Fertilization
               _buildLegendItem(
-                Icons.agriculture,
-                const Color(0xFF8BC34A),
-                AppLocale.plantingDateLabel.getString(context),
-                AppLocale.plantingDateDesc.getString(context),
+                Icons.spa,
+                const Color(0xFF4CAF50),
+                AppLocale.fertilizationLabel.getString(context),
+                AppLocale.fertilizationDesc.getString(context),
               ),
               const SizedBox(height: 12),
               

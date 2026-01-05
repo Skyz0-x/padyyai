@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../config/supabase_config.dart';
 
 class OrdersService {
@@ -22,7 +24,18 @@ class OrdersService {
           .eq('user_id', userId)
           .order('created_at', ascending: false);
 
-      return List<Map<String, dynamic>>.from(response);
+      final orders = List<Map<String, dynamic>>.from(response);
+      await _attachOrderItemsIfMissing(orders);
+
+      if (kDebugMode) {
+        debugPrint('Orders fetched: ${orders.length}');
+        for (final o in orders) {
+          final items = o['order_items'];
+          debugPrint('Order ${o['id']}: items type=${items.runtimeType}, count=${items is List ? items.length : 'n/a'}');
+        }
+      }
+
+      return orders;
     } catch (e) {
       print('Error fetching user orders: $e');
       rethrow;
@@ -49,10 +62,65 @@ class OrdersService {
           .eq('status', status)
           .order('created_at', ascending: false);
 
-      return List<Map<String, dynamic>>.from(response);
+      final orders = List<Map<String, dynamic>>.from(response);
+      await _attachOrderItemsIfMissing(orders);
+
+      if (kDebugMode) {
+        debugPrint('Orders by status "$status": ${orders.length}');
+        for (final o in orders) {
+          final items = o['order_items'];
+          debugPrint('Order ${o['id']}: items type=${items.runtimeType}, count=${items is List ? items.length : 'n/a'}');
+        }
+      }
+
+      return orders;
     } catch (e) {
       print('Error fetching orders by status: $e');
       rethrow;
+    }
+  }
+
+  // Fallback: if nested order_items comes back empty, fetch them explicitly
+  Future<void> _attachOrderItemsIfMissing(List<Map<String, dynamic>> orders) async {
+    if (orders.isEmpty) return;
+
+    final missingIds = orders
+        .where((o) => (o['order_items'] is! List) || (o['order_items'] as List).isEmpty)
+        .map((o) => o['id'])
+        .where((id) => id != null)
+        .toList();
+
+    if (missingIds.isEmpty) return;
+
+    final itemsResponse = await supabase
+        .from('order_items')
+        .select('*')
+        .inFilter('order_id', missingIds);
+
+    final items = List<Map<String, dynamic>>.from(itemsResponse);
+    final grouped = <String, List<Map<String, dynamic>>>{};
+    for (final item in items) {
+      final orderId = item['order_id'];
+      if (orderId == null) continue;
+      final key = orderId.toString();
+      grouped.putIfAbsent(key, () => []).add(item);
+    }
+
+    for (final order in orders) {
+      final id = order['id'];
+      if (id == null) continue;
+      final key = id.toString();
+      order['order_items'] = grouped[key] ?? (order['order_items'] ?? []);
+    }
+
+    if (kDebugMode) {
+      debugPrint('Fallback fetched ${items.length} order_items for ${missingIds.length} orders');
+      if (items.isNotEmpty) {
+        debugPrint('First item sample: ${items.first}');
+      }
+      for (final entry in grouped.entries) {
+        debugPrint('Grouped order_id ${entry.key}: ${entry.value.length} items');
+      }
     }
   }
 
