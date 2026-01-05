@@ -13,26 +13,31 @@ class SupplierOrdersService {
 
       print('🔍 DEBUG: Fetching orders for supplier: $supplierId');
 
-      // First, try to get orders from order_items by supplier_id
+      // Strategy 1: Get orders directly from order_items.supplier_id
       final supplierOrderIds = <String>{};
       try {
         final orderItemsResponse = await supabase
             .from('order_items')
-            .select('order_id')
+            .select('order_id, product_name, supplier_id')
             .eq('supplier_id', supplierId);
 
-        print('🔍 DEBUG: Raw response: $orderItemsResponse');
+        print('🔍 DEBUG: order_items query returned ${orderItemsResponse.length} items');
+        if (orderItemsResponse.isNotEmpty) {
+          print('🔍 DEBUG: Sample item: ${orderItemsResponse.first}');
+        }
+        
         for (var item in orderItemsResponse) {
-          supplierOrderIds.add(item['order_id']);
+          if (item['order_id'] != null) {
+            supplierOrderIds.add(item['order_id'].toString());
+          }
         }
 
-        print('🔍 DEBUG: Found ${supplierOrderIds.length} orders from order_items.supplier_id');
-        print('🔍 DEBUG: Order IDs: $supplierOrderIds');
+        print('🔍 DEBUG: Found ${supplierOrderIds.length} unique orders from order_items.supplier_id');
       } catch (e) {
         print('🔍 DEBUG: Error querying order_items.supplier_id: $e');
       }
 
-      // If no orders found, try fallback: get from products -> order_items
+      // Strategy 2: Fallback - get from products -> order_items
       if (supplierOrderIds.isEmpty) {
         print('🔍 DEBUG: No supplier_id in order_items, trying products approach...');
         
@@ -47,20 +52,24 @@ class SupplierOrdersService {
           supplierProductIds.add(product['id'].toString());
         }
 
+        print('🔍 DEBUG: Found ${supplierProductIds.length} products from this supplier');
+
         if (supplierProductIds.isNotEmpty) {
-          print('🔍 DEBUG: Found ${supplierProductIds.length} products from this supplier');
-          
           // Get all order_items with these products
           final itemsResponse = await supabase
               .from('order_items')
-              .select('order_id')
+              .select('order_id, product_id, product_name')
               .inFilter('product_id', supplierProductIds.toList());
 
+          print('🔍 DEBUG: Found ${itemsResponse.length} order items with supplier products');
+          
           for (var item in itemsResponse) {
-            supplierOrderIds.add(item['order_id']);
+            if (item['order_id'] != null) {
+              supplierOrderIds.add(item['order_id'].toString());
+            }
           }
 
-          print('🔍 DEBUG: Found ${supplierOrderIds.length} orders with supplier products');
+          print('🔍 DEBUG: Total ${supplierOrderIds.length} unique orders after products fallback');
         }
       }
 

@@ -170,6 +170,22 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
               ],
             ),
           ),
+          IconButton(
+            onPressed: _isLoading ? null : _loadOrders,
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.refresh, color: Colors.white, size: 22),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            tooltip: 'Refresh orders',
+          ),
         ],
       ),
     );
@@ -319,6 +335,11 @@ class _SupplierOrdersScreenState extends State<SupplierOrdersScreen>
     }
 
     final orders = _filterOrdersByStatus(status);
+
+    print('🔍 DISPLAY: Rendering ${orders.length} orders for status: $status');
+    for (var order in orders) {
+      print('🔍 DISPLAY: Order ${order['order_number']} - Status: ${order['status']} - Items: ${(order['order_items'] as List?)?.length ?? 0}');
+    }
 
     if (orders.isEmpty) {
       return Center(

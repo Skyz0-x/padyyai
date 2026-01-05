@@ -207,12 +207,27 @@ class CartService {
       }
 
       final tax = subtotal * 0.0; // 0% tax, adjust as needed
-      final shippingFee = subtotal > 1000 ? 0.0 : 50.0; // Free shipping over $1000
+      final shippingFee = subtotal > 1000 ? 0.0 : 6.0; // Free shipping over RM 1000, RM 6 otherwise
       final totalAmount = subtotal + tax + shippingFee;
 
       // Generate order number
       final orderNumberResult = await _client.rpc('generate_order_number');
       final orderNumber = orderNumberResult as String;
+
+      // Get supplier_id from first product (assuming single supplier per order)
+      String? orderSupplierId;
+      if (cartItems.isNotEmpty) {
+        try {
+          final firstProductResponse = await _client
+              .from('products')
+              .select('supplier_id')
+              .eq('id', cartItems.first['product_id'])
+              .single();
+          orderSupplierId = firstProductResponse['supplier_id'] as String?;
+        } catch (e) {
+          print('Warning: Could not fetch supplier_id for order: $e');
+        }
+      }
 
       // Create order
       final order = await _client.from('orders').insert({
@@ -229,6 +244,7 @@ class CartService {
         'shipping_phone': shippingPhone,
         'shipping_address': shippingAddress,
         'notes': notes,
+        'supplier_id': orderSupplierId, // Set supplier_id in orders table
       }).select().single();
 
       // Create order items

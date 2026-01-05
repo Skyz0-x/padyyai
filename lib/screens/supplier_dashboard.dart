@@ -338,7 +338,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               Expanded(
                 child: _buildStatCard(
                   AppLocale.monthlySales.getString(context), 
-                  'RM${_monthlySales.toStringAsFixed(2)}', 
+                  'RM ${_monthlySales.toStringAsFixed(2)}', 
                   Icons.trending_up, 
                   Colors.orange,
                 ),
@@ -560,15 +560,20 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(icon, color: color, size: 24),
-                const Spacer(),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: color,
+                Expanded(
+                  child: Text(
+                    value,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: color,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    textAlign: TextAlign.right,
                   ),
                 ),
               ],
@@ -580,6 +585,8 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                 fontSize: 12,
                 color: Colors.grey.shade600,
               ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
           ],
         ),
