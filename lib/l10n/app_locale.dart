@@ -514,6 +514,8 @@ class AppLocale {
   static const String totalProducts = 'totalProducts';
   static const String activeOrders = 'activeOrders';
   static const String monthlySales = 'monthlySales';
+  static const String currentMonthSales = 'currentMonthSales';
+  static const String monthlySalesDescription = 'monthlySalesDescription';
   static const String customers = 'customers';
   static const String manageProducts = 'manageProducts';
   static const String addEditRemoveProducts = 'addEditRemoveProducts';
@@ -1149,6 +1151,8 @@ mixin LocaleData {
     'totalProducts': 'Total Products',
     'activeOrders': 'Active Orders',
     'monthlySales': 'Monthly Sales',
+    'currentMonthSales': 'Current Month Sales',
+    'monthlySalesDescription': 'This amount represents the total sales for the current month from all your orders.',
     'customers': 'Customers',
     'manageProducts': 'Manage Products',
     'addEditRemoveProducts': 'Add, edit, or remove your products',
@@ -1772,6 +1776,8 @@ mixin LocaleData {
     'totalProducts': 'Jumlah Produk',
     'activeOrders': 'Pesanan Aktif',
     'monthlySales': 'Jualan Bulanan',
+    'currentMonthSales': 'Jualan Bulan Semasa',
+    'monthlySalesDescription': 'Jumlah ini mewakili jumlah jualan untuk bulan semasa daripada semua pesanan anda.',
     'customers': 'Pelanggan',
     'manageProducts': 'Urus Produk',
     'addEditRemoveProducts': 'Tambah, edit, atau buang produk anda',

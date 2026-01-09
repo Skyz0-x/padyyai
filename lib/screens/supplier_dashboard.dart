@@ -86,6 +86,61 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
     }
   }
 
+  void _showMonthlySalesDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.trending_up, color: Colors.orange),
+              const SizedBox(width: 8),
+              Text(AppLocale.monthlySales.getString(context)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                AppLocale.currentMonthSales.getString(context),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'RM ${_monthlySales.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Divider(color: Colors.grey.shade300),
+              const SizedBox(height: 8),
+              Text(
+                AppLocale.monthlySalesDescription.getString(context),
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey.shade600,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(AppLocale.close.getString(context)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
@@ -341,6 +396,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                   'RM ${_monthlySales.toStringAsFixed(2)}', 
                   Icons.trending_up, 
                   Colors.orange,
+                  onTap: _showMonthlySalesDialog,
                 ),
               ),
               const SizedBox(width: 16),
@@ -563,6 +619,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Icon(icon, color: color, size: 24),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     value,
@@ -574,6 +631,7 @@ class _SupplierDashboardState extends State<SupplierDashboard> {
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     textAlign: TextAlign.right,
+                    softWrap: false,
                   ),
                 ),
               ],
